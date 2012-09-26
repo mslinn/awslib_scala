@@ -1,0 +1,17 @@
+target
+.s3
+.com.micronautics.aws
+tomcat.8080
+.classpath
+*~
+.cache
+.idea
+.idea_modules/
+.project
+.settings/
+*.iml
+*.stackdump
+project/target/
+AwsCredentials.properties
+BBCredentials.properties
+classes/
