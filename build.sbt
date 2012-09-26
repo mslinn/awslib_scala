@@ -38,6 +38,17 @@ libraryDependencies ++= Seq(
   "org.scala-tools.time"          %  "time_2.9.1"          % "0.5"
 )
 
+publishTo <<= (version) { version: String =>
+   val scalasbt = "http://scalasbt.artifactoryonline.com/scalasbt/"
+   val (name, url) = if (version.contains("-SNAPSHOT"))
+                       ("sbt-plugin-snapshots", scalasbt+"sbt-plugin-snapshots")
+                     else
+                       ("sbt-plugin-releases", scalasbt+"sbt-plugin-releases")
+   Some(Resolver.url(name, new URL(url))(Resolver.ivyStylePatterns))
+}
+
+publishMavenStyle := false
+
 seq(StartScriptPlugin.startScriptForClassesSettings: _*)
 
 logLevel := Level.Error
