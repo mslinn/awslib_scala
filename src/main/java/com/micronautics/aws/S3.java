@@ -235,8 +235,8 @@ public class S3 {
         String keyLC = key.toLowerCase().trim();
         if (keyLC.endsWith(".css"))
             metadata.setContentType("text/css");
-        else if (keyLC.endsWith(".doc") || keyLC.endsWith(".docx"))
-            metadata.setContentType("application/msword");
+        else if (keyLC.endsWith(".csv"))
+            metadata.setContentType("application/csv");
         else if (keyLC.endsWith(".html") || keyLC.endsWith(".htm")  || keyLC.endsWith(".shtml") || keyLC.endsWith(".jsp") || keyLC.endsWith(".php"))
             metadata.setContentType("text/html");
         else if (keyLC.endsWith(".gif"))
@@ -249,12 +249,18 @@ public class S3 {
             metadata.setContentType("application/pdf");
         else if (keyLC.endsWith(".png"))
             metadata.setContentType("image/png");
+        else if (keyLC.endsWith(".ppt") || keyLC.endsWith(".pptx"))
+            metadata.setContentType("application/vnd.ms-powerpoint");
+        else if (keyLC.endsWith(".doc") || keyLC.endsWith(".docx"))
+            metadata.setContentType("application/vnd.ms-word");
+        else if (keyLC.endsWith(".xls") || keyLC.endsWith(".xlsx"))
+            metadata.setContentType("application/vnd.ms-excel");
         else if (keyLC.endsWith(".txt"))
             metadata.setContentType("text/plain");
         else if (keyLC.endsWith(".zip"))
             metadata.setContentType("application/zip");
         else
-            metadata.setContentType("text/plain");
+            metadata.setContentType("application/octet-stream");
     }
 
     /** Download an object - if the key has any leading slashes, they are removed.
