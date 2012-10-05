@@ -251,7 +251,7 @@ public class S3 {
             metadata.setContentType("image/png");
         else if (keyLC.endsWith(".ppt") || keyLC.endsWith(".pptx"))
             metadata.setContentType("application/vnd.ms-powerpoint");
-        else if (keyLC.endsWith(".doc") || keyLC.endsWith(".docx"))
+        else if (keyLC.endsWith(".doc") || keyLC.endsWith(".dot") || keyLC.endsWith(".docx"))
             metadata.setContentType("application/vnd.ms-word");
         else if (keyLC.endsWith(".xls") || keyLC.endsWith(".xlsx"))
             metadata.setContentType("application/vnd.ms-excel");
