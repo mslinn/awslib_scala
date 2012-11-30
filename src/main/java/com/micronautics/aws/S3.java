@@ -237,26 +237,60 @@ public class S3 {
             metadata.setContentType("text/css");
         else if (keyLC.endsWith(".csv"))
             metadata.setContentType("application/csv");
-        else if (keyLC.endsWith(".html") || keyLC.endsWith(".htm")  || keyLC.endsWith(".shtml") || keyLC.endsWith(".jsp") || keyLC.endsWith(".php"))
-            metadata.setContentType("text/html");
+        else if (keyLC.endsWith(".doc") || keyLC.endsWith(".dot") || keyLC.endsWith(".docx"))
+            metadata.setContentType("application/vnd.ms-word");
+        else if (keyLC.endsWith(".dtd"))
+            metadata.setContentType("application/xml-dtd");
+        else if (keyLC.endsWith(".flv"))
+            metadata.setContentType("video/x-flv");
         else if (keyLC.endsWith(".gif"))
             metadata.setContentType("image/gif");
+        else if (keyLC.endsWith(".gzip") || keyLC.endsWith(".gz"))
+            metadata.setContentType("application/gzip");
+        else if (keyLC.endsWith(".html") || keyLC.endsWith(".htm")  || keyLC.endsWith(".shtml") || keyLC.endsWith(".jsp") || keyLC.endsWith(".php"))
+            metadata.setContentType("text/html");
+        else if (keyLC.endsWith(".ico"))
+            metadata.setContentType("image/vnd.microsoft.icon");
         else if (keyLC.endsWith(".jpg"))
             metadata.setContentType("image/jpeg");
         else if (keyLC.endsWith(".js"))
-            metadata.setContentType("text/javascript");
+            metadata.setContentType("application/javascript");
+        else if (keyLC.endsWith(".json"))
+            metadata.setContentType("application/json");
+        else if (keyLC.endsWith(".mp3") || keyLC.endsWith(".mpeg"))
+            metadata.setContentType("audio/mpeg");
+        else if (keyLC.endsWith(".mp4"))
+            metadata.setContentType("audio/mp4");
+        else if (keyLC.endsWith(".ogg"))
+            metadata.setContentType("application/ogg");
         else if (keyLC.endsWith(".pdf"))
             metadata.setContentType("application/pdf");
         else if (keyLC.endsWith(".png"))
             metadata.setContentType("image/png");
         else if (keyLC.endsWith(".ppt") || keyLC.endsWith(".pptx"))
             metadata.setContentType("application/vnd.ms-powerpoint");
-        else if (keyLC.endsWith(".doc") || keyLC.endsWith(".dot") || keyLC.endsWith(".docx"))
-            metadata.setContentType("application/vnd.ms-word");
-        else if (keyLC.endsWith(".xls") || keyLC.endsWith(".xlsx"))
-            metadata.setContentType("application/vnd.ms-excel");
+        else if (keyLC.endsWith(".ps"))
+            metadata.setContentType("application/postscript");
+        else if (keyLC.endsWith(".qt"))
+            metadata.setContentType("video/quicktime");
+        else if (keyLC.endsWith(".ra"))
+            metadata.setContentType("audio/vnd.rn-realaudio");
+        else if (keyLC.endsWith(".tiff"))
+            metadata.setContentType("image/tiff");
         else if (keyLC.endsWith(".txt"))
             metadata.setContentType("text/plain");
+        else if (keyLC.endsWith(".xls") || keyLC.endsWith(".xlsx"))
+            metadata.setContentType("application/vnd.ms-excel");
+        else if (keyLC.endsWith(".xml"))
+            metadata.setContentType("application/xml");
+        else if (keyLC.endsWith(".vcard"))
+            metadata.setContentType("text/vcard");
+        else if (keyLC.endsWith(".wav"))
+            metadata.setContentType("audio/vnd.wave");
+        else if (keyLC.endsWith(".webm"))
+            metadata.setContentType("audio/webm");
+        else if (keyLC.endsWith(".wmv"))
+            metadata.setContentType("video/x-ms-wmv");
         else if (keyLC.endsWith(".zip"))
             metadata.setContentType("application/zip");
         else
