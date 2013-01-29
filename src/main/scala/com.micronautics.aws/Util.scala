@@ -1,9 +1,9 @@
 package com.micronautics.aws
 
-import _root_.scalax.file.Path
-import _root_.scalax.io.Codec
+import scala.language.implicitConversions
 import com.amazonaws.services.s3.model.S3ObjectSummary
-import java.io.File
+import java.io.{File, FileWriter}
+import java.nio.file.Path
 import java.util.Date
 import java.text.SimpleDateFormat
 import grizzled.math.stats._
@@ -13,7 +13,6 @@ import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
 import java.nio.file.Files
 import com.codahale.jerkson.Json._
 import S3Model._
-import scala.Some
 import io.Source
 import org.joda.time.format.DateTimeFormat
 import org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS
@@ -101,14 +100,13 @@ object Util {
 
   /** @return `.aws` contents as a String */
   def credentialFileContents: Option[String] = {
-    val file = new File(credentialPath.path)
-    if (file.exists)
-      Some(Source.fromFile(file).mkString)
+    if (credentialPath.toFile.exists)
+      Some(Source.fromFile(credentialPath.toFile).mkString)
     else
       None
   }
 
-  def credentialPath: Path = Path(new File(sys.env("HOME"))) / ".aws"
+  def credentialPath: Path = new File(sys.env("HOME"), ".aws").toPath
 
   def readS3File(): S3File = {
     findS3File() match {
@@ -202,29 +200,37 @@ object Util {
 
   /** @return S3File from parsing JSON in given `.s3` file */
   def parseS3File(file: File): S3File = try {
-    parse[S3File](Path(file).slurpString(Codec.UTF8))
+    parse[S3File](Source.fromFile(file, "UTF-8"))
   } catch {
-    case e =>
+    case e: Throwable =>
       println("Error parsing " + file.getAbsolutePath + ":\n" + e.getMessage)
       sys.exit(-2)
       null
   }
 
+  def using[A <: {def close(): Unit}, B](param: A)(f: A => B): B = {
+    import scala.language.reflectiveCalls
+    try { f(param) } finally { param.close() }
+  }
+
+  def writeToFile(fileName:String, data:String) = 
+    using (new FileWriter(fileName)) {
+      fileWriter => fileWriter.write(data)
+    }
+
   def writeS3(contents: String): Unit = {
     val s3File = new File(System.getProperty("user.dir"), ".s3")
-    val s3Path = Path(s3File)
-    s3Path.write(contents.replaceAll("(.*?:(\\[.*?\\],|.*?,))", "$0\n "))
+    val s3Path = s3File.toPath
+    writeToFile(s3File.getAbsolutePath, contents.replaceAll("(.*?:(\\[.*?\\],|.*?,))", "$0\n "))
     makeFileHiddenIfDos(s3Path)
   }
 
-  def makeFileHiddenIfDos(path: Path) {
+  def makeFileHiddenIfDos(path: Path): Unit = {
     if (IS_OS_WINDOWS) {
-      path.fileOption match {
-        case Some(file) =>
-          if (!file.isHidden)
-            Files.setAttribute(file.toPath, "dos:hidden", true)
-
-        case None =>
+      val file = path.toFile
+      if (file.exists && !file.isHidden) {
+        Files.setAttribute(file.toPath, "dos:hidden", true)
+        ()
       }
     }
   }

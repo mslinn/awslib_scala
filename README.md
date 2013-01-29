@@ -7,6 +7,7 @@ This project was sponsored by [Micronautics Research Corporation](http://www.mic
 ## Building ##
 
  1. Java 7 or later is required.
+ 1. Uses Scala 2.10 and SBT 12.2 since v0.1.1, and will download them if necessary
  1. Point `JAVA_HOME` to a Java 7 JDK.
  1. Type the following into a bash console:
 ````
