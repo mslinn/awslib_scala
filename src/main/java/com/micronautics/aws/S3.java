@@ -120,6 +120,11 @@ public class S3 {
         return false;
     }
 
+    /** Normal use case is to delete a directory and all its contents */
+    public void deletePrefix(String bucketName, String prefix) {
+        S3Scala.deletePrefix(this, bucketName, prefix);
+    }
+
     /** Requires property com.amazonaws.sdk.disableCertChecking to have a value (any value will do) */
     public boolean isWebsiteEnabled(String bucketName) {
         try {
