@@ -34,7 +34,7 @@ libraryDependencies ++= Seq(
 )
 
 publishTo <<= (version) { version: String =>
-   val scalasbt = "http://scalasbt.artifactoryonline.com/scalasbt/"
+   val scalasbt = "http://repo.scala-sbt.org/scalasbt/"
    val (name, url) = if (version.contains("-SNAPSHOT"))
                        ("sbt-plugin-snapshots", scalasbt+"sbt-plugin-snapshots")
                      else
