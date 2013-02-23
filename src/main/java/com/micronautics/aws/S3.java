@@ -207,6 +207,13 @@ public class S3 {
         }
     }
 
+    /** Recursive upload to AWS S3 bucket
+      * @param file or directory to copy
+      * @param dest path to copy to on AWS S3 */
+    public void uploadFileOrDirectory(String bucketName, String dest, File file) {
+        S3Scala.uploadFileOrDirectory(this, bucketName, dest, file);
+    }
+
     public PutObjectResult uploadString(String bucketName, String key, String contents) {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setLastModified(new Date());
