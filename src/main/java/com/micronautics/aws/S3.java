@@ -326,9 +326,15 @@ public class S3 {
         return object.getObjectContent();
     }
 
-    /** List objects in given bucketName by prefix.
+    /** List objects in given bucketName by prefix, followed by number of bytes.
      * @param prefix Any leading slashes are removed if a prefix is specified */
     public String[] listObjectsByPrefix(String bucketName, String prefix) {
+        return listObjectsByPrefix(bucketName, prefix, true);
+    }
+
+    /** List objects in given bucketName by prefix; number of bytes is included if showSize is true.
+     * @param prefix Any leading slashes are removed if a prefix is specified */
+    public String[] listObjectsByPrefix(String bucketName, String prefix, boolean showSize) {
         while (null!=prefix && prefix.length()>0 && prefix.startsWith("/"))
             prefix = prefix.substring(1);
         LinkedList<String> result = new LinkedList<String>();
@@ -338,7 +344,7 @@ public class S3 {
                 .withPrefix(prefix));
         while (more) {
             for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries())
-                result.add(objectSummary.getKey() + " (size = " + objectSummary.getSize() + ")");
+                result.add(objectSummary.getKey() + (showSize ? " (size = " + objectSummary.getSize() + ")" : ""));
             more = objectListing.isTruncated();
             if (more)
                 objectListing = s3.listNextBatchOfObjects(objectListing);
