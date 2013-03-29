@@ -23,7 +23,7 @@ scalacOptions in (Compile, doc) <++= baseDirectory.map {
 }
 
 libraryDependencies ++= Seq(
-  "com.amazonaws"                 %  "aws-java-sdk"        % "1.3.32"  withSources(),
+  "com.amazonaws"                 %  "aws-java-sdk"        % "1.4.1"  withSources(),
   "com.codahale"                  %  "jerkson_2.9.1"       % "0.5.0",
   "commons-io"                    %  "commons-io"          % "2.4"     withSources(),
   "commons-lang"                  %  "commons-lang"        % "2.6"     withSources(),
