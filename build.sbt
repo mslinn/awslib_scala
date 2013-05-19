@@ -30,7 +30,7 @@ libraryDependencies ++= Seq(
   "junit"                         %  "junit"               % "4.10"    % "test" withSources(),
   "org.clapper"                   %% "grizzled-scala"      % "1.1.2"   withSources(),
   "org.scalatest"                 %% "scalatest"           % "2.0.M5b" % "test" withSources(),
-  "org.scala-tools"               %  "time"                 % "2.7.4-0.1"
+  "org.scala-tools"               %  "time"                % "2.7.4-0.1"
 )
 
 publishTo <<= (version) { version: String =>
