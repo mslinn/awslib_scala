@@ -1,10 +1,11 @@
 package com.micronautics.aws
 
-import com.amazonaws.auth.{PropertiesCredentials, AWSCredentials}
+import com.amazonaws.auth.{BasicAWSCredentials, PropertiesCredentials, AWSCredentials}
 import com.amazonaws.services.sns.AmazonSNSClient
 import java.lang.{Exception, String}
 import java.io.InputStream
 import scala.Exception
+import com.amazonaws.services.s3.AmazonS3Client
 
 class SNS {
   var sns: AmazonSNSClient = _
@@ -32,5 +33,11 @@ class SNS {
     case ex: Exception => {
       exception = ex
     }
+  }
+
+  def this(key: String, secret: String) {
+    this()
+    awsCredentials = new BasicAWSCredentials(key, secret)
+    sns = new AmazonSNSClient(awsCredentials)
   }
 }

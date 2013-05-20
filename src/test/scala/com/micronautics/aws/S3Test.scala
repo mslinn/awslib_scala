@@ -5,7 +5,6 @@ import java.util.Date
 import com.amazonaws.auth.policy.Principal
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, WordSpec}
 import org.scalatest.matchers.MustMatchers
-import scala.Some
 import com.amazonaws.services.s3.model.{SetBucketAclRequest, CanonicalGrantee, AccessControlList, Permission, GetBucketAclRequest, Bucket}
 
 /**These tests will fail unless a file called AwsCredentials.properties is created in src/test/resources. */

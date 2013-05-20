@@ -11,15 +11,15 @@ import java.util.ArrayList
 import scala.collection.JavaConversions._
 import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
 import java.nio.file.Files
-import com.codahale.jerkson.Json._
 import S3Model._
 import io.Source
 import org.joda.time.format.DateTimeFormat
 import org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS
+import play.api.libs.json._
 
-/**
- * @author Mike Slinn */
 object Util {
+  implicit val s3FileFormat = Json.format[S3File]
+
   var s3Option: Option[S3] = None
 
   lazy val dtFormat = DateTimeFormat.forPattern("HH:mm:ss 'on' mmm, dd YYYY")
@@ -50,7 +50,7 @@ object Util {
     if (deleteResult.length>0)
       return deleteResult
 
-    return ""
+    ""
   }
 
   def computeStatString(label: String, values: ArrayList[Long]): String = {
@@ -70,7 +70,7 @@ object Util {
     val stdDev = popStdDev(values: _*).asInstanceOf[Long]
     val result = "%s mean of %d values: %d ms, +/- %d ms (1 std dev: %d ms, 2 std devs: %d ms)".
       format(label, values.length, millisMean, stdDev, millisMean + stdDev, millisMean + 2*stdDev)
-    return result
+    result
   }
 
   /** @return -2 if s3File does not exist,
@@ -172,8 +172,10 @@ object Util {
       case None =>
         None
 
-      case Some(contents) =>
-        val creds = AllCredentials(parse[Array[Credentials]](contents)).flatMap { cred =>
+      case Some(contents) => None
+        implicit val credsFormat = Json.format[Credentials]
+        val credArray: Seq[Credentials] = Json.fromJson[Seq[Credentials]](Json.parse(contents)).get
+        val creds = AllCredentials(credArray.toArray).flatMap { cred =>
           if (cred.awsAccountName==accountName)
             Some(cred)
           else
@@ -200,7 +202,9 @@ object Util {
 
   /** @return S3File from parsing JSON in given `.s3` file */
   def parseS3File(file: File): S3File = try {
-    parse[S3File](Source.fromFile(file, "UTF-8"))
+    val str = Source.fromFile(file, "UTF-8").toString()
+    val jsValue = Json.parse(str)
+    Json.fromJson(jsValue).get
   } catch {
     case e: Throwable =>
       println("Error parsing " + file.getAbsolutePath + ":\n" + e.getMessage)
@@ -247,7 +251,7 @@ object Util {
       case Some(dateTime) =>
         "last synced " + dtFormat.print(dateTime)
     }
-    writeS3(generate(newS3File) + "\n")
+    writeS3(Json.toJson(newS3File) + "\n")
     synced
   }
 }

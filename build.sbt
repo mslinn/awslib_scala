@@ -22,14 +22,20 @@ scalacOptions in (Compile, doc) <++= baseDirectory.map {
   )
 }
 
+resolvers ++= Seq(
+  "Typesafe Releases"   at "http://repo.typesafe.com/typesafe/releases",
+  "Mandubian snapshots" at "https://raw.github.com/mandubian/mandubian-mvn/master/snapshots/",
+  "Mandubian releases"  at "https://raw.github.com/mandubian/mandubian-mvn/master/releases/"
+)
+
 libraryDependencies ++= Seq(
   "com.amazonaws"                 %  "aws-java-sdk"        % "1.4.4.1" withSources(),
-  "io.backchat.jerkson"           %  "jerkson_2.9.2"       % "0.7.0"   withSources(),
+  "play"                          %  "play-json_2.10"      % "2.2-SNAPSHOT" withSources(),
   "commons-io"                    %  "commons-io"          % "2.4"     withSources(),
   "commons-lang"                  %  "commons-lang"        % "2.6"     withSources(),
-  "junit"                         %  "junit"               % "4.10"    % "test" withSources(),
-  "org.clapper"                   %% "grizzled-scala"      % "1.1.2"   withSources(),
-  "org.scalatest"                 %% "scalatest"           % "2.0.M5b" % "test" withSources(),
+  "junit"                         %  "junit"               % "4.11"    % "test" withSources(),
+  "org.clapper"                   %% "grizzled-scala"      % "1.1.3"   withSources(),
+  "org.scalatest"                 %% "scalatest"           % "2.0.M6-SNAP16" % "test" withSources(),
   "org.scala-tools"               %  "time"                % "2.7.4-0.1"
 )
 
