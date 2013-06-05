@@ -29,7 +29,7 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.amazonaws"                 %  "aws-java-sdk"        % "1.4.4.1" withSources(),
+  "com.amazonaws"                 %  "aws-java-sdk"        % "1.4.5" withSources(),
   "play"                          %  "play-json_2.10"      % "2.2-SNAPSHOT" withSources(),
   "commons-io"                    %  "commons-io"          % "2.4"     withSources(),
   "commons-lang"                  %  "commons-lang"        % "2.6"     withSources(),
