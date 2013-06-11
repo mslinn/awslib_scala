@@ -156,6 +156,22 @@ public class S3 {
         return result.toArray(new String[result.size()]);
     }
 
+    /** Move oldKey in bucket with bucketName to newKey.
+      * Object metadata is preserved. */
+    public void move(String bucketName, String oldKey, String newKey) {
+        move(bucketName, oldKey, bucketName, newKey);
+    }
+
+    /** Move oldKey in bucket with bucketName to newBucket / newKey.
+      * Object metadata is preserved. */
+    public void move(String oldBucketName, String oldKey, String newBucketName, String newKey) {
+        CopyObjectRequest copyRequest = new CopyObjectRequest(oldBucketName, oldKey, newBucketName,newKey);
+        s3.copyObject(copyRequest);
+
+        DeleteObjectRequest deleteRequest = new DeleteObjectRequest(oldBucketName, oldKey);
+        s3.deleteObject(deleteRequest);
+    }
+
     /** Uploads a file to the specified bucket. The file's last-modified date is applied to the uploaded file.
      * AWS does not respect the last-modified metadata, and Java on Windows does not handle last-modified properly either.
      * If the key has leading slashes, they are removed for consistency.
