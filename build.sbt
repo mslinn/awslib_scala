@@ -6,7 +6,7 @@ name := "awss3"
 
 crossPaths := false
 
-version := "0.1.2-SNAPSHOT"
+version := "0.1.3-SNAPSHOT"
 
 scalaVersion := "2.10.2"
 
@@ -23,19 +23,18 @@ scalacOptions in (Compile, doc) <++= baseDirectory.map {
 }
 
 resolvers ++= Seq(
-  "Typesafe Releases"   at "http://repo.typesafe.com/typesafe/releases",
-  "Mandubian snapshots" at "https://raw.github.com/mandubian/mandubian-mvn/master/snapshots/",
-  "Mandubian releases"  at "https://raw.github.com/mandubian/mandubian-mvn/master/releases/"
+  "Typesafe Releases"   at "http://repo.typesafe.com/typesafe/releases"
 )
 
 libraryDependencies ++= Seq(
-  "com.amazonaws"                 %  "aws-java-sdk"        % "1.4.6" withSources(),
-  "play"                          %  "play-json_2.10"      % "2.2-SNAPSHOT" withSources(),
-  "commons-io"                    %  "commons-io"          % "2.4"     withSources(),
-  "commons-lang"                  %  "commons-lang"        % "2.6"     withSources(),
-  "junit"                         %  "junit"               % "4.11"    % "test" withSources(),
-  "org.clapper"                   %% "grizzled-scala"      % "1.1.3"   withSources(),
-  "org.scalatest"                 %% "scalatest"           % "2.0.M6-SNAP16" % "test" withSources(),
+  "org.codehaus.jackson"          %  "jackson-mapper-asl"  % "1.9.11",
+  "com.amazonaws"                 %  "aws-java-sdk"        % "1.5.8" withSources,
+  "com.typesafe.play"             %  "play-json_2.10"      % "2.2.0" withSources,
+  "commons-io"                    %  "commons-io"          % "2.4"   withSources,
+  "commons-lang"                  %  "commons-lang"        % "2.6"   withSources,
+  "junit"                         %  "junit"               % "4.11"  % "test" withSources,
+  "org.clapper"                   %% "grizzled-scala"      % "1.1.4" withSources,
+  "org.scalatest"                 %% "scalatest"           % "2.0.M8" % "test" withSources,
   "org.scala-tools"               %  "time"                % "2.7.4-0.1"
 )
 
@@ -61,3 +60,4 @@ initialCommands := """
 // Only show warnings and errors on the screen for compilations.
 // This applies to both test:compile and compile and is Info by default
 //logLevel in compile := Level.Warn
+

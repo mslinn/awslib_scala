@@ -7,7 +7,7 @@ This project was sponsored by [Micronautics Research Corporation](http://www.mic
 ## Building ##
 
  1. Java 7 or later is required.
- 1. Uses Scala 2.10 and SBT 12.2 since v0.1.1, and will download them if necessary
+ 1. Uses Scala 2.10.2 and SBT 0.13.0, and will download them if necessary
  1. Point `JAVA_HOME` to a Java 7 JDK.
  1. Type the following into a bash console:
 ````
@@ -19,15 +19,7 @@ sbt publish-local
 Add this to your project's `build.sbt` (remember that file requires double-spacing):
 
 ````
-libraryDependencies += "com.micronautics" % "awss3" % "0.1.0-SNAPSHOT" withSources()
-
-// The sbt-plugin-releases resolver should not be required for SBT 0.12, but it is required for SBT 0.11.3:
-
-//resolvers += Resolver.url("sbt-plugin-releases", new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-releases/"))(Resolver.ivyStylePatterns)
-
-// The following resolver will continue to be required for SNAPSHOTS:
-
-resolvers += Resolver.url("sbt-plugin-snapshots", new URL("http://scalasbt.artifactoryonline.com/scalasbt/sbt-plugin-snapshots/"))(Resolver.ivyStylePatterns)
+libraryDependencies += "com.micronautics" % "awss3" % "0.1.3-SNAPSHOT" withSources()
 ````
 
 ## Notes ##
@@ -44,3 +36,4 @@ As another example, AwsMirror defines the key for a file in a directory called `
 For each directory, AWS creates a file of the same name, with the suffix `_$folder$`.
 If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
 These hidden files are ignored by this program; users never see them because they are for AWS S3 internal use only.
+
