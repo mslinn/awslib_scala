@@ -76,7 +76,7 @@ public class S3 {
                 "\t\t\t\t\"AWS\": \"*\"\n" +
                 "\t\t\t},\n" +
                 "\t\t\t\"Action\": \"s3:GetObject\",\n" +
-                "\t\t\t\"Resource\": \"arn:com.micronautics.aws:s3:::" + bucketName + "/*\"\n" +
+                "\t\t\t\"Resource\": \"arn:aws:s3:::" + bucketName + "/*\"\n" +
                 "\t\t}\n" +
                 "\t]\n" +
                 "}";
