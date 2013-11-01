@@ -1,10 +1,10 @@
 package com.micronautics.aws
 
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, WordSpec}
-import org.scalatest.matchers.MustMatchers
+import org.scalatest.Matchers
 
 /**These tests will fail unless a file called AwsCredentials.properties is created in src/test/resources. */
-class SNSTest extends WordSpec with MustMatchers with BeforeAndAfter with BeforeAndAfterAll {
+class SNSTest extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll {
   val s3File1: S3File = Util.readS3File
   val creds = Util.getAuthentication(s3File1.accountName)
 

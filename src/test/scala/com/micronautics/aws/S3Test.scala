@@ -4,11 +4,11 @@ import java.io.File
 import java.util.Date
 import com.amazonaws.auth.policy.Principal
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, WordSpec}
-import org.scalatest.matchers.MustMatchers
+import org.scalatest.Matchers
 import com.amazonaws.services.s3.model.{SetBucketAclRequest, CanonicalGrantee, AccessControlList, Permission, GetBucketAclRequest, Bucket}
 
 /**These tests will fail unless a file called AwsCredentials.properties is created in src/test/resources. */
-class S3Test extends WordSpec with MustMatchers with BeforeAndAfter with BeforeAndAfterAll {
+class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll {
   val bucketName = "test" + new Date().getTime
   val file1Name = "index.html"
   val file2Name = "index2.html"

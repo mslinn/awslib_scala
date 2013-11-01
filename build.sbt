@@ -8,7 +8,7 @@ crossPaths := false
 
 version := "0.1.3-SNAPSHOT"
 
-scalaVersion := "2.10.2"
+scalaVersion := "2.10.3"
 
 scalacOptions ++= Seq("-deprecation", "-encoding", "UTF-8", "-feature", "-target:jvm-1.7", "-unchecked",
     "-Ywarn-adapted-args", "-Ywarn-value-discard", "-Xlint")
@@ -28,14 +28,15 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "org.codehaus.jackson"          %  "jackson-mapper-asl"  % "1.9.11",
-  "com.amazonaws"                 %  "aws-java-sdk"        % "1.5.8" withSources,
-  "com.typesafe.play"             %  "play-json_2.10"      % "2.2.0" withSources,
+  "com.amazonaws"                 %  "aws-java-sdk"        % "1.6.4" withSources,
+  "com.typesafe.play"             %% "play-json"           % "2.2.0" withSources,
   "commons-io"                    %  "commons-io"          % "2.4"   withSources,
   "commons-lang"                  %  "commons-lang"        % "2.6"   withSources,
-  "junit"                         %  "junit"               % "4.11"  % "test" withSources,
   "org.clapper"                   %% "grizzled-scala"      % "1.1.4" withSources,
-  "org.scalatest"                 %% "scalatest"           % "2.0.M8" % "test" withSources,
-  "org.scala-tools"               %  "time"                % "2.7.4-0.1"
+  "org.scala-tools"               %  "time"                % "2.7.4-0.1",
+  //
+  "junit"                         %  "junit"               % "4.11"  % "test" withSources,
+  "org.scalatest"                 %% "scalatest"           % "2.0.M8" % "test" withSources
 )
 
 publishTo <<= (version) { version: String =>

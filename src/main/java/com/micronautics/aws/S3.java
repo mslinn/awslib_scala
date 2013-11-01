@@ -4,11 +4,28 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.PropertiesCredentials;
+import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.event.ProgressEvent;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.StringInputStream;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
@@ -197,11 +214,11 @@ public class S3 {
         try {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, file);
             putObjectRequest.setMetadata(metadata);
-            putObjectRequest.setProgressListener(new ProgressListener() {
+            putObjectRequest.setGeneralProgressListener(new ProgressListener() {
                 int bytesTransferred = 0;
                 @Override
                 public void progressChanged(ProgressEvent progressEvent) {
-                    bytesTransferred += progressEvent.getBytesTransfered();
+                    bytesTransferred += progressEvent.getBytesTransferred();
                     if (progressEvent.getEventCode()==ProgressEvent.COMPLETED_EVENT_CODE)
                         System.out.print(" " + bytesTransferred + " bytes; ");
                     else
