@@ -28,11 +28,11 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "org.codehaus.jackson"          %  "jackson-mapper-asl"  % "1.9.11",
-  "com.amazonaws"                 %  "aws-java-sdk"        % "1.6.8" withSources,
-  "com.typesafe.play"             %% "play-json"           % "2.2.1" withSources,
-  "commons-io"                    %  "commons-io"          % "2.4"   withSources,
-  "commons-lang"                  %  "commons-lang"        % "2.6"   withSources,
-  "org.clapper"                   %% "grizzled-scala"      % "1.1.4" withSources,
+  "com.amazonaws"                 %  "aws-java-sdk"        % "1.6.10" withSources,
+  "com.typesafe.play"             %% "play-json"           % "2.2.1"  withSources,
+  "commons-io"                    %  "commons-io"          % "2.4"    withSources,
+  "commons-lang"                  %  "commons-lang"        % "2.6"    withSources,
+  "org.clapper"                   %% "grizzled-scala"      % "1.1.4"  withSources,
   "org.scala-tools"               %  "time"                % "2.7.4-0.1",
   //
   "junit"                         %  "junit"               % "4.11"  % "test" withSources,
