@@ -17,13 +17,15 @@ sbt publish-local
 
 ## Publishing ##
 
-    s3publish com.micronautics/awss3
+    s3publish com/micronautics/awss3_2.10
 
 ## Installation ##
 Add this to your project's `build.sbt` (remember that file requires double-spacing):
 
 ````
-libraryDependencies += "com.micronautics" % "awss3" % "0.1.3-SNAPSHOT" withSources()
+resolvers += "Micronautics snapshots" at "http://www.mavenrepo.s3.amazonaws.com/snapshots"
+
+libraryDependencies += "com.micronautics" % "awss3" % "0.1.3-SNAPSHOT" withSources
 ````
 
 ## Notes ##

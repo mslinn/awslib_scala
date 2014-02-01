@@ -1,10 +1,10 @@
-import com.typesafe.sbt.SbtStartScript
+//import com.typesafe.sbt.SbtStartScript
 
 organization := "com.micronautics"
 
 name := "awss3"
 
-crossPaths := false
+//crossPaths := false
 
 version := "0.1.3-SNAPSHOT"
 
@@ -28,33 +28,22 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "org.codehaus.jackson"          %  "jackson-mapper-asl"  % "1.9.11",
-  "com.amazonaws"                 %  "aws-java-sdk"        % "1.7.0" withSources,
-  "com.typesafe.play"             %% "play-json"           % "2.2.1"  withSources,
-  "commons-io"                    %  "commons-io"          % "2.4"    withSources,
-  "commons-lang"                  %  "commons-lang"        % "2.6"    withSources,
-  "org.clapper"                   %% "grizzled-scala"      % "1.1.4"  withSources,
+  "com.amazonaws"                 %  "aws-java-sdk"        % "1.7.0",
+  "com.typesafe.play"             %% "play-json"           % "2.2.1",
+  "commons-io"                    %  "commons-io"          % "2.4",
+  "commons-lang"                  %  "commons-lang"        % "2.6",
+  "org.clapper"                   %% "grizzled-scala"      % "1.1.4",
   "org.scala-tools"               %  "time"                % "2.7.4-0.1",
   //
-  "junit"                         %  "junit"               % "4.11"  % "test" withSources,
-  "org.scalatest"                 %% "scalatest"           % "2.0.M8" % "test" withSources
+  "junit"                         %  "junit"               % "4.11"  % "test",
+  "org.scalatest"                 %% "scalatest"           % "2.0.M8" % "test"
 )
-
-//publishTo <<= (version) { version: String =>
-//   val scalasbt = "http://repo.scala-sbt.org/scalasbt/"
-//   val (name, url) = if (version.contains("-SNAPSHOT"))
-//                       ("sbt-plugin-snapshots", scalasbt+"sbt-plugin-snapshots")
-//                     else
-//                       ("sbt-plugin-releases", scalasbt+"sbt-plugin-releases")
-//   Some(Resolver.url(name, new URL(url))(Resolver.ivyStylePatterns))
-//}
-
-//publishMavenStyle := false
 
 publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath + "/.ivy2/local")))
 
 publishMavenStyle := true
 
-seq(SbtStartScript.startScriptForClassesSettings: _*)
+//seq(SbtStartScript.startScriptForClassesSettings: _*)
 
 //logLevel := Level.Error
 
