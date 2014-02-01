@@ -2,18 +2,22 @@
 
 This library is used by AwsMirror and AwsUpdate.
 
-This project was sponsored by [Micronautics Research Corporation](http://www.micronauticsresearch.com/)
+This project is sponsored by [Micronautics Research Corporation](http://www.micronauticsresearch.com/)
 
 ## Building ##
 
  1. Java 7 or later is required.
- 1. Uses Scala 2.10.2 and SBT 0.13.0, and will download them if necessary
+ 1. Uses Scala 2.10.3 and SBT 0.13.0, and will download them if necessary
  1. Point `JAVA_HOME` to a Java 7 JDK.
  1. Type the following into a bash console:
 ````
 git clone git@github.com:mslinn/AwsS3.git
 cd AwsS3
 sbt publish-local
+
+## Publishing ##
+
+    s3publish com.micronautics/awss3
 
 ## Installation ##
 Add this to your project's `build.sbt` (remember that file requires double-spacing):

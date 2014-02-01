@@ -28,7 +28,7 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "org.codehaus.jackson"          %  "jackson-mapper-asl"  % "1.9.11",
-  "com.amazonaws"                 %  "aws-java-sdk"        % "1.6.12" withSources,
+  "com.amazonaws"                 %  "aws-java-sdk"        % "1.7.0" withSources,
   "com.typesafe.play"             %% "play-json"           % "2.2.1"  withSources,
   "commons-io"                    %  "commons-io"          % "2.4"    withSources,
   "commons-lang"                  %  "commons-lang"        % "2.6"    withSources,
@@ -39,16 +39,20 @@ libraryDependencies ++= Seq(
   "org.scalatest"                 %% "scalatest"           % "2.0.M8" % "test" withSources
 )
 
-publishTo <<= (version) { version: String =>
-   val scalasbt = "http://repo.scala-sbt.org/scalasbt/"
-   val (name, url) = if (version.contains("-SNAPSHOT"))
-                       ("sbt-plugin-snapshots", scalasbt+"sbt-plugin-snapshots")
-                     else
-                       ("sbt-plugin-releases", scalasbt+"sbt-plugin-releases")
-   Some(Resolver.url(name, new URL(url))(Resolver.ivyStylePatterns))
-}
+//publishTo <<= (version) { version: String =>
+//   val scalasbt = "http://repo.scala-sbt.org/scalasbt/"
+//   val (name, url) = if (version.contains("-SNAPSHOT"))
+//                       ("sbt-plugin-snapshots", scalasbt+"sbt-plugin-snapshots")
+//                     else
+//                       ("sbt-plugin-releases", scalasbt+"sbt-plugin-releases")
+//   Some(Resolver.url(name, new URL(url))(Resolver.ivyStylePatterns))
+//}
 
-publishMavenStyle := false
+//publishMavenStyle := false
+
+publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath + "/.ivy2/local")))
+
+publishMavenStyle := true
 
 seq(SbtStartScript.startScriptForClassesSettings: _*)
 
