@@ -1,27 +1,9 @@
 package com.micronautics.aws
 
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, WordSpec}
-import org.scalatest.Matchers
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, WordSpec, Matchers}
 
-/**These tests will fail unless a file called AwsCredentials.properties is created in src/test/resources. */
-class SNSTest extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll {
-  val s3File1: S3File = Util.readS3File
-  val creds = Util.getAuthentication(s3File1.accountName)
-
-  val sns: SNS = creds match {
-    case Some(credentials) =>
-      S3Model.credentials = credentials
-      new SNS(credentials.accessKey, credentials.secretKey)
-
-    case None =>
-      fail("Cannot locate .com.micronautics.aws file")
-  }
-
-  override def afterAll() {
-  }
-
-  override def beforeAll() {
-  }
+class SNSTest extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll with Fixtures {
+  def sns = new SNS(s3.awsCredentials.getAWSAccessKeyId, s3.awsCredentials.getAWSSecretKey)
 
   "Blah" must {
     "blah" in {

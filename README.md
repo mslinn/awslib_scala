@@ -25,7 +25,7 @@ Add this to your project's `build.sbt` (remember that file requires double-spaci
 ````
 resolvers += "Micronautics snapshots" at "http://www.mavenrepo.s3.amazonaws.com/snapshots"
 
-libraryDependencies += "com.micronautics" % "awss3" % "0.1.3-SNAPSHOT" withSources
+libraryDependencies += "com.micronautics" % "awss3" % "0.1.5-SNAPSHOT" withSources
 ````
 
 ## Notes ##

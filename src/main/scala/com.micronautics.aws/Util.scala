@@ -1,21 +1,21 @@
 package com.micronautics.aws
 
-import scala.language.implicitConversions
+import collection.JavaConversions._
 import com.amazonaws.services.s3.model.S3ObjectSummary
+import grizzled.math.stats._
+import io.Source
 import java.io.{File, FileWriter}
 import java.nio.file.Path
-import java.util.Date
 import java.text.SimpleDateFormat
-import grizzled.math.stats._
+import java.util.Date
 import java.util.ArrayList
-import scala.collection.JavaConversions._
-import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
+import java.nio.file.attribute.BasicFileAttributeView
 import java.nio.file.Files
-import S3Model._
-import io.Source
+import language.implicitConversions
 import org.joda.time.format.DateTimeFormat
 import org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS
 import play.api.libs.json._
+import S3Model._
 
 object Util {
   implicit val s3FileFormat = Json.format[S3File]
@@ -108,15 +108,7 @@ object Util {
 
   def credentialPath: Path = new File(sys.env("HOME"), ".aws").toPath
 
-  def readS3File(): S3File = {
-    findS3File() match {
-      case None =>
-        null
-
-      case Some(file) =>
-        parseS3File(file)
-    }
-  }
+  def readS3File(): Option[S3File] = findS3File() map { parseS3File }
 
   /**
     * Walk up from the current directory
@@ -149,8 +141,8 @@ object Util {
       case None =>
         None
 
-      case Some(credentials) =>
-        Some(new S3(credentials.accessKey, credentials.secretKey))
+      case Some(creds) =>
+        Some(new S3(creds.accessKey, creds.secretKey))
     }
   }
 
@@ -193,8 +185,8 @@ object Util {
       case None =>
         s3Option = None
 
-      case Some(credentials) =>
-        val s3 = new S3(credentials.accessKey, credentials.secretKey)
+      case Some(creds) =>
+        val s3 = new S3(creds.accessKey, creds.secretKey)
         s3Option = Some(s3)
     }
     s3Option
@@ -217,7 +209,7 @@ object Util {
     try { f(param) } finally { param.close() }
   }
 
-  def writeToFile(fileName:String, data:String) = 
+  def writeToFile(fileName:String, data:String) =
     using (new FileWriter(fileName)) {
       fileWriter => fileWriter.write(data)
     }

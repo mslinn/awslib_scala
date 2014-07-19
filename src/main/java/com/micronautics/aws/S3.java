@@ -4,26 +4,15 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.PropertiesCredentials;
+import com.amazonaws.event.ProgressEvent;
+import com.amazonaws.event.ProgressEventType;
 import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.event.ProgressEvent;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.StringInputStream;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -167,7 +156,7 @@ public class S3 {
 
     /** List the buckets in the account */
     public String[] listBuckets() {
-        LinkedList<String> result = new LinkedList<String>();
+        LinkedList<String> result = new LinkedList<>();
         for (Bucket bucket : s3.listBuckets())
             result.add(bucket.getName());
         return result.toArray(new String[result.size()]);
@@ -215,12 +204,10 @@ public class S3 {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, file);
             putObjectRequest.setMetadata(metadata);
             putObjectRequest.setGeneralProgressListener(new ProgressListener() {
-                int bytesTransferred = 0;
                 @Override
                 public void progressChanged(ProgressEvent progressEvent) {
-                    bytesTransferred += progressEvent.getBytesTransferred();
-                    if (progressEvent.getEventCode()==ProgressEvent.COMPLETED_EVENT_CODE)
-                        System.out.print(" " + bytesTransferred + " bytes; ");
+                    if (progressEvent.getEventType()==ProgressEventType.TRANSFER_COMPLETED_EVENT)
+                        System.out.print(" " + progressEvent.getBytesTransferred() + " bytes; ");
                     else
                         System.out.print(".");
                 }
@@ -370,7 +357,7 @@ public class S3 {
     public String[] listObjectsByPrefix(String bucketName, String prefix, boolean showSize) {
         while (null!=prefix && prefix.length()>0 && prefix.startsWith("/"))
             prefix = prefix.substring(1);
-        LinkedList<String> result = new LinkedList<String>();
+        LinkedList<String> result = new LinkedList<>();
         boolean more = true;
         ObjectListing objectListing = s3.listObjects(new ListObjectsRequest()
                 .withBucketName(bucketName)
@@ -393,7 +380,7 @@ public class S3 {
             prefix = prefix.substring(1);
             prefixAdjusted = true;
         }
-        LinkedList<S3ObjectSummary> result = new LinkedList<S3ObjectSummary>();
+        LinkedList<S3ObjectSummary> result = new LinkedList<>();
         boolean more = true;
         ObjectListing objectListing = s3.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix));
         while (more) {
@@ -456,20 +443,5 @@ public class S3 {
         LinkedList<S3ObjectSummary> items = getAllObjectData(bucketName, null);
         for (S3ObjectSummary item : items)
             s3.deleteObject(bucketName, item.getKey());
-    }
-
-    /** Displays the contents of the specified input stream as text.
-     * @param input The input stream to display as text.
-     * @throws IOException  */
-    private static void displayTextInputStream(InputStream input) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-        while (true) {
-            String line = reader.readLine();
-            if (line == null)
-                break;
-
-            System.out.println("    " + line);
-        }
-        System.out.println();
     }
 }

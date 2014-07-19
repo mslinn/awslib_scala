@@ -1,43 +1,29 @@
 package com.micronautics.aws
 
-import java.io.File
-import java.util.Date
-import com.amazonaws.auth.policy.Principal
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, WordSpec}
-import org.scalatest.Matchers
 import com.amazonaws.services.s3.model.{SetBucketAclRequest, CanonicalGrantee, AccessControlList, Permission, GetBucketAclRequest, Bucket}
+import java.io.File
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, WordSpec, Matchers}
 
-/**These tests will fail unless a file called AwsCredentials.properties is created in src/test/resources. */
-class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll {
-  val bucketName = "test" + new Date().getTime
+class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll with Fixtures {
   val file1Name = "index.html"
   val file2Name = "index2.html"
-  val s3File1: S3File = Util.readS3File
   val file1 = new File(file1Name)
   val file2 = new File(file2Name)
-  val creds = Util.getAuthentication(s3File1.accountName)
-  var bucket: Bucket = null
 
-  val s3: S3 = creds match {
-    case Some(credentials) =>
-      S3Model.credentials = credentials
-      new S3(credentials.accessKey, credentials.secretKey)
-
-    case None =>
-      fail("Cannot locate .com.micronautics.aws file")
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    file1.createNewFile()
+    file2.createNewFile()
+    ()
   }
-  val s3File = s3File1.copy(bucketName=this.bucketName)
 
-  override def afterAll() {
-    s3.deleteBucket(bucketName)
+  override def afterAll(): Unit = {
+    super.afterAll()
+    if (file1.exists)
+      file1.delete
     if (file2.exists)
       file2.delete
-    bucket = null
-  }
-
-  override def beforeAll() {
-    println("Creating bucket " + bucketName)
-    bucket = s3.createBucket(bucketName)
+    ()
   }
 
   "Bucket names" must {
@@ -65,7 +51,6 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
       val getBucketAclRequest = new GetBucketAclRequest(bucketName)
       println(getBucketAclRequest)
 
-      val principal = new Principal("3be599c1fa2d0ef24de229ad27adb107f736a79727ef8753fba31ff7db10e2ee")
       val accessControlList = new AccessControlList()
       val grantee = new CanonicalGrantee("mslinn@mslinn.com")
       accessControlList.grantPermission(grantee, Permission.FullControl)
@@ -86,7 +71,7 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
       assert(
         """{"accountName":"memyselfi",
           | "bucketName":"blah",
-          | "ignores":[".*~",".*.com.micronautics.aws",".*.git",".*.s3",".*.svn",".*.swp",".*.tmp","cvs"],
+          | "ignores":[".*~",".*.com.micronautics.aws",".*.git",".*.s3",".*.svn",".*.tmp","cvs"],
           | "endpoint":"s3-website-us-east-1.amazonaws.com"}""".stripMargin === result, "PrettyPrinted JSON")
     }
   }

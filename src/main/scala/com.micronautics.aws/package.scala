@@ -15,11 +15,9 @@
 package com.micronautics.aws
 
 import collection.mutable.MutableList
-import scala.Array
-import org.joda.time.DateTime
 import java.util.regex.Pattern
+import org.joda.time.DateTime
 import org.codehaus.jackson.annotate.JsonIgnore
-import collection.JavaConversions._
 
 case class Credentials(awsAccountName: String, accessKey: String, secretKey: String)
 

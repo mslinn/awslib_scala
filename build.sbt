@@ -6,7 +6,7 @@ name := "awss3"
 
 //crossPaths := false
 
-version := "0.1.4-SNAPSHOT"
+version := "0.1.5-SNAPSHOT"
 
 scalaVersion := "2.10.4"
 
@@ -28,15 +28,15 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "org.codehaus.jackson"          %  "jackson-mapper-asl"  % "1.9.13",
-  "com.amazonaws"                 %  "aws-java-sdk"        % "1.7.7",
-  "com.typesafe.play"             %  "play-json_2.10"      % "2.2.2",
+  "com.amazonaws"                 %  "aws-java-sdk"        % "1.8.4",
+  "com.typesafe.play"             %  "play-json_2.10"      % "2.2.3",
   "commons-io"                    %  "commons-io"          % "2.4",
   "commons-lang"                  %  "commons-lang"        % "2.6",
-  "org.clapper"                   %  "grizzled-scala_2.10" % "1.1.5",
-  "org.scala-tools"               %  "time"                % "2.7.4-0.1",
+  "org.clapper"                   %  "grizzled-scala_2.10" % "1.2",
+  "com.github.nscala-time"        %  "nscala-time_2.10"    % "1.2.0",
   //
   "junit"                         %  "junit"               % "4.11"  % "test",
-  "org.scalatest"                 %  "scalatest_2.10"      % "2.1.3" % "test"
+  "org.scalatest"                 %  "scalatest_2.10"      % "2.2.0" % "test"
 )
 
 publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath + "/.ivy2/local")))
