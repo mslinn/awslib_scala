@@ -28,15 +28,15 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "org.codehaus.jackson"          %  "jackson-mapper-asl"  % "1.9.13",
-  "com.amazonaws"                 %  "aws-java-sdk"        % "1.9.5",
-  "com.typesafe.play"             %  "play-json_2.10"      % "2.2.5",
-  "commons-io"                    %  "commons-io"          % "2.4",
-  "commons-lang"                  %  "commons-lang"        % "2.6",
-  "org.clapper"                   %  "grizzled-scala_2.10" % "1.2",
-  "com.github.nscala-time"        %  "nscala-time_2.10"    % "1.4.0",
+  "com.amazonaws"                 %  "aws-java-sdk"        % "1.9.8",
+  "com.typesafe.play"             %% "play-json"           % "2.2.6" withSources(),
+  "commons-io"                    %  "commons-io"          % "2.4" withSources(),
+  "commons-lang"                  %  "commons-lang"        % "2.6" withSources(),
+  "org.clapper"                   %  "grizzled-scala_2.10" % "1.2" withSources(),
+  "com.github.nscala-time"        %  "nscala-time_2.10"    % "1.6.0" withSources(),
   //
   "junit"                         %  "junit"               % "4.11"  % "test",
-  "org.scalatest"                 %  "scalatest_2.10"      % "2.2.0" % "test"
+  "org.scalatest"                 %  "scalatest_2.10"      % "2.2.2" % "test"
 )
 
 publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath + "/.ivy2/local")))
