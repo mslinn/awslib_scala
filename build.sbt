@@ -6,7 +6,7 @@ name := "awss3"
 
 //crossPaths := false
 
-version := "0.1.7-SNAPSHOT"
+version := "0.1.8"
 
 scalaVersion := "2.10.4"
 

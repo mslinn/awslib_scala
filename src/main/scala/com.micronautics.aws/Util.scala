@@ -1,19 +1,18 @@
 package com.micronautics.aws
 
-import collection.JavaConversions._
+import collection.JavaConverters._
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import grizzled.math.stats._
-import io.Source
 import java.io.{File, FileWriter}
 import java.nio.file.Path
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.ArrayList
+import java.util.{ArrayList=>JArrayList}
 import java.nio.file.attribute.BasicFileAttributeView
 import java.nio.file.Files
 import language.implicitConversions
-import org.joda.time.format.DateTimeFormat
 import org.apache.commons.lang.SystemUtils.IS_OS_WINDOWS
+import org.joda.time.format.DateTimeFormat
 import play.api.libs.json._
 import S3Model._
 
@@ -32,45 +31,33 @@ object Util {
 
   def latestFileTime(file: File): Long = {
     val fileAttributeView = Files.getFileAttributeView(file.toPath, classOf[BasicFileAttributeView])
-    val creationTime = fileAttributeView.readAttributes().creationTime().toMillis
-    val lastModifiedTime = fileAttributeView.readAttributes().lastModifiedTime().toMillis
+    val creationTime = fileAttributeView.readAttributes.creationTime.toMillis
+    val lastModifiedTime = fileAttributeView.readAttributes.lastModifiedTime.toMillis
     math.max(creationTime, lastModifiedTime)
   }
 
   /** Type erasure means that Java interop does not allow the parameters to be specified as ArrayList[Long] */
-  def computeStats(modificationTimes: ArrayList[_], deletionTimes: ArrayList[_]): String = {
-    val editResult = computeStatString("Edit time", modificationTimes.asInstanceOf[ArrayList[Long]])
-    val deleteResult = computeStatString("Deletion time", deletionTimes.asInstanceOf[ArrayList[Long]])
-    if (editResult.length>0 && deleteResult.length>0)
-      return editResult + "\n" + deleteResult
-
-    if (editResult.length>0)
-      return editResult
-
-    if (deleteResult.length>0)
-      return deleteResult
-
-    ""
+  def computeStats(modificationTimes: JArrayList[Long], deletionTimes: JArrayList[Long]): String = {
+    val editResult = computeStatString("Edit time", modificationTimes)
+    val deleteResult = computeStatString("Deletion time", deletionTimes)
+    if (editResult.length>0 && deleteResult.length>0) s"$editResult\n$deleteResult"
+    else if (editResult.length>0) editResult
+    else if (deleteResult.length>0) deleteResult
+    else ""
   }
 
-  def computeStatString(label: String, values: ArrayList[Long]): String = {
-    if (values.length==0)
-      return ""
-
-    if (values.length==1)
-      return "1 value: " + values(0) + " ms";
-
-    val millisMean = arithmeticMean(values: _*).asInstanceOf[Long]
-
-    if (values.length<5)
-      return "%s mean of %d values: %d ms".format(label, values.length, millisMean)
-
-    // std deviation is +/- so subtract from mean and double it to show uncertainty range
-    // midpoint of uncertainty is therefore the mean
-    val stdDev = popStdDev(values: _*).asInstanceOf[Long]
-    val result = "%s mean of %d values: %d ms, +/- %d ms (1 std dev: %d ms, 2 std devs: %d ms)".
-      format(label, values.length, millisMean, stdDev, millisMean + stdDev, millisMean + 2*stdDev)
-    result
+  def computeStatString(label: String, values: JArrayList[Long]): String = values.size match {
+    case 0 => ""
+    case 1 => s"1 value: ${values.get(0)}ms"
+    case _ =>
+      val millisMean: Long = arithmeticMean(values.asScala: _*).toLong
+      if (values.size<5) {
+        s"$label mean of ${values.size} values: $millisMean ms"
+      } else {
+        // Std deviation is +/- so subtract from mean and double it to show uncertainty range. Midpoint of uncertainty is the mean.
+        val stdDev: Long = popStdDev(values.asScala: _*).toLong
+        s"$label mean of ${values.size}} values: $millisMean ms, +/- $stdDev ms (1 std dev: ${millisMean+stdDev} ms, 2 std devs: %${millisMean + 2*stdDev}} ms)."
+      }
   }
 
   /** @return -2 if s3File does not exist,
@@ -79,31 +66,23 @@ object Util {
    *           1 if remote copy is newer,
    *           2 if local copy does not exist */
   def compareS3FileAge(file: File, node: S3ObjectSummary): Int = {
-    if (!file.exists)
-      return s3FileDoesNotExistLocally
-
-    if (null==node)
-      return s3FileDoesNotExist
-
-    // Some OSes only truncate lastModified time to the nearest second, so truncate both times to nearest second
-    val s3NodeLastModified: Long = node.getLastModified.getTime / 1000L
-    val fileTime: Long = (latestFileTime(file) + 500L) / 1000L // round to nearest second
-    //println("s3NodeLastModified=" + s3NodeLastModified + "; lastestFileTime=" + fileLastModified)
-    val result: Int = if (s3NodeLastModified == fileTime)
-        s3FileSameAgeAsLocal
-      else if (s3NodeLastModified < fileTime)
-        s3FileIsOlderThanLocal
-      else
-        s3FileNewerThanLocal
-      result
+    if (!file.exists) s3FileDoesNotExistLocally
+    else if (null==node) s3FileDoesNotExist
+    else { // Some OSes only truncate lastModified time to the nearest second, so truncate both times to nearest second
+      val s3NodeLastModified: Long = node.getLastModified.getTime / 1000L
+      val fileTime: Long = (latestFileTime(file) + 500L) / 1000L // round to nearest second
+      //println(s"s3NodeLastModified=$s3NodeLastModified; lastestFileTime=$fileLastModified")
+      if (s3NodeLastModified == fileTime) s3FileSameAgeAsLocal
+        else if (s3NodeLastModified < fileTime) s3FileIsOlderThanLocal
+        else s3FileNewerThanLocal
     }
+  }
 
   /** @return `.aws` contents as a String */
   def credentialFileContents: Option[String] = {
-    if (credentialPath.toFile.exists)
-      Some(Source.fromFile(credentialPath.toFile).mkString)
-    else
-      None
+    val file = credentialPath.toFile
+    if (file.exists) Some(io.Source.fromFile(credentialPath.toFile).mkString)
+    else None
   }
 
   def credentialPath: Path = new File(sys.env("HOME"), ".aws").toPath
@@ -194,23 +173,22 @@ object Util {
 
   /** @return S3File from parsing JSON in given `.s3` file */
   def parseS3File(file: File): S3File = try {
-    val str = Source.fromFile(file, "UTF-8").toString()
-    val jsValue = Json.parse(str)
-    Json.fromJson(jsValue).get
+    val str = io.Source.fromFile(file, "UTF-8").toString
+    val jsValue: JsValue = Json.parse(str)
+    Json.fromJson[S3File](jsValue).get
   } catch {
-    case e: Throwable =>
-      println("Error parsing " + file.getAbsolutePath + ":\n" + e.getMessage)
-      sys.exit(-2)
-      null
+    case e: Exception =>
+      println(s"Error parsing ${file.getAbsolutePath}:\n${e.getMessage}")
+      throw(e)
   }
 
-  def using[A <: {def close(): Unit}, B](param: A)(f: A => B): B = {
+  private def withCloseable[A <: {def close(): Unit}, B](param: A)(f: A => B): B = {
     import scala.language.reflectiveCalls
     try { f(param) } finally { param.close() }
   }
 
   def writeToFile(fileName:String, data:String) =
-    using (new FileWriter(fileName)) {
+    withCloseable (new FileWriter(fileName)) {
       fileWriter => fileWriter.write(data)
     }
 
@@ -236,14 +214,13 @@ object Util {
    * @return String indicating when last synced, if ever synced
    */
   def writeS3(newS3File: S3File): String = {
-    val synced = newS3File.lastSyncOption match {
+    writeS3(Json.toJson(newS3File) + "\n")
+    newS3File.lastSyncOption match {
       case None =>
         "never synced"
 
       case Some(dateTime) =>
-        "last synced " + dtFormat.print(dateTime)
+        s"last synced ${dtFormat.print(dateTime)}"
     }
-    writeS3(Json.toJson(newS3File) + "\n")
-    synced
   }
 }

@@ -10,10 +10,23 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
   val file1 = new File(file1Name)
   val file2 = new File(file2Name)
 
+  private def saveToFile(file: java.io.File, string: String): Unit = {
+    val printWriter = new java.io.PrintWriter(file)
+    try {
+      printWriter.print(string)
+    } finally {
+      printWriter.close()
+    }
+  }
+
   override def beforeAll(): Unit = {
     super.beforeAll()
-    file1.createNewFile()
-    file2.createNewFile()
+    saveToFile(file1, """<h1>Test 1 of AWS S3</h1>
+                        |<p>This is index.html</p>
+                        |""".stripMargin)
+    saveToFile(file2, """<h1>Test 2 of AWS S3</h1>
+                        |<p>This is index2.html</p>
+                        |""".stripMargin)
     ()
   }
 
@@ -33,7 +46,7 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
     }
 
     "not duplicate existing bucket names" in {
-      assert(s3.bucketExists(bucketName), "Bucket should exists")
+      assert(s3.bucketExists(bucketName), "Bucket should exist")
     }
   }
 
