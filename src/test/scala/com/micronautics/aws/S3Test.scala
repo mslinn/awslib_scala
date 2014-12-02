@@ -1,8 +1,23 @@
+/* Copyright 2012-2014 Micronautics Research Corporation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License. */
+
 package com.micronautics.aws
 
-import com.amazonaws.services.s3.model.{SetBucketAclRequest, CanonicalGrantee, AccessControlList, Permission, GetBucketAclRequest, Bucket}
 import java.io.File
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, WordSpec, Matchers}
+
+import com.amazonaws.services.s3.model.{AccessControlList, CanonicalGrantee, GetBucketAclRequest, Permission, SetBucketAclRequest}
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpec}
 
 class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll with Fixtures {
   val file1Name = "index.html"
@@ -59,8 +74,8 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
     }
   }
 
-  "ACLs" must {
-    "provide access to authorized people" in {
+ /* "ACLs" must {
+    "provide access to authorized people" ignore {
       val getBucketAclRequest = new GetBucketAclRequest(bucketName)
       println(getBucketAclRequest)
 
@@ -70,7 +85,7 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
       val setBucketAclRequest = new SetBucketAclRequest(bucketName, accessControlList)
       println(setBucketAclRequest)
     }
-  }
+  }*/
 
   "S3 operations" must {
     "ensure file to upload can be found" in {
@@ -80,7 +95,6 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
     "pretty-print JSON" in {
       val contents = """{"accountName":"memyselfi","bucketName":"blah","ignores":[".*~",".*.com.micronautics.aws",".*.git",".*.s3",".*.svn",".*.tmp","cvs"],"endpoint":"s3-website-us-east-1.amazonaws.com"}"""
       val result = contents.replaceAll("(.*?:(\\[.*?\\],|.*?,))", "$0\n ")
-      println(result)
       assert(
         """{"accountName":"memyselfi",
           | "bucketName":"blah",

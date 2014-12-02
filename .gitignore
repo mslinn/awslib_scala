@@ -1,4 +1,5 @@
 target
+*-
 .s3
 .com.micronautics.aws
 tomcat.8080

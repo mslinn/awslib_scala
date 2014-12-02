@@ -1,4 +1,4 @@
-/* Copyright 2012 Micronautics Research Corporation.
+/* Copyright 2012-2014 Micronautics Research Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,12 +30,12 @@ trait Fixtures { this: BeforeAndAfterAll =>
   }
 
   override def beforeAll(): Unit = try {
-      println("Creating bucket " + bucketName)
+      println(s"Creating bucket $bucketName")
       bucket = s3.createBucket(bucketName)
     } catch {
       case e: Exception =>
         val creds = s3.awsCredentials
-        fail(s"Error creating bucket with accessKey=${creds.getAWSAccessKeyId} and secretKey=${creds.getAWSSecretKey}")
+        fail(s"Error creating bucket with accessKey=${creds.getAWSAccessKeyId} and secretKey=${creds.getAWSSecretKey}\n${e.getMessage}")
     }
 
   def maybeS3FromEnv: Option[S3] = for {

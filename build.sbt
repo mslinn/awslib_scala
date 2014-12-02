@@ -1,13 +1,9 @@
-//import com.typesafe.sbt.SbtStartScript
+import sbt.Keys._
 
-organization := "com.micronautics"
-
+version := "0.2.0"
 name := "awss3"
-
+organization := "com.micronautics"
 //crossPaths := false
-
-version := "0.1.8"
-
 scalaVersion := "2.10.4"
 
 scalacOptions ++= Seq("-deprecation", "-encoding", "UTF-8", "-feature", "-target:jvm-1.7", "-unchecked",
@@ -23,7 +19,7 @@ scalacOptions in (Compile, doc) <++= baseDirectory.map {
 }
 
 resolvers ++= Seq(
-  "Typesafe Releases"   at "http://repo.typesafe.com/typesafe/releases"
+  "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases"
 )
 
 libraryDependencies ++= Seq(
@@ -39,19 +35,15 @@ libraryDependencies ++= Seq(
   "org.scalatest"                 %  "scalatest_2.10"      % "2.2.2" % "test"
 )
 
+updateOptions := updateOptions.value.withCachedResolution(true)
 publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath + "/.ivy2/local")))
-
 publishMavenStyle := true
-
-//seq(SbtStartScript.startScriptForClassesSettings: _*)
-
 //logLevel := Level.Error
 
 // define the statements initially evaluated when entering 'console', 'console-quick', or 'console-project'
 initialCommands := """
-  """
+  |""".stripMargin
 
 // Only show warnings and errors on the screen for compilations.
 // This applies to both test:compile and compile and is Info by default
 //logLevel in compile := Level.Warn
-
