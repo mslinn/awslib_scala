@@ -1,7 +1,7 @@
 package com.micronautics.aws
 
 import collection.JavaConverters._
-import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.{BasicAWSCredentials, AWSCredentials}
 import com.amazonaws.auth.policy.Statement.Effect
 import com.amazonaws.auth.policy.actions.S3Actions
 import com.amazonaws.auth.policy.{Principal, Resource, Statement}
@@ -39,10 +39,7 @@ object IAM {
     def createCredentials: AWSCredentials = {
       val createAccessKeyRequest = new CreateAccessKeyRequest().withUserName(iamUser.getUserId)
       val accessKeyResult = iamClient.createAccessKey(createAccessKeyRequest)
-      new AWSCredentials {
-        val getAWSAccessKeyId: String = accessKeyResult.getAccessKey.getAccessKeyId
-        val getAWSSecretKey: String = accessKeyResult.getAccessKey.getSecretAccessKey
-      }
+      new BasicAWSCredentials(accessKeyResult.getAccessKey.getAccessKeyId, accessKeyResult.getAccessKey.getSecretAccessKey)
     }
   }
 }
@@ -80,6 +77,19 @@ case class IAM(implicit iamClient: AmazonIdentityManagementClient) {
       iamClient.removeUserFromGroup(new RemoveUserFromGroupRequest().withUserName(userId).withGroupName(group.getGroupName))
     }
   }
+
+  def deleteIAMUser(userId: String): Unit = try {
+     val deleteAccessKeyRequest = new DeleteAccessKeyRequest().withUserName(userId)
+     iamClient.deleteAccessKey(deleteAccessKeyRequest)
+
+     val deleteLoginProfileRequest = new DeleteLoginProfileRequest().withUserName(userId)
+     iamClient.deleteLoginProfile(deleteLoginProfileRequest)
+
+     val deleteUserRequest = new DeleteUserRequest().withUserName(userId)
+     iamClient.deleteUser(deleteUserRequest)
+
+     Logger.debug(s"Deleted AWS IAM user $userId")
+   } catch { case e: Throwable => }
 
   def deleteLoginProfile(userId: String): Unit = try {
     iamClient.deleteLoginProfile(new DeleteLoginProfileRequest(userId))

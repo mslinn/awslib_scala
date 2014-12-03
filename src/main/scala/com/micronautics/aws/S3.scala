@@ -50,10 +50,7 @@ object S3 {
 
   def apply: Try[(AWSCredentials, AmazonS3Client)] = {
     try {
-      val awsCredentials = new AWSCredentials {
-        def getAWSAccessKeyId: String = System.getenv("accessKey")
-        def getAWSSecretKey: String = System.getenv("secretKey")
-      }
+      val awsCredentials = new BasicAWSCredentials(System.getenv("accessKey"), System.getenv("secretKey"))
       if (awsCredentials.getAWSAccessKeyId != null && awsCredentials.getAWSSecretKey != null) {
         Success((awsCredentials, new AmazonS3Client(awsCredentials)))
       } else {

@@ -20,15 +20,7 @@ class SNS {
   var sns: AmazonSNSClient = _
   var exception: Exception = null
 
-  var awsCredentials: AWSCredentials = new AWSCredentials {
-    def getAWSAccessKeyId: String = {
-      System.getenv("accessKey")
-    }
-
-    def getAWSSecretKey: String = {
-      System.getenv("secretKey")
-    }
-  }
+  var awsCredentials: AWSCredentials = new BasicAWSCredentials(System.getenv("accessKey"), System.getenv("secretKey"))
 
   try {
     sns = if (awsCredentials.getAWSAccessKeyId != null && awsCredentials.getAWSSecretKey != null) {
