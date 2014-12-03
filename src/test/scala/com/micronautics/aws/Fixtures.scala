@@ -14,6 +14,7 @@
 
 package com.micronautics.aws
 
+import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.model.Bucket
 import org.scalatest.Assertions.fail
 import org.scalatest.BeforeAndAfterAll
@@ -42,18 +43,20 @@ trait Fixtures { this: BeforeAndAfterAll =>
     accessKey <- Some(System.getenv("AWS_ACCESS_KEY")) if accessKey.nonEmpty
     secretKey <- Some(System.getenv("AWS_SECRET_KEY")) if secretKey.nonEmpty
   } yield {
-    new S3(accessKey, secretKey)
+    implicit val credentials = new BasicAWSCredentials(accessKey, secretKey)
+    new S3
   }
 
   def maybeS3FromFile: Option[S3] = for {
     s3File      <- Util.readS3File()
     credentials <- Util.getAuthentication(s3File.accountName)
   } yield {
-    S3Model.credentials = credentials
-    new S3(credentials.accessKey, credentials.secretKey)
+    new S3()(credentials)
   }
 
   lazy val s3: S3 = maybeS3FromEnv.getOrElse(
                       maybeS3FromFile.getOrElse(
                         fail("No AWS credentials found. Is a .s3 file available in the working directory, or a parent directory?")))
+  lazy val iam: IAM = IAM(s3.awsCredentials)
+  lazy val sns: SNS = SNS(s3.awsCredentials)
 }

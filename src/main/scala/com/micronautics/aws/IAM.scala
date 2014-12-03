@@ -1,18 +1,19 @@
 package com.micronautics.aws
 
-import collection.JavaConverters._
-import com.amazonaws.auth.{BasicAWSCredentials, AWSCredentials}
+import AwsCredentials._
 import com.amazonaws.auth.policy.Statement.Effect
 import com.amazonaws.auth.policy.actions.S3Actions
 import com.amazonaws.auth.policy.{Principal, Resource, Statement}
+import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials}
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient
 import com.amazonaws.services.identitymanagement.model.{User => IAMUser, _}
 import com.amazonaws.services.s3.model._
-import org.slf4j.LoggerFactory
-import util.{Failure, Success, Try}
+import scala.collection.JavaConverters._
+import scala.util.{Failure, Success, Try}
 
 object IAM {
-  lazy val Logger = LoggerFactory.getLogger("IAM")
+  def apply(implicit awsCredentials: AWSCredentials, iamClient: AmazonIdentityManagementClient=new AmazonIdentityManagementClient): IAM =
+    new IAM()(awsCredentials, iamClient)
 
   def allowAllStatement(bucket: Bucket, principals: Seq[Principal], idString: String): Statement =
     allowSomeStatement(bucket, principals, List(S3Actions.AllS3Actions), idString)
@@ -44,7 +45,7 @@ object IAM {
   }
 }
 
-case class IAM(implicit iamClient: AmazonIdentityManagementClient) {
+class IAM()(implicit val awsCredentials: AWSCredentials, val iamClient: AmazonIdentityManagementClient=new AmazonIdentityManagementClient) {
   import com.micronautics.aws.IAM._
 
   /** (Re)creates an AWS IAM user with the given `userId`

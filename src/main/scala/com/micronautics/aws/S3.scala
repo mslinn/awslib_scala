@@ -14,24 +14,21 @@
 
 package com.micronautics.aws
 
+import AwsCredentials._
 import java.io.{File, InputStream}
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
 import java.util.Date
-
-import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials, PropertiesCredentials}
+import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.event.ProgressEventType
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
-import com.amazonaws.{HttpMethod, AmazonClientException, event}
+import com.amazonaws.{AmazonClientException, HttpMethod, event}
 import com.micronautics.aws.Util._
 import org.joda.time.DateTime
-import org.slf4j.LoggerFactory
-
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
-import scala.util.{Failure, Success, Try}
 
 /**
  * When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.
@@ -46,22 +43,8 @@ import scala.util.{Failure, Success, Try}
  * Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only).
  */
 object S3 {
-  lazy val Logger = LoggerFactory.getLogger("S3")
-
-  def apply: Try[(AWSCredentials, AmazonS3Client)] = {
-    try {
-      val awsCredentials = new BasicAWSCredentials(System.getenv("accessKey"), System.getenv("secretKey"))
-      if (awsCredentials.getAWSAccessKeyId != null && awsCredentials.getAWSSecretKey != null) {
-        Success((awsCredentials, new AmazonS3Client(awsCredentials)))
-      } else {
-        val inputStream: InputStream = getClass.getClassLoader.getResourceAsStream("AwsCredentials.properties")
-        val propertiesCredentials = new PropertiesCredentials(inputStream)
-        Success((propertiesCredentials, new AmazonS3Client(propertiesCredentials)))
-      }
-    } catch {
-      case ex: Exception => Failure(ex)
-    }
-  }
+  def apply(implicit awsCredentials: AWSCredentials, s3Client: AmazonS3Client=new AmazonS3Client): S3 =
+    new S3()(awsCredentials, s3Client)
 
   protected def bucketPolicy(bucketName: String): String = s"""{
     |\t"Version": "2008-10-17",
@@ -85,12 +68,8 @@ object S3 {
   def relativize(key: String): String = sanitizePrefix(key)
 }
 
-// TODO replace key and secret with awsCredentials: AWSCredentials
-case class S3(key: String, secret: String) {
-  import S3._
-
-  val awsCredentials: AWSCredentials = new BasicAWSCredentials(key, secret)
-  val s3Client: AmazonS3Client = new AmazonS3Client(awsCredentials)
+class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Client=new AmazonS3Client) {
+  import com.micronautics.aws.S3._
 
   /** Create a new S3 bucket.
     * If the bucket name starts with "www.", make it publicly viewable and enable it as a web site.
@@ -310,7 +289,7 @@ case class S3(key: String, secret: String) {
         result
     }
 
-    val objectListing: ObjectListing = s3Client.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(sanitizedPrefix(key)))
+    val objectListing: ObjectListing = s3Client.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(sanitizedPrefix(awsCredentials.getAWSAccessKeyId)))
     again(objectListing, List.empty[String])
   }
 

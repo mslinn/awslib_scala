@@ -12,15 +12,12 @@
  * License for the specific language governing permissions and limitations under
  * the License. */
 
-package com.micronautics.aws;
+package com.micronautics.aws
 
-public class S3Model {
-    public static final int s3FileDoesNotExist = -2;
-    public static final int s3FileIsOlderThanLocal = -1;
-    public static final int s3FileSameAgeAsLocal = 0;
-    public static final int s3FileNewerThanLocal = 1;
-    public static final int s3FileDoesNotExistLocally = 2;
-
-    public static Credentials credentials;
-    public static S3 s3;
+object S3Model {
+  val s3FileDoesNotExist = -2
+  val s3FileIsOlderThanLocal = -1
+  val s3FileSameAgeAsLocal = 0
+  val s3FileNewerThanLocal = 1
+  val s3FileDoesNotExistLocally = 2
 }

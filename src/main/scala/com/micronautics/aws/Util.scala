@@ -14,6 +14,8 @@
 
 package com.micronautics.aws
 
+import com.amazonaws.services.s3.AmazonS3Client
+
 import collection.JavaConverters._
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import grizzled.math.stats._
@@ -135,7 +137,7 @@ object Util {
         None
 
       case Some(creds) =>
-        Some(new S3(creds.accessKey, creds.secretKey))
+        Some(S3(creds.asBasicAWSCredentials))
     }
   }
 
@@ -179,8 +181,7 @@ object Util {
         s3Option = None
 
       case Some(creds) =>
-        val s3 = new S3(creds.accessKey, creds.secretKey)
-        s3Option = Some(s3)
+        s3Option = Some(S3(creds.asBasicAWSCredentials))
     }
     s3Option
   }

@@ -14,12 +14,16 @@
 
 package com.micronautics.aws
 
+import com.amazonaws.auth.BasicAWSCredentials
+
 import collection.mutable.MutableList
 import java.util.regex.Pattern
 import org.joda.time.DateTime
 import org.codehaus.jackson.annotate.JsonIgnore
 
-case class Credentials(awsAccountName: String, accessKey: String, secretKey: String)
+case class Credentials(awsAccountName: String, accessKey: String, secretKey: String) extends BasicAWSCredentials(accessKey, secretKey) {
+  lazy val asBasicAWSCredentials: BasicAWSCredentials = new BasicAWSCredentials(accessKey, secretKey)
+}
 
 class AllCredentials extends MutableList[Credentials] {
   def addAll(credArray: Array[Credentials]): AllCredentials = {
