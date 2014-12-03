@@ -15,6 +15,7 @@
 package com.micronautics.aws
 
 import java.io.{File, InputStream}
+import java.net.URL
 import java.nio.file.Files
 import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
 import java.util.Date
@@ -23,8 +24,10 @@ import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials, PropertiesCreden
 import com.amazonaws.event.ProgressEventType
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
-import com.amazonaws.{AmazonClientException, event}
+import com.amazonaws.{HttpMethod, AmazonClientException, event}
 import com.micronautics.aws.Util._
+import org.joda.time.DateTime
+import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
@@ -43,6 +46,8 @@ import scala.util.{Failure, Success, Try}
  * Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only).
  */
 object S3 {
+  lazy val Logger = LoggerFactory.getLogger("S3")
+
   def apply: Try[(AWSCredentials, AmazonS3Client)] = {
     try {
       val awsCredentials = new AWSCredentials {
@@ -61,16 +66,6 @@ object S3 {
     }
   }
 
-  /** @param key any leading slashes are removed so the key can be used as a relative path */
-  def relativize(key: String): String = {
-    var result: String = key
-    while (result.startsWith("/"))
-      result = result.substring(1)
-    result.replace("//", "/")
-  }
-}
-
-case class S3(key: String, secret: String) {
   protected def bucketPolicy(bucketName: String): String = s"""{
     |\t"Version": "2008-10-17",
     |\t"Statement": [
@@ -86,6 +81,16 @@ case class S3(key: String, secret: String) {
     |\t]
     |}
     |""".stripMargin
+
+  def sanitizePrefix(key: String): String = key.substring(key.indexWhere(_!='/')).replace("//", "/")
+
+  /** @param key any leading slashes are removed so the key can be used as a relative path */
+  def relativize(key: String): String = sanitizePrefix(key)
+}
+
+// TODO replace key and secret with awsCredentials: AWSCredentials
+case class S3(key: String, secret: String) {
+  import S3._
 
   val awsCredentials: AWSCredentials = new BasicAWSCredentials(key, secret)
   val s3Client: AmazonS3Client = new AmazonS3Client(awsCredentials)
@@ -150,6 +155,17 @@ case class S3(key: String, secret: String) {
     s3Client.copyObject(copyRequest)
     val deleteRequest: DeleteObjectRequest = new DeleteObjectRequest(oldBucketName, oldKey)
     s3Client.deleteObject(deleteRequest)
+  }
+
+  def signUrl(bucket: Bucket, url: URL, minutesValid: Int=60): URL =
+    signUrlStr(relativize(url.getFile), bucket, minutesValid)
+
+  def signUrlStr(key: String, bucket: Bucket, minutesValid: Int=0): URL = {
+    val expiry = DateTime.now.plusMinutes(minutesValid)
+    val generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket.getName, key).
+      withMethod(HttpMethod.GET).withExpiration(expiry.toDate)
+    val signedUrl: URL = s3Client.generatePresignedUrl(generatePresignedUrlRequest)
+    new URL("http", signedUrl.getHost, signedUrl.getPort, signedUrl.getFile)
   }
 
   /** Uploads a file to the specified bucket. The file's last-modified date is applied to the uploaded file.
@@ -357,6 +373,39 @@ case class S3(key: String, secret: String) {
     val items: List[S3ObjectSummary] = getAllObjectData(bucketName, null)
     items foreach { item => s3Client.deleteObject(bucketName, item.getKey) }
   }
+
+  /**
+  <?xml version="1.0" encoding="UTF-8"?>
+  <CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+      <CORSRule>
+          <AllowedOrigin>*</AllowedOrigin>
+          <AllowedMethod>GET</AllowedMethod>
+          <AllowedMethod>HEAD</AllowedMethod>
+          <AllowedMethod>PUT</AllowedMethod>
+          <AllowedMethod>POST</AllowedMethod>
+          <AllowedMethod>DELETE</AllowedMethod>
+          <AllowedHeader>*</AllowedHeader>
+      </CORSRule>
+  </CORSConfiguration> */
+  def enableCors(bucket: Bucket): Unit =
+    try {
+      val rule1 = new CORSRule()
+        .withAllowedMethods(List(
+          CORSRule.AllowedMethods.GET,
+          CORSRule.AllowedMethods.HEAD,
+          CORSRule.AllowedMethods.PUT,
+          CORSRule.AllowedMethods.POST,
+          CORSRule.AllowedMethods.DELETE).asJava)
+        .withAllowedOrigins(List("*").asJava)
+        .withAllowedHeaders(List("*").asJava)
+      val rules = List(rule1)
+      val configuration = new BucketCrossOriginConfiguration
+      configuration.setRules(rules.asJava)
+      s3Client.setBucketCrossOriginConfiguration(bucket.getName, configuration)
+    } catch {
+      case ignored: Exception =>
+        Logger.debug("Ignored: " + ignored)
+    }
 
   def sanitizedPrefix(key: String): String = if (key==null) null else key.substring(math.max(0, key.indexWhere(_!='/')))
 }

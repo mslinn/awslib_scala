@@ -4,11 +4,19 @@ import com.amazonaws.auth.{BasicAWSCredentials, PropertiesCredentials, AWSCreden
 import com.amazonaws.services.sns.AmazonSNSClient
 import java.lang.{Exception, String}
 import java.io.InputStream
+import org.slf4j.LoggerFactory
+
 import scala.Exception
 import com.amazonaws.services.sns.model._
 import collection.JavaConverters._
 
+object SNS {
+  lazy val Logger = LoggerFactory.getLogger("SNS")
+}
+
 class SNS {
+  import SNS._
+
   var sns: AmazonSNSClient = _
   var exception: Exception = null
 
