@@ -21,6 +21,7 @@ import java.nio.file.Files
 import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
 import java.util.Date
 import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.policy.{Statement, Policy}
 import com.amazonaws.event.ProgressEventType
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
@@ -72,14 +73,14 @@ trait S3Implicits {
   implicit class RichBucket(val bucket: Bucket)(implicit val s3: S3) {
     def allObjectData(prefix: String): List[S3ObjectSummary] = s3.allObjectData(bucket.getName, prefix)
 
-    def bucketExists: Boolean = s3.bucketExists(bucket.getName)
+    def exists: Boolean = s3.bucketExists(bucket.getName)
 
-    def bucketLocation: String = s3.bucketLocation(bucket.getName)
+    def location: String = s3.bucketLocation(bucket.getName)
 
-    def createBucket: Bucket = s3.createBucket(bucket.getName)
+    def create: Bucket = s3.createBucket(bucket.getName)
 
     @throws(classOf[AmazonClientException])
-    def deleteBucket(): Unit = s3.deleteBucket(bucket.getName)
+    def delete(): Unit = s3.deleteBucket(bucket.getName)
 
     def deleteObject(key: String): Unit = s3.deleteObject(bucket.getName, key)
 
@@ -90,7 +91,7 @@ trait S3Implicits {
     def downloadAsString(key: String): String = io.Source.fromInputStream(downloadAsStream(key)).mkString
 
     @throws(classOf[AmazonClientException])
-    def emptyBucket(): Unit = s3.emptyBucket(bucket.getName)
+    def empty(): Unit = s3.emptyBucket(bucket.getName)
 
     def enableCors(): Unit = s3.enableCors(bucket)
 
@@ -108,10 +109,18 @@ trait S3Implicits {
 
     def move(oldKey: String, newBucketName: String, newKey: String): Unit = s3.move(bucket.getName, oldKey, newBucketName, newKey)
 
+    def policy_=(policyJson: String) = s3.setBucketPolicy(bucket, policyJson)
+
+    def policy_=(statements: List[Statement]) = s3.setBucketPolicy(bucket, statements)
+
+    def policy: BucketPolicy = s3.s3Client.getBucketPolicy(bucket.getName)
+
+    def policyAsJson: String = policy.getPolicyText
+
     def policyEncoder(policyText: String, contentLength: Long, expiryDuration: Duration=Duration.standardHours(1)): String =
       new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyEncoder(policyText, contentLength)
 
-    def policyText(key: String, contentLength: Long, acl: String="private", expiryDuration: Duration=Duration.standardHours(1)): String =
+    def createPolicyText(key: String, contentLength: Long, acl: String="private", expiryDuration: Duration=Duration.standardHours(1)): String =
       new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyText(key, contentLength, acl)
 
     def oneObjectData(prefix: String): Option[S3ObjectSummary] = s3.oneObjectData(bucket.getName, prefix)
@@ -168,6 +177,9 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
   def bucketExists(bucketName: String): Boolean = s3Client.listBuckets.asScala.exists(_.getName==bucketName)
 
   def bucketLocation(bucketName: String): String = s3Client.getBucketLocation(bucketName)
+
+  /** List the buckets in the account */
+  def bucketNames: List[String] = s3Client.listBuckets.asScala.map(_.getName).toList
 
   /** Create a new S3 bucket.
     * If the bucket name starts with "www.", make it publicly viewable and enable it as a web site.
@@ -274,9 +286,6 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
       case e: Exception => false
     }
 
-  /** List the buckets in the account */
-  def bucketNames: List[String] = s3Client.listBuckets.asScala.map(_.getName).toList
-
   /** List objects in given bucketName by prefix, followed by number of bytes.
     * @param prefix Any leading slashes are removed if a prefix is specified */
   def listObjectsByPrefix(bucketName: String, prefix: String): List[String] =
@@ -372,6 +381,25 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
     else if (keyLC.endsWith (".zip") ) metadata.setContentType ("application/zip")
     else metadata.setContentType ("application/octet-stream")
     metadata
+  }
+
+  /** This method is idempotent
+    * Side effect: sets policy for AWS S3 upload bucket */
+  def setBucketPolicy(bucket: Bucket, statements: List[Statement]): Bucket =
+    setBucketPolicy(bucket, new Policy().withStatements(statements: _*).toJson)
+
+  /** This method is idempotent
+    * Side effect: sets policy for AWS S3 upload bucket */
+  // TODO ensure only one user can execute this at any given instant
+  def setBucketPolicy(bucket: Bucket, policyJson: String): Bucket = {
+    Logger.debug(s"New policy for ${bucket.getName} bucket: " + policyJson)
+    try {
+      s3Client.setBucketPolicy(bucket.getName, policyJson)
+    } catch {
+      case ignored: Exception =>
+        Logger.debug(s"setBucketPolicy: ${ignored.toString}")
+    }
+    bucket
   }
 
   def signUrl(bucket: Bucket, url: URL, minutesValid: Int=60): URL =

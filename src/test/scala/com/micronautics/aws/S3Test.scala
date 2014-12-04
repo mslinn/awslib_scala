@@ -81,6 +81,10 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
       assert(thrown.getMessage contains "exists")
     }
 
+    "Manage policies" in {
+      assert(bucket.policyAsJson == s"""{"Version":"2008-10-17","Statement":[{"Sid":"AddPerm","Effect":"Allow","Principal":{"AWS":"*"},"Action":"s3:GetObject","Resource":"arn:aws:s3:::$bucketName/*"}]}""")
+    }
+
     "be able to do lots of things" in {
       bucket.uploadString("you/know/that/this/means/war.txt", "blah blah")
       bucket.uploadString("you/know/doodle.txt", "deedle doodle")
@@ -133,7 +137,7 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
       bucket.uploadFileOrDirectory(file2Name, file2)
       assert(bucket.allObjectData(file2Name).size==1)
 
-      bucket.emptyBucket()
+      bucket.empty()
       assert(bucket.allObjectData("").size==0)
 
       assert(s3.bucketNames contains bucket.getName)
