@@ -28,7 +28,7 @@ object IAM {
       .withPrincipals(principals: _*)
       .withResources(resources: _*)
 
-  implicit class RichBucket(bucket: Bucket) {
+  implicit class RichBucketIAM(bucket: Bucket) {
     def allowAllStatement(principals: Seq[Principal], idString: String): Statement =
       IAM.allowAllStatement(bucket, principals, idString)
 

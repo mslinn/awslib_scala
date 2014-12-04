@@ -14,9 +14,10 @@
 
 package com.micronautics.aws
 
-import java.io.File
+import java.io.{InputStream, File}
 
-import com.amazonaws.services.s3.model.{AccessControlList, CanonicalGrantee, GetBucketAclRequest, Permission, SetBucketAclRequest}
+import com.amazonaws.services.s3.model._
+import com.micronautics.aws.S3._
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpec}
 
 class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll with Fixtures {
@@ -65,12 +66,78 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
     }
   }
 
-  "Bucket websites" must {
+  "Buckets" must {
     "be queryable" in {
       // These asserts require the system property: -Dcom.amazonaws.sdk.disableCertChecking=true
       assert(s3.isWebsiteEnabled("www.mslinn.com"))
-      assert(s3.isWebsiteEnabled("www.slinnbooks.com"))
       assert(!s3.isWebsiteEnabled(bucketName))
+      assert(s3.bucketExists(bucketName))
+      assert(!s3.bucketExists("aosdifaosidfyoasidfyoasidfyuoasidfyosiadfyoi"))
+    }
+
+    "prevent duplicate bucket names" in {
+      val thrown = intercept[Exception] {
+        s3.createBucket(bucketName)
+      }
+      assert(thrown.getMessage contains "exists")
+    }
+
+    "be able to do lots of things" in {
+      bucket.uploadString("you/know/that/this/means/war.txt", "blah blah")
+      bucket.uploadString("you/know/doodle.txt", "deedle doodle")
+      val contents1 = bucket.downloadAsString("you/know/that/this/means/war.txt")
+      assert(contents1=="blah blah")
+      assert(bucket.listObjectsByPrefix("you").size == 2)
+      assert(bucket.allObjectData("you/know").size==2)
+      assert(bucket.allObjectData("").size==2)
+
+      bucket.deletePrefix("you/know/that")
+      assert(bucket.listObjectsByPrefix("you").size == 1)
+      assert(bucket.allObjectData("you/know").size==1)
+      assert(bucket.allObjectData("").size==1)
+
+      val contents2 = bucket.downloadAsString("you/know/doodle.txt")
+      assert(contents2=="deedle doodle")
+
+      bucket.deleteObject("you/know/doodle.txt")
+      assert(bucket.allObjectData("").size==0)
+
+      assert(!bucket.isWebsiteEnabled)
+      bucket.enableWebsite()
+      assert(bucket.isWebsiteEnabled)
+      bucket.enableWebsite("error.html")
+      assert(bucket.isWebsiteEnabled)
+
+      bucket.enableCors()
+      bucket.uploadString("you/know/that/this/means/war.html", "blah blah")
+      bucket.uploadString("you/know/doodle.txt", "deedle doodle")
+      assert(bucket.allObjectData("").size==2)
+
+      bucket.oneObjectData("you/know/doodle.txt").exists{ _.getKey == "you/know/doodle.txt" }
+
+      assert(bucket.resourceUrl("you/know/doodle.txt") == s"https://$bucketName.s3.amazonaws.com/you/know/doodle.txt")
+
+      assert(s3.setContentType("plain.txt").getContentType=="text/plain")
+      assert(s3.setContentType("page.html").getContentType=="text/html")
+      assert(s3.setContentType("video.mp4").getContentType=="video/mp4")
+
+      bucket.move("you/know/doodle.txt", "autre/location/blah.txt")
+      val contents3 = bucket.downloadAsString("autre/location/blah.txt")
+      assert(contents3 == "deedle doodle")
+      val thrown = intercept[Exception] {
+        bucket.downloadAsString("you/know/doodle.txt")
+      }
+
+      bucket.uploadFile(file1Name, file1)
+      assert(bucket.allObjectData(file1Name).size==1)
+
+      bucket.uploadFileOrDirectory(file2Name, file2)
+      assert(bucket.allObjectData(file2Name).size==1)
+
+      bucket.emptyBucket()
+      assert(bucket.allObjectData("").size==0)
+
+      assert(s3.bucketNames contains bucket.getName)
     }
   }
 
@@ -86,6 +153,15 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
       println(setBucketAclRequest)
     }
   }*/
+
+  "S3 key names" must {
+    "be sanitized" in {
+      assert(sanitizePrefix("/this/means/war.txt")=="this/means/war.txt")
+      assert(relativize("/of/course/you/realize/that/this/means/war.txt")=="of/course/you/realize/that/this/means/war.txt")
+      assert(sanitizePrefix("this/means/war.txt")=="this/means/war.txt")
+      assert(relativize("this/means/war.txt")=="this/means/war.txt")
+    }
+  }
 
   "S3 operations" must {
     "ensure file to upload can be found" in {

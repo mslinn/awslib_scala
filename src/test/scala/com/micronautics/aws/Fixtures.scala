@@ -44,7 +44,7 @@ trait Fixtures { this: BeforeAndAfterAll =>
     secretKey <- Some(System.getenv("AWS_SECRET_KEY")) if secretKey.nonEmpty
   } yield {
     implicit val credentials = new BasicAWSCredentials(accessKey, secretKey)
-    new S3
+    new S3()
   }
 
   def maybeS3FromFile: Option[S3] = for {
@@ -54,9 +54,9 @@ trait Fixtures { this: BeforeAndAfterAll =>
     new S3()(credentials)
   }
 
-  lazy val s3: S3 = maybeS3FromEnv.getOrElse(
-                      maybeS3FromFile.getOrElse(
-                        fail("No AWS credentials found. Is a .s3 file available in the working directory, or a parent directory?")))
-  lazy val iam: IAM = IAM(s3.awsCredentials)
-  lazy val sns: SNS = SNS(s3.awsCredentials)
+  lazy implicit val s3: S3 = maybeS3FromEnv.getOrElse(
+                               maybeS3FromFile.getOrElse(
+                                 fail("No AWS credentials found in environment variables and no .s3 file was found in the working directory, or a parent directory.")))
+  lazy implicit val iam: IAM = IAM(s3.awsCredentials)
+  lazy implicit val sns: SNS = SNS(s3.awsCredentials)
 }

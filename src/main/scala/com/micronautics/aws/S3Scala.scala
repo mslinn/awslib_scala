@@ -19,7 +19,7 @@ import java.io.File
 object S3Scala {
   /** Normal use case is to delete a directory and all its contents */
   def deletePrefix(s3: S3, bucketName: String, prefix: String): Unit =
-    s3.getAllObjectData(bucketName, prefix).map { _.getKey } foreach { objName =>
+    s3.allObjectData(bucketName, prefix).map { _.getKey } foreach { objName =>
       s3.deleteObject(bucketName, objName)
     }
 
