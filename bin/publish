@@ -1,4 +1,3 @@
 #!/bin/bash
 
-s3publish com/micronautics/awss3_2.10
-
+sbt test && clearSbtCacheItem && s3publish com/micronautics/awss3_2.10

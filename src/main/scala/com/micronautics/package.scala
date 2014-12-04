@@ -30,6 +30,58 @@ import com.amazonaws.services.identitymanagement.model.{User => IAMUser}
  *
  */
 package object aws {
+  private val contentTypeMap = Map(
+    "css"   ->"text/css",
+    "doc"   -> "application/vnd.ms-word",
+    "dot"   -> "application/vnd.ms-word",
+    "docx"  -> "application/vnd.ms-word",
+    "dtd"   -> "application/xml-dtd",
+    "flv"   -> "video/x-flv",
+    "gif"   -> "image/gif",
+    "gzip"  -> "application/gzip",
+    "gz"    -> "application/gzip",
+    "html"  -> "text/html",
+    "htm"   -> "text/html",
+    "shtml" -> "text/html",
+    "jsp"   -> "text/html",
+    "php"   -> "text/html",
+    "ico"   -> "image/vnd.microsoft.icon",
+    "jpg"   -> "image/jpeg",
+    "js"    -> "application/javascript",
+    "json"  -> "application/json",
+    "mkv"   -> "video/x-matroska",
+    "mov"   -> "video/quicktime",
+    "mp3"   -> "audio/mpeg",
+    "mpeg"  -> "audio/mpeg",
+    "mpg"   -> "video/mpeg",
+    "mp4"   -> "video/mp4",
+    "ogg"   -> "video/ogg",
+    "pdf"   -> "application/pdf",
+    "png"   -> "image/png",
+    "ppt"   -> "application/vnd.ms-powerpoint",
+    "pptx"  -> "application/vnd.ms-powerpoint",
+    "ps"    -> "application/postscript",
+    "qt"    -> "video/quicktime",
+    "ra"    -> "audio/vnd.rn-realaudio",
+    "svg"   -> "image/svg+xml",
+    "tif"   -> "image/tiff",
+    "tiff"  -> "image/tiff",
+    "txt"   -> "text/plain",
+    "xls"   -> "application/vnd.ms-excel",
+    "xlsx"  -> "application/vnd.ms-excel",
+    "xml"   -> "application/xml",
+    "vcard" -> "text/vcard",
+    "wav"   -> "audio/vnd.wave",
+    "webm"  -> "video/webm",
+    "wmv"   -> "video/x-ms-wmv",
+    "zip"   -> "application/zip"
+  ).withDefaultValue("application/octet-stream")
+
+  def guessContentType(key: String): String = {
+    val keyLC: String = key.substring(math.max(0, key.lastIndexOf('.')+1)).trim.toLowerCase
+    contentTypeMap(keyLC)
+  }
+
   implicit class RichBucket(val bucket: Bucket)(implicit val s3: S3) {
     def allObjectData(prefix: String): List[S3ObjectSummary] = s3.allObjectData(bucket.getName, prefix)
 

@@ -44,48 +44,6 @@ import scala.collection.JavaConverters._
  * Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only).
  */
 object S3 {
-  val contentTypeMap = Map(
-    "css"   ->"text/css",
-    "doc"   -> "application/vnd.ms-word",
-    "dot"   -> "application/vnd.ms-word",
-    "docx"  -> "application/vnd.ms-word",
-    "dtd"   -> "application/xml-dtd",
-    "flv"   ->"video/x-flv",
-    "gif"   -> "image/gif",
-    "gzip"  -> "application/gzip",
-    "gz"    -> "application/gzip",
-    "html"  -> "text/html",
-    "htm"   -> "text/html",
-    "shtml" -> "text/html",
-    "jsp"   -> "text/html",
-    "php"   -> "text/html",
-    "ico"   -> "image/vnd.microsoft.icon",
-    "jpg"   -> "image/jpeg",
-    "js"    -> "application/javascript",
-    "json"  -> "application/json",
-    "mp3"   -> "audio/mpeg",
-    "mpeg"  -> "audio/mpeg",
-    "mp4"   -> "video/mp4",
-    "ogg"   -> "application/ogg",
-    "pdf"   -> "application/pdf",
-    "png"   -> "image/png",
-    "ppt"   -> "application/vnd.ms-powerpoint",
-    "pptx"  -> "application/vnd.ms-powerpoint",
-    "ps"    -> "application/postscript",
-    "qt"    -> "video/quicktime",
-    "ra"    -> "audio/vnd.rn-realaudio",
-    "tiff"  -> "image/tiff",
-    "txt"   -> "text/plain",
-    "xls"   -> "application/vnd.ms-excel",
-    "xlsx"  -> "application/vnd.ms-excel",
-    "xml"   -> "application/xml",
-    "vcard" -> "text/vcard",
-    "wav"   -> "audio/vnd.wave",
-    "webm"  -> "audio/webm",
-    "wmv"   -> "video/x-ms-wmv",
-    "zip"   -> "application/zip"
-  ).withDefaultValue("application/octet-stream")
-
   def apply(implicit awsCredentials: AWSCredentials, s3Client: AmazonS3Client = new AmazonS3Client): S3 =
     new S3()(awsCredentials, s3Client)
 
@@ -311,8 +269,7 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
   }
 
   def setContentType(key: String, metadata: ObjectMetadata): ObjectMetadata = {
-    val keyLC: String = key.substring(math.max(0, key.lastIndexOf('.')+1)).trim.toLowerCase
-    metadata.setContentType(contentTypeMap(keyLC))
+    metadata.setContentType(guessContentType(key))
     metadata
   }
 

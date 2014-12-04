@@ -17,26 +17,8 @@ case class SignedAndEncoded(
 
 object AWSUpload {
   val Logger = LoggerFactory.getLogger("AWSUpload")
-
   val publicAcl = "public-read"
   val privateAcl = "private"
-
-  private lazy val contentTypeMap = Map(
-    ".jpg"  -> "image/jpeg",
-    ".png"  -> "image/png",
-    ".gif"  -> "image/gif",
-    ".svg"  -> "image/svg+xml",
-    ".tif"  -> "image/tiff",
-    ".tiff" -> "image/tiff",
-    ".mp4"  -> "video/mp4",
-    ".mpg"  -> "video/mpeg",
-    ".ogg"  -> "video/ogg",
-    ".mov"  -> "video/quicktime",
-    ".webm" -> "video/webm",
-    ".mkv"  -> "video/x-matroska",
-    ".wmv"  -> "video/x-ms-wmv",
-    ".flv"  -> "video/mpeg"
-  ).withDefaultValue("application/octet-stream")
 }
 
 /** @param expiryDuration times out policy in one hour by default */
@@ -91,8 +73,6 @@ class AWSUpload(val bucket: Bucket, val expiryDuration: Duration=Duration.standa
     val policy = policyText(key, contentLength, acl)
     val encodedPolicy = policyEncoder(policy, contentLength)
     val signedPolicy = signPolicy(policy, contentLength, awsSecretKey)
-    val indexDot = key.lastIndexOf(".")
-    val contentType = contentTypeMap(if (indexDot>0) key.substring(indexDot).toLowerCase else "")
-    SignedAndEncoded(encodedPolicy=encodedPolicy, signedPolicy=signedPolicy, contentType=contentType)
+    SignedAndEncoded(encodedPolicy=encodedPolicy, signedPolicy=signedPolicy, contentType=guessContentType(key))
   }
 }
