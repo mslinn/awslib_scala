@@ -287,7 +287,7 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
       s3Client.setBucketPolicy(bucket.getName, policyJson)
     } catch {
       case ignored: Exception =>
-        Logger.debug(s"setBucketPolicy: ${ignored.toString}")
+        Logger.debug(s"setBucketPolicy: $ignored")
     }
     bucket
   }

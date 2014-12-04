@@ -25,6 +25,10 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
   val file1 = new File(file1Name)
   val file2 = new File(file2Name)
 
+  val publisher1UserId = "testPublisher1UserId"
+  val instructor1UserId = "testInstructor1UserId"
+  val instructor2UserId = "testInstructor2UserId"
+
   private def saveToFile(file: java.io.File, string: String): Unit = {
     val printWriter = new java.io.PrintWriter(file)
     try {
@@ -83,6 +87,51 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
 
     "Manage policies" in {
       assert(bucket.policyAsJson == s"""{"Version":"2008-10-17","Statement":[{"Sid":"AddPerm","Effect":"Allow","Principal":{"AWS":"*"},"Action":"s3:GetObject","Resource":"arn:aws:s3:::$bucketName/*"}]}""")
+
+      val cadenzaPolicy = s"""|{
+      |	"Version": "2012-10-17",
+      |	"Statement": [
+      |		{
+      |			"Sid": "Allow root and publisher ($publisher1UserId) to do everything",
+      |			"Effect": "Allow",
+      |			"Principal": {
+      |				"AWS": [
+      |					"arn:aws:iam::031372724784:root"
+      |					"arn:aws:iam::031372724784:user/root",
+      |					"arn:aws:iam::031372724784:user/superuser",
+      |					"arn:aws:iam::031372724784:user/$publisher1UserId",
+      |				]
+      |			},
+      |			"Action": "s3:*",
+      |			"Resource": "arn:aws:s3:::$bucketName/*"
+      |		},
+      |		{
+      |			"Sid": "Publisher and instructors can ListBucket",
+      |			"Effect": "Allow",
+      |			"Principal": {
+      |				"AWS": [
+      |					"arn:aws:iam::031372724784:root"
+      |					"arn:aws:iam::031372724784:user/root",
+      |					"arn:aws:iam::031372724784:user/superuser",
+      |					"arn:aws:iam::031372724784:user/$instructor1UserId",
+      |					"arn:aws:iam::031372724784:user/$instructor2UserId",
+      |				]
+      |			},
+      |			"Action": "s3:ListBucket",
+      |			"Resource": "arn:aws:s3:::$bucketName"
+      |		},
+      |		{
+      |			"Sid": "AddPerm",
+      |			"Effect": "Allow",
+      |			"Principal": {
+      |				"AWS": "*"
+      |			},
+      |			"Action": "s3:GetObject",
+      |			"Resource": "arn:aws:s3:::$bucketName/*"
+      |		}
+      |	]
+      |}""".stripMargin
+      bucket.policy = cadenzaPolicy // if the policy is accepted then all is well
     }
 
     "be able to do lots of things" in {

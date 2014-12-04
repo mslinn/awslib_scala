@@ -22,7 +22,7 @@ import org.scalatest.BeforeAndAfterAll
 /** Tests that mix this trait in will fail unless a file called AwsCredentials.properties is created in src/test/resources, or
   * environment variables AWS_ACCESS_KEY and AWS_SECRET_KEY are properly set. */
 trait Fixtures { this: BeforeAndAfterAll =>
-  val bucketName = "test" + new java.util.Date().getTime
+  val bucketName = s"www.test${new java.util.Date().getTime}.com"
   val bucket: Bucket = try {
       println(s"Creating bucket $bucketName")
       s3.createBucket(bucketName)
@@ -33,7 +33,7 @@ trait Fixtures { this: BeforeAndAfterAll =>
     }
 
   override def afterAll(): Unit = {
-    s3.deleteBucket(bucketName)
+    bucket.delete()
   }
 
   override def beforeAll(): Unit = {}

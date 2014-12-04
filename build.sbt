@@ -31,6 +31,7 @@ libraryDependencies ++= Seq(
   "org.clapper"                   %  "grizzled-scala_2.10" % "1.2" withSources(),
   "com.github.nscala-time"        %  "nscala-time_2.10"    % "1.6.0" withSources(),
   "org.slf4j"                     %  "slf4j-api"           % "1.7.5" withSources(),
+  "org.slf4j"                     %  "logback-classic"     % "1.1.2" withSources(),
   //
   "junit"                         %  "junit"               % "4.11"  % "test",
   "org.scalatest"                 %  "scalatest_2.10"      % "2.2.2" % "test"
