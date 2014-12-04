@@ -39,6 +39,9 @@ libraryDependencies ++= Seq(
 updateOptions := updateOptions.value.withCachedResolution(true)
 publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath + "/.ivy2/local")))
 publishMavenStyle := true
+logBuffered in Test := false
+Keys.fork in Test := false
+parallelExecution in Test := false
 //logLevel := Level.Error
 
 // define the statements initially evaluated when entering 'console', 'console-quick', or 'console-project'

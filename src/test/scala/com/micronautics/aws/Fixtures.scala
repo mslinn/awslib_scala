@@ -23,21 +23,20 @@ import org.scalatest.BeforeAndAfterAll
   * environment variables AWS_ACCESS_KEY and AWS_SECRET_KEY are properly set. */
 trait Fixtures { this: BeforeAndAfterAll =>
   val bucketName = "test" + new java.util.Date().getTime
-  var bucket: Bucket = null
+  val bucket: Bucket = try {
+      println(s"Creating bucket $bucketName")
+      s3.createBucket(bucketName)
+    } catch {
+      case e: Exception =>
+        val awsCredentials = s3.awsCredentials
+        fail(s"Error creating bucket with accessKey=${awsCredentials.getAWSAccessKeyId} and secretKey=${awsCredentials.getAWSSecretKey}\n${e.getMessage}")
+    }
 
   override def afterAll(): Unit = {
     s3.deleteBucket(bucketName)
-    bucket = null
   }
 
-  override def beforeAll(): Unit = try {
-      println(s"Creating bucket $bucketName")
-      bucket = s3.createBucket(bucketName)
-    } catch {
-      case e: Exception =>
-        val creds = s3.awsCredentials
-        fail(s"Error creating bucket with accessKey=${creds.getAWSAccessKeyId} and secretKey=${creds.getAWSSecretKey}\n${e.getMessage}")
-    }
+  override def beforeAll(): Unit = {}
 
   def maybeS3FromEnv: Option[S3] = for {
     accessKey <- Some(System.getenv("AWS_ACCESS_KEY")) if accessKey.nonEmpty

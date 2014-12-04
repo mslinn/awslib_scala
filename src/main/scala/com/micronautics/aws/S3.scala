@@ -43,7 +43,49 @@ import scala.collection.JavaConverters._
  *
  * Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only).
  */
-object S3 extends S3Implicits {
+object S3 {
+  val contentTypeMap = Map(
+    "css"   ->"text/css",
+    "doc"   -> "application/vnd.ms-word",
+    "dot"   -> "application/vnd.ms-word",
+    "docx"  -> "application/vnd.ms-word",
+    "dtd"   -> "application/xml-dtd",
+    "flv"   ->"video/x-flv",
+    "gif"   -> "image/gif",
+    "gzip"  -> "application/gzip",
+    "gz"    -> "application/gzip",
+    "html"  -> "text/html",
+    "htm"   -> "text/html",
+    "shtml" -> "text/html",
+    "jsp"   -> "text/html",
+    "php"   -> "text/html",
+    "ico"   -> "image/vnd.microsoft.icon",
+    "jpg"   -> "image/jpeg",
+    "js"    -> "application/javascript",
+    "json"  -> "application/json",
+    "mp3"   -> "audio/mpeg",
+    "mpeg"  -> "audio/mpeg",
+    "mp4"   -> "video/mp4",
+    "ogg"   -> "application/ogg",
+    "pdf"   -> "application/pdf",
+    "png"   -> "image/png",
+    "ppt"   -> "application/vnd.ms-powerpoint",
+    "pptx"  -> "application/vnd.ms-powerpoint",
+    "ps"    -> "application/postscript",
+    "qt"    -> "video/quicktime",
+    "ra"    -> "audio/vnd.rn-realaudio",
+    "tiff"  -> "image/tiff",
+    "txt"   -> "text/plain",
+    "xls"   -> "application/vnd.ms-excel",
+    "xlsx"  -> "application/vnd.ms-excel",
+    "xml"   -> "application/xml",
+    "vcard" -> "text/vcard",
+    "wav"   -> "audio/vnd.wave",
+    "webm"  -> "audio/webm",
+    "wmv"   -> "video/x-ms-wmv",
+    "zip"   -> "application/zip"
+  ).withDefaultValue("application/octet-stream")
+
   def apply(implicit awsCredentials: AWSCredentials, s3Client: AmazonS3Client = new AmazonS3Client): S3 =
     new S3()(awsCredentials, s3Client)
 
@@ -67,85 +109,6 @@ object S3 extends S3Implicits {
     |\t]
     |}
     |""".stripMargin
-}
-
-trait S3Implicits {
-  implicit class RichBucket(val bucket: Bucket)(implicit val s3: S3) {
-    def allObjectData(prefix: String): List[S3ObjectSummary] = s3.allObjectData(bucket.getName, prefix)
-
-    def exists: Boolean = s3.bucketExists(bucket.getName)
-
-    def location: String = s3.bucketLocation(bucket.getName)
-
-    def create: Bucket = s3.createBucket(bucket.getName)
-
-    @throws(classOf[AmazonClientException])
-    def delete(): Unit = s3.deleteBucket(bucket.getName)
-
-    def deleteObject(key: String): Unit = s3.deleteObject(bucket.getName, key)
-
-    def deletePrefix(prefix: String): Unit = s3.deletePrefix(bucket.getName, prefix)
-
-    def downloadAsStream(key: String): InputStream = s3.downloadFile(bucket.getName, key)
-
-    def downloadAsString(key: String): String = io.Source.fromInputStream(downloadAsStream(key)).mkString
-
-    @throws(classOf[AmazonClientException])
-    def empty(): Unit = s3.emptyBucket(bucket.getName)
-
-    def enableCors(): Unit = s3.enableCors(bucket)
-
-    def enableWebsite(): Unit = s3.enableWebsite(bucket.getName)
-
-    def enableWebsite(errorPage: String): Unit = s3.enableWebsite(bucket.getName, errorPage)
-
-    def isWebsiteEnabled: Boolean = s3.isWebsiteEnabled(bucket.getName)
-
-    def listObjectsByPrefix(prefix: String): List[String] = s3.listObjectsByPrefix(bucket.getName, prefix)
-
-    def listObjectsByPrefix(prefix: String, showSize: Boolean): List[String] = s3.listObjectsByPrefix(bucket.getName, prefix, showSize)
-
-    def move(oldKey: String, newKey: String): Unit = s3.move(bucket.getName, oldKey, newKey)
-
-    def move(oldKey: String, newBucketName: String, newKey: String): Unit = s3.move(bucket.getName, oldKey, newBucketName, newKey)
-
-    def policy_=(policyJson: String) = s3.setBucketPolicy(bucket, policyJson)
-
-    def policy_=(statements: List[Statement]) = s3.setBucketPolicy(bucket, statements)
-
-    def policy: BucketPolicy = s3.s3Client.getBucketPolicy(bucket.getName)
-
-    def policyAsJson: String = policy.getPolicyText
-
-    def policyEncoder(policyText: String, contentLength: Long, expiryDuration: Duration=Duration.standardHours(1)): String =
-      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyEncoder(policyText, contentLength)
-
-    def createPolicyText(key: String, contentLength: Long, acl: String="private", expiryDuration: Duration=Duration.standardHours(1)): String =
-      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyText(key, contentLength, acl)
-
-    def oneObjectData(prefix: String): Option[S3ObjectSummary] = s3.oneObjectData(bucket.getName, prefix)
-
-    def resourceUrl(key: String): String = s3.resourceUrl(bucket.getName, key)
-
-    def signAndEncodePolicy(key: String, contentLength: Long, acl: String=AWSUpload.privateAcl, awsSecretKey: String = s3.awsCredentials.getAWSSecretKey,
-                            expiryDuration: Duration=Duration.standardHours(1)): SignedAndEncoded =
-      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).signAndEncodePolicy(key, contentLength, acl, awsSecretKey)
-
-    def signPolicy(policyText: String, contentLength: Long, awsSecretKey: String, expiryDuration: Duration=Duration.standardHours(1)): String =
-      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).signPolicy(policyText, contentLength, awsSecretKey)
-
-    def signUrl(url: URL, minutesValid: Int=60): URL = s3.signUrl(bucket, url, minutesValid)
-
-    def signUrlStr(key: String, minutesValid: Int=0): URL = s3.signUrlStr(bucket, key, minutesValid)
-
-    def uploadFile(key: String, file: File): PutObjectResult = s3.uploadFile(bucket.getName, key, file)
-
-    def uploadFileOrDirectory(dest: String, file: File): Unit = s3.uploadFileOrDirectory(bucket.getName, dest, file)
-
-    def uploadString(key: String, contents: String): PutObjectResult =  s3.uploadString(bucket.getName, key, contents)
-
-    def uploadStream(key: String, stream: InputStream, length: Int): Unit = s3.uploadStream(bucket.getName, key, stream, length)
-  }
 }
 
 class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Client=new AmazonS3Client) {
@@ -348,38 +311,8 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
   }
 
   def setContentType(key: String, metadata: ObjectMetadata): ObjectMetadata = {
-    val keyLC: String = key.toLowerCase.trim
-    if (keyLC.endsWith (".css") ) metadata.setContentType ("text/css")
-    else if (keyLC.endsWith (".csv") ) metadata.setContentType ("application/csv")
-    else if (keyLC.endsWith (".doc") || keyLC.endsWith (".dot") || keyLC.endsWith (".docx") ) metadata.setContentType ("application/vnd.ms-word")
-    else if (keyLC.endsWith (".dtd") ) metadata.setContentType ("application/xml-dtd")
-    else if (keyLC.endsWith (".flv") ) metadata.setContentType ("video/x-flv")
-    else if (keyLC.endsWith (".gif") ) metadata.setContentType ("image/gif")
-    else if (keyLC.endsWith (".gzip") || keyLC.endsWith (".gz") ) metadata.setContentType ("application/gzip")
-    else if (keyLC.endsWith (".html") || keyLC.endsWith (".htm") || keyLC.endsWith (".shtml") || keyLC.endsWith (".jsp") || keyLC.endsWith (".php") ) metadata.setContentType ("text/html")
-    else if (keyLC.endsWith (".ico") ) metadata.setContentType ("image/vnd.microsoft.icon")
-    else if (keyLC.endsWith (".jpg") ) metadata.setContentType ("image/jpeg")
-    else if (keyLC.endsWith (".js") ) metadata.setContentType ("application/javascript")
-    else if (keyLC.endsWith (".json") ) metadata.setContentType ("application/json")
-    else if (keyLC.endsWith (".mp3") || keyLC.endsWith (".mpeg") ) metadata.setContentType ("audio/mpeg")
-    else if (keyLC.endsWith (".mp4") ) metadata.setContentType ("video/mp4")
-    else if (keyLC.endsWith (".ogg") ) metadata.setContentType ("application/ogg")
-    else if (keyLC.endsWith (".pdf") ) metadata.setContentType ("application/pdf")
-    else if (keyLC.endsWith (".png") ) metadata.setContentType ("image/png")
-    else if (keyLC.endsWith (".ppt") || keyLC.endsWith (".pptx") ) metadata.setContentType ("application/vnd.ms-powerpoint")
-    else if (keyLC.endsWith (".ps") ) metadata.setContentType ("application/postscript")
-    else if (keyLC.endsWith (".qt") ) metadata.setContentType ("video/quicktime")
-    else if (keyLC.endsWith (".ra") ) metadata.setContentType ("audio/vnd.rn-realaudio")
-    else if (keyLC.endsWith (".tiff") ) metadata.setContentType ("image/tiff")
-    else if (keyLC.endsWith (".txt") ) metadata.setContentType ("text/plain")
-    else if (keyLC.endsWith (".xls") || keyLC.endsWith (".xlsx") ) metadata.setContentType ("application/vnd.ms-excel")
-    else if (keyLC.endsWith (".xml") ) metadata.setContentType ("application/xml")
-    else if (keyLC.endsWith (".vcard") ) metadata.setContentType ("text/vcard")
-    else if (keyLC.endsWith (".wav") ) metadata.setContentType ("audio/vnd.wave")
-    else if (keyLC.endsWith (".webm") ) metadata.setContentType ("audio/webm")
-    else if (keyLC.endsWith (".wmv") ) metadata.setContentType ("video/x-ms-wmv")
-    else if (keyLC.endsWith (".zip") ) metadata.setContentType ("application/zip")
-    else metadata.setContentType ("application/octet-stream")
+    val keyLC: String = key.substring(math.max(0, key.lastIndexOf('.')+1)).trim.toLowerCase
+    metadata.setContentType(contentTypeMap(keyLC))
     metadata
   }
 
