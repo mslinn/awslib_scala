@@ -14,8 +14,6 @@
 
 package com.micronautics.aws
 
-import com.amazonaws.services.s3.AmazonS3Client
-
 import collection.JavaConverters._
 import com.amazonaws.services.s3.model.S3ObjectSummary
 import grizzled.math.stats._
@@ -32,6 +30,7 @@ import org.joda.time.format.DateTimeFormat
 import play.api.libs.json._
 import S3Model._
 
+/** Most of this code is probably not required any more */
 object Util {
   implicit val s3FileFormat = Json.format[S3File]
 

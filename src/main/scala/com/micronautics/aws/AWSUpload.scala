@@ -39,13 +39,13 @@ object AWSUpload {
   ).withDefaultValue("application/octet-stream")
 }
 
-/** @param duration times out policy in one hour by default */
-class AWSUpload(val bucket: Bucket, val duration: Duration=Duration.standardHours(1))(implicit awsCredentials: AWSCredentials) {
+/** @param expiryDuration times out policy in one hour by default */
+class AWSUpload(val bucket: Bucket, val expiryDuration: Duration=Duration.standardHours(1))(implicit awsCredentials: AWSCredentials) {
   import com.micronautics.aws.AWSUpload._
 
   /** @param key has path, without leading slash, including filetype */
   def policyText(key: String, contentLength: Long, acl: String="private"): String = {
-    val expiryDT = new DateTime(DateTimeZone.UTC).plus(duration)
+    val expiryDT = new DateTime(DateTimeZone.UTC).plus(expiryDuration)
     val expiryFormatted = ISODateTimeFormat.dateHourMinuteSecond().print(expiryDT)
     val lastSlash = key.lastIndexOf("/")
     val keyPrefix = if (lastSlash<0) "" else key.substring(0, lastSlash)
@@ -69,7 +69,7 @@ class AWSUpload(val bucket: Bucket, val duration: Duration=Duration.standardHour
 
   /** @param policyText must be encoded with UTF-8
     * @param awsSecretKey must be encoded with UTF-8 */
-  def sign(policyText: String, contentLength: Long, awsSecretKey: String): String = {
+  def signPolicy(policyText: String, contentLength: Long, awsSecretKey: String): String = {
     assert(awsSecretKey.nonEmpty)
     val hmac = Mac.getInstance("HmacSHA1")
     hmac.init(new SecretKeySpec(awsSecretKey.getBytes("UTF-8"), "HmacSHA1"))
@@ -83,16 +83,14 @@ class AWSUpload(val bucket: Bucket, val duration: Duration=Duration.standardHour
   /** @param key has path, without leading slash, including filetype
     * @param acl must either be "public" or "public-read"
     * @return tuple containing encoded policy and signed policy for given key and contentLength */
-  def getSignedAndEncoded(key: String,
-                          contentLength: Long,
-                          awsSecretKey: String = awsCredentials.getAWSSecretKey,
-                          acl: String=privateAcl): SignedAndEncoded = {
+  def signAndEncodePolicy(key: String, contentLength: Long, acl: String = privateAcl,
+                          awsSecretKey: String = awsCredentials.getAWSSecretKey): SignedAndEncoded = {
     assert(!key.startsWith("/"))
     assert(acl==publicAcl || acl==privateAcl)
     Logger.debug(s"Signing '$key' with awsSecretKey='$awsSecretKey' and acl='$acl'")
     val policy = policyText(key, contentLength, acl)
     val encodedPolicy = policyEncoder(policy, contentLength)
-    val signedPolicy = sign(policy, contentLength, awsSecretKey)
+    val signedPolicy = signPolicy(policy, contentLength, awsSecretKey)
     val indexDot = key.lastIndexOf(".")
     val contentType = contentTypeMap(if (indexDot>0) key.substring(indexDot).toLowerCase else "")
     SignedAndEncoded(encodedPolicy=encodedPolicy, signedPolicy=signedPolicy, contentType=contentType)

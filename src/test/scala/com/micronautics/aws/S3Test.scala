@@ -14,9 +14,8 @@
 
 package com.micronautics.aws
 
-import java.io.{InputStream, File}
+import java.io.File
 
-import com.amazonaws.services.s3.model._
 import com.micronautics.aws.S3._
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpec}
 

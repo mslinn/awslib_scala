@@ -26,7 +26,7 @@ import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
 import com.amazonaws.{AmazonClientException, HttpMethod, event}
 import com.micronautics.aws.Util._
-import org.joda.time.DateTime
+import org.joda.time.{Duration, DateTime}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 
@@ -42,14 +42,14 @@ import scala.collection.JavaConverters._
  *
  * Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only).
  */
-object S3 {
-  def apply(implicit awsCredentials: AWSCredentials, s3Client: AmazonS3Client=new AmazonS3Client): S3 =
+object S3 extends S3Implicits {
+  def apply(implicit awsCredentials: AWSCredentials, s3Client: AmazonS3Client = new AmazonS3Client): S3 =
     new S3()(awsCredentials, s3Client)
 
   /** @param key any leading slashes are removed so the key can be used as a relative path */
   def relativize(key: String): String = sanitizePrefix(key)
 
-  def sanitizePrefix(key: String): String = key.substring(key.indexWhere(_!='/')).replace("//", "/")
+  def sanitizePrefix(key: String): String = key.substring(key.indexWhere(_ != '/')).replace("//", "/")
 
   protected def bucketPolicy(bucketName: String): String = s"""{
     |\t"Version": "2008-10-17",
@@ -66,8 +66,10 @@ object S3 {
     |\t]
     |}
     |""".stripMargin
+}
 
-  implicit class RichBucket(bucket: Bucket)(implicit val s3: S3) {
+trait S3Implicits {
+  implicit class RichBucket(val bucket: Bucket)(implicit val s3: S3) {
     def allObjectData(prefix: String): List[S3ObjectSummary] = s3.allObjectData(bucket.getName, prefix)
 
     def bucketExists: Boolean = s3.bucketExists(bucket.getName)
@@ -106,9 +108,22 @@ object S3 {
 
     def move(oldKey: String, newBucketName: String, newKey: String): Unit = s3.move(bucket.getName, oldKey, newBucketName, newKey)
 
+    def policyEncoder(policyText: String, contentLength: Long, expiryDuration: Duration=Duration.standardHours(1)): String =
+      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyEncoder(policyText, contentLength)
+
+    def policyText(key: String, contentLength: Long, acl: String="private", expiryDuration: Duration=Duration.standardHours(1)): String =
+      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyText(key, contentLength, acl)
+
     def oneObjectData(prefix: String): Option[S3ObjectSummary] = s3.oneObjectData(bucket.getName, prefix)
 
     def resourceUrl(key: String): String = s3.resourceUrl(bucket.getName, key)
+
+    def signAndEncodePolicy(key: String, contentLength: Long, acl: String=AWSUpload.privateAcl, awsSecretKey: String = s3.awsCredentials.getAWSSecretKey,
+                            expiryDuration: Duration=Duration.standardHours(1)): SignedAndEncoded =
+      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).signAndEncodePolicy(key, contentLength, acl, awsSecretKey)
+
+    def signPolicy(policyText: String, contentLength: Long, awsSecretKey: String, expiryDuration: Duration=Duration.standardHours(1)): String =
+      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).signPolicy(policyText, contentLength, awsSecretKey)
 
     def signUrl(url: URL, minutesValid: Int=60): URL = s3.signUrl(bucket, url, minutesValid)
 
@@ -382,7 +397,7 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
     *
     * To list the last modified date with seconds in bash with: <code>ls -lc --time-style=full-iso</code>
     * To list the creation date with seconds in bash with: <code>ls -l --time-style=full-iso</code> */
-  def uploadFile(bucketName: String, key: String, file: File): PutObjectResult = {
+  def uploadFile(bucketName: String, key: String, file: File, showProgress: Boolean=false): PutObjectResult = {
     val metadata: ObjectMetadata = new ObjectMetadata
     metadata.setLastModified(new Date(latestFileTime(file)))
     metadata.setContentEncoding("utf-8")
@@ -391,14 +406,16 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
     try {
       val putObjectRequest: PutObjectRequest = new PutObjectRequest(bucketName, sanitizedKey, file)
       putObjectRequest.setMetadata(metadata)
-      putObjectRequest.setGeneralProgressListener(new event.ProgressListener {
-        def progressChanged(progressEvent: event.ProgressEvent): Unit = {
-          if (progressEvent.getEventType eq ProgressEventType.TRANSFER_COMPLETED_EVENT)
-            println(" " + progressEvent.getBytesTransferred + " bytes; ")
-          else
-            println(".")
-        }
-      })
+      if (showProgress) {
+        putObjectRequest.setGeneralProgressListener(new event.ProgressListener {
+          def progressChanged(progressEvent: event.ProgressEvent): Unit = {
+            if (progressEvent.getEventType eq ProgressEventType.TRANSFER_COMPLETED_EVENT)
+              println(" " + progressEvent.getBytesTransferred + " bytes; ")
+            else
+              println(".")
+          }
+        })
+      }
       val result: PutObjectResult = s3Client.putObject(putObjectRequest)
       val m2: ObjectMetadata = s3Client.getObjectMetadata(bucketName, sanitizedKey)
       val time: FileTime = FileTime.fromMillis(m2.getLastModified.getTime)

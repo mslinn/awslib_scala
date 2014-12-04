@@ -11,8 +11,8 @@ import com.amazonaws.services.s3.model._
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
-object IAM {
-  def apply(implicit awsCredentials: AWSCredentials, iamClient: AmazonIdentityManagementClient=new AmazonIdentityManagementClient): IAM =
+object IAM extends IAMImplicits {
+  def apply(implicit awsCredentials: AWSCredentials, iamClient: AmazonIdentityManagementClient = new AmazonIdentityManagementClient): IAM =
     new IAM()(awsCredentials, iamClient)
 
   def allowAllStatement(bucket: Bucket, principals: Seq[Principal], idString: String): Statement =
@@ -27,8 +27,10 @@ object IAM {
       .withActions(actions: _*)
       .withPrincipals(principals: _*)
       .withResources(resources: _*)
+}
 
-  implicit class RichBucketIAM(bucket: Bucket) {
+trait IAMImplicits {
+  implicit class RichBucketIAM(val bucket: Bucket) {
     def allowAllStatement(principals: Seq[Principal], idString: String): Statement =
       IAM.allowAllStatement(bucket, principals, idString)
 
@@ -36,17 +38,26 @@ object IAM {
       IAM.allowSomeStatement(bucket, principals, actions, idString)
   }
 
-  implicit class RichIAMUser(iamUser: IAMUser)(implicit iamClient: AmazonIdentityManagementClient) {
+  implicit class RichIAMUser(val iamUser: IAMUser)(implicit iam: IAM) {
     def createCredentials: AWSCredentials = {
       val createAccessKeyRequest = new CreateAccessKeyRequest().withUserName(iamUser.getUserId)
-      val accessKeyResult = iamClient.createAccessKey(createAccessKeyRequest)
+      val accessKeyResult = iam.iamClient.createAccessKey(createAccessKeyRequest)
       new BasicAWSCredentials(accessKeyResult.getAccessKey.getAccessKeyId, accessKeyResult.getAccessKey.getSecretAccessKey)
     }
+
+    def deleteAccessKeys(): Unit = iam.deleteAccessKeys(iamUser.getUserId)
+
+    def deleteGroups(): Unit = iam.deleteGroups(iamUser.getUserId)
+
+    def deleteLoginProfile(): Unit = iam.deleteLoginProfile(iamUser.getUserId)
+
+    def deleteUser(): Unit = iam.deleteIAMUser(iamUser.getUserId)
   }
 }
 
 class IAM()(implicit val awsCredentials: AWSCredentials, val iamClient: AmazonIdentityManagementClient=new AmazonIdentityManagementClient) {
   import com.micronautics.aws.IAM._
+  implicit val implicitIAM = this
 
   /** (Re)creates an AWS IAM user with the given `userId`
     * @param maybeCredentials might contain new AWS IAM credentials */
@@ -70,6 +81,14 @@ class IAM()(implicit val awsCredentials: AWSCredentials, val iamClient: AmazonId
 
       case e: Exception =>
         Failure(new Exception(e.getMessage))
+    }
+  }
+
+  def deleteAccessKeys(userId: String): Unit = {
+    val listAccessKeysRequest = new ListAccessKeysRequest().withUserName(userId)
+    iamClient.listAccessKeys(listAccessKeysRequest).getAccessKeyMetadata.asScala.foreach { accessKey =>
+      val deleteAccessKeyRequest = new DeleteAccessKeyRequest().withUserName(userId).withAccessKeyId(accessKey.getAccessKeyId)
+      iamClient.deleteAccessKey(deleteAccessKeyRequest)
     }
   }
 
@@ -97,14 +116,6 @@ class IAM()(implicit val awsCredentials: AWSCredentials, val iamClient: AmazonId
   } catch {
     case e: NoSuchEntityException => // no problem if this happens
       Logger.debug(e.getMessage)
-  }
-
-  def deleteAccessKeys(userId: String): Unit = {
-    val listAccessKeysRequest = new ListAccessKeysRequest().withUserName(userId)
-    iamClient.listAccessKeys(listAccessKeysRequest).getAccessKeyMetadata.asScala.foreach { accessKey =>
-      val deleteAccessKeyRequest = new DeleteAccessKeyRequest().withUserName(userId).withAccessKeyId(accessKey.getAccessKeyId)
-      iamClient.deleteAccessKey(deleteAccessKeyRequest)
-    }
   }
 
   def deleteUser(userId: String): Boolean = try {
