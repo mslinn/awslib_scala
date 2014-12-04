@@ -24,7 +24,7 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "org.codehaus.jackson"          %  "jackson-mapper-asl"  % "1.9.13",
-  "com.amazonaws"                 %  "aws-java-sdk"        % "1.9.8",
+  "com.amazonaws"                 %  "aws-java-sdk"        % "1.9.9",
   "com.typesafe.play"             %% "play-json"           % "2.2.6" withSources(),
   "commons-io"                    %  "commons-io"          % "2.4"   withSources(),
   "commons-lang"                  %  "commons-lang"        % "2.6"   withSources(),
