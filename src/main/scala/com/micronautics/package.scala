@@ -98,6 +98,8 @@ package object aws {
 
     def deletePrefix(prefix: String): Unit = s3.deletePrefix(bucket.getName, prefix)
 
+    def disableWebsite(): Unit = s3.disableWebsite(bucket.getName)
+
     def downloadAsStream(key: String): InputStream = s3.downloadFile(bucket.getName, key)
 
     def downloadAsString(key: String): String = io.Source.fromInputStream(downloadAsStream(key)).mkString

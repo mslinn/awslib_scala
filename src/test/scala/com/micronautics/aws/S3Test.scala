@@ -72,8 +72,7 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
   "Buckets" must {
     "be queryable" in {
       // These asserts require the system property: -Dcom.amazonaws.sdk.disableCertChecking=true
-      assert(s3.isWebsiteEnabled("www.mslinn.com"))
-      assert(!s3.isWebsiteEnabled(bucketName))
+      assert(s3.isWebsiteEnabled(bucketName))
       assert(s3.bucketExists(bucketName))
       assert(!s3.bucketExists("aosdifaosidfyoasidfyoasidfyuoasidfyosiadfyoi"))
     }
@@ -88,6 +87,7 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
     "Manage policies" in {
       assert(bucket.policyAsJson == s"""{"Version":"2008-10-17","Statement":[{"Sid":"AddPerm","Effect":"Allow","Principal":{"AWS":"*"},"Action":"s3:GetObject","Resource":"arn:aws:s3:::$bucketName/*"}]}""")
 
+      /** No principals for the publisher or any instructors are referenced */
       val cadenzaPolicy = s"""|{
       |	"Version": "2012-10-17",
       |	"Statement": [
@@ -96,10 +96,8 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
       |			"Effect": "Allow",
       |			"Principal": {
       |				"AWS": [
-      |					"arn:aws:iam::031372724784:root"
-      |					"arn:aws:iam::031372724784:user/root",
-      |					"arn:aws:iam::031372724784:user/superuser",
-      |					"arn:aws:iam::031372724784:user/$publisher1UserId",
+      |					"arn:aws:iam::031372724784:root",
+      |					"arn:aws:iam::031372724784:user/root"
       |				]
       |			},
       |			"Action": "s3:*",
@@ -110,11 +108,9 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
       |			"Effect": "Allow",
       |			"Principal": {
       |				"AWS": [
-      |					"arn:aws:iam::031372724784:root"
+      |					"arn:aws:iam::031372724784:root",
       |					"arn:aws:iam::031372724784:user/root",
-      |					"arn:aws:iam::031372724784:user/superuser",
-      |					"arn:aws:iam::031372724784:user/$instructor1UserId",
-      |					"arn:aws:iam::031372724784:user/$instructor2UserId",
+      |					"arn:aws:iam::031372724784:user/superuser"
       |				]
       |			},
       |			"Action": "s3:ListBucket",
@@ -154,9 +150,9 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
       bucket.deleteObject("you/know/doodle.txt")
       assert(bucket.allObjectData("").size==0)
 
-      assert(!bucket.isWebsiteEnabled)
-      bucket.enableWebsite()
       assert(bucket.isWebsiteEnabled)
+      bucket.disableWebsite()
+      assert(!bucket.isWebsiteEnabled)
       bucket.enableWebsite("error.html")
       assert(bucket.isWebsiteEnabled)
 

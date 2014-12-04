@@ -135,6 +135,11 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
   def deleteObject(bucketName: String, key: String): Unit =
     s3Client.deleteObject(bucketName, sanitizedPrefix(key))
 
+  def disableWebsite(bucketName: String): Unit = {
+    s3Client.deleteBucketWebsiteConfiguration(bucketName)
+    ()
+  }
+
   /** Download an object - if the key has any leading slashes, they are removed.
     * When you download an object, you get all of the object's metadata and a
     * stream from which to read the contents. It's important to read the contents of the stream as quickly as
@@ -280,9 +285,8 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
 
   /** This method is idempotent
     * Side effect: sets policy for AWS S3 upload bucket */
-  // TODO ensure only one user can execute this at any given instant
   def setBucketPolicy(bucket: Bucket, policyJson: String): Bucket = {
-    Logger.debug(s"New policy for ${bucket.getName} bucket: " + policyJson)
+    //Logger.debug(s"New policy for ${bucket.getName} bucket: " + policyJson)
     try {
       s3Client.setBucketPolicy(bucket.getName, policyJson)
     } catch {
