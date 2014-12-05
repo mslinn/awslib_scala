@@ -32,7 +32,7 @@ object IAM {
 class IAM()(implicit val awsCredentials: AWSCredentials, val iamClient: AmazonIdentityManagementClient=new AmazonIdentityManagementClient) {
   implicit val implicitIAM = this
 
-  /** (Re)creates an AWS IAM user with the given `userId`
+  /** (Re)creates an AWS IAM user with the given `userId`. Only PrivilegedUsers can have an associated IAM user.
     * @param maybeCredentials might contain new AWS IAM credentials */
   def createIAMUser(userId: String, maybeCredentials: Option[AWSCredentials]=None): Try[(IAMUser, AWSCredentials)] = {
     try {
@@ -115,4 +115,14 @@ class IAM()(implicit val awsCredentials: AWSCredentials, val iamClient: AmazonId
       Logger.error(e.getMessage)
       false
   }
+
+  def findUser(userId: String): Option[IAMUser] = try {
+    Some(iamClient.getUser(new GetUserRequest().withUserName(userId)).getUser)
+  } catch {
+    case e: Exception =>
+      Logger.warn(e.getMessage)
+      None
+  }
+
+  def maybePrincipal(userId: String): Option[Principal] = findUser(userId).map { aimUser => new Principal(aimUser.getArn) }
 }
