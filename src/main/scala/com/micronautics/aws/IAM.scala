@@ -40,7 +40,7 @@ class IAM()(implicit val awsCredentials: AWSCredentials, val iamClient: AmazonId
       val credentials = maybeCredentials.getOrElse(oldIamUser.createCredentials)
       Success((oldIamUser, credentials))
     } catch {
-      case e: NoSuchEntityException =>
+      case e: NoSuchEntityException => // this is normal, if the IAM user does not exist create it
         try {
           val createUserRequest = new CreateUserRequest().withUserName(userId)
           val iamUserNew: IAMUser = iamClient.createUser(createUserRequest).getUser

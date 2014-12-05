@@ -173,7 +173,7 @@ package object aws {
 
   implicit class RichIAMUser(val iamUser: IAMUser)(implicit iam: IAM) {
     def createCredentials: AWSCredentials = {
-      val createAccessKeyRequest = new CreateAccessKeyRequest().withUserName(iamUser.getUserId)
+      val createAccessKeyRequest = new CreateAccessKeyRequest().withUserName(iamUser.getUserName)
       val accessKeyResult = iam.iamClient.createAccessKey(createAccessKeyRequest)
       new BasicAWSCredentials(accessKeyResult.getAccessKey.getAccessKeyId, accessKeyResult.getAccessKey.getSecretAccessKey)
     }
