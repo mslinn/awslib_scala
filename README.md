@@ -12,7 +12,7 @@ The container classes are defined using composition instead of inheritance.
 
 This library uses implicit values to simplify usage.
 Some AWS Java classes have been enhanced using implicit classes so they appear to have extra capability.
-Enhanced AWS classes include S3's `Bucket` and IAM's `User`.
+Enhanced AWS classes include CloudFront's `DistributionSummary`, S3's `Bucket` and IAM's `User`.
 Most methods employ typed parameters so accidental mixing up of arguments cannot happen.
 Programmers using this library are encouraged to use named parameters for the few remaining untyped parameters.
 

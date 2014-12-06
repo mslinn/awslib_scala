@@ -17,13 +17,17 @@ import com.amazonaws.services.cloudfront.model._
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
+import AwsCredentials.Logger
 
 object CloudFront {
+  val oneMinute = 1L * 60L * 1000L
+
   def apply(implicit awsCredentials: AWSCredentials, cfClient: AmazonCloudFrontClient=new AmazonCloudFrontClient): CloudFront =
     new CloudFront()(awsCredentials, cfClient)
 }
 
 class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: AmazonCloudFrontClient=new AmazonCloudFrontClient) extends CFImplicits {
+  import CloudFront._
   import com.amazonaws.services.s3.model.Bucket
 
   def configs: List[DistributionSummary] = cfClient.listDistributions(new ListDistributionsRequest).getDistributionList.getItems.asScala.toList
@@ -75,6 +79,71 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
       1
     }
     counts.sum
+  }
+
+  /** Enable/disable the most recently created distribution for the given bucketName */
+  def enableDistribution(bucket: Bucket, newStatus: Boolean=true)(implicit s3: S3): Unit = {
+    val distributions: Seq[DistributionSummary] = distributionsFor(bucket)
+    distributions.lastOption.foreach { implicit distributionSummary =>
+        val configResult: GetDistributionConfigResult = distributionSummary.configResult
+        configResult.getDistributionConfig.setEnabled(newStatus)
+        val distributionETag = configResult.getETag // is the in the proper sequence?
+        val updateRequest = new UpdateDistributionRequest(configResult.getDistributionConfig, distributionSummary.getId, distributionETag)
+        cfClient.updateDistribution(updateRequest)
+    }
+  }
+
+  /** Remove the most recently created distribution for the given bucketName.
+    * Can take 15 minutes to an hour to return. */
+  def removeDistribution(bucket: Bucket)(implicit s3: S3): Boolean = {
+    distributionsFor(bucket).lastOption.exists { implicit distributionSummary =>
+      val distributionId = distributionSummary.getId
+      val getDistributionConfigRequest = new GetDistributionConfigRequest().withId(distributionSummary.getId)
+      val distributionConfigResult = cfClient.getDistributionConfig(getDistributionConfigRequest)
+      distributionSummary.getOrigins.getItems.asScala.toList.map { origin =>
+        removeOrigin(distributionSummary, distributionId, distributionConfigResult, origin)
+      }.forall { case tryBoolean => tryBoolean.isSuccess }
+    }
+  }
+
+  def removeOrigin(distributionSummary: DistributionSummary, distributionId: String, distributionConfigResult: GetDistributionConfigResult, origin: Origin): Try[Boolean] = {
+    val domainName: String = origin.getDomainName
+    val distributionETag: String = distributionConfigResult.getETag
+    val config: DistributionConfig = distributionConfigResult.getDistributionConfig
+    // The explanation of how to find the eTag is wrong in the docs: http://docs.aws.amazon.com/AmazonCloudFront/latest/APIReference/DeleteDistribution.html
+    // I think the correct explanation is that the eTag from the most recent GET or PUT operation is what is actually required
+    val eTag = if (distributionConfigResult.getDistributionConfig.getEnabled) {
+      Logger.debug(s"Disabling distribution of $domainName with id $$distributionId and ETag $distributionETag")
+      config.setEnabled(false)
+      Logger.debug(s"Distribution config after disabling=${jsonPrettyPrint(config)}")
+      val updateRequest = new UpdateDistributionRequest(config, distributionId, distributionETag)
+      val updateResult: UpdateDistributionResult = cfClient.updateDistribution(updateRequest)
+      val updateETag = updateResult.getETag
+      Logger.debug(s"Update result ETag = $updateETag; enabled=${distributionSummary.enabled}; status=${distributionSummary.status}")
+      var i = 1
+      while (distributionSummary.status == "InProgress") {
+        Thread.sleep(oneMinute) // TODO don't tie up a thread like this
+        Logger.debug(s"  $i: Distribution enabled=${distributionSummary.enabled}; status=InProgress")
+        i = i + 1
+      }
+      updateETag
+    } else {
+      Logger.debug(s"Distribution of $domainName with id $distributionId and ETag $distributionETag was already disabled.")
+      distributionETag
+    }
+    // fails with: Distribution of scalacoursesdemo.s3.amazonaws.com with id E1ALVO6LY3X3XE and ETag E21ZQTZDDOETEA:
+    // The distribution you are trying to delete has not been disabled.
+    try {
+      Logger.debug(s"Deleting distribution of $domainName with id $distributionId and ETag $eTag.")
+      distributionSummary.delete(eTag)
+      Success(true)
+    } catch {
+      case nsde: NoSuchDistributionException =>
+        Failure(new Exception(s"Distribution of $domainName with id $distributionId and ETag $distributionETag does not exist", nsde))
+
+      case e: Exception =>
+        Failure(new Exception(s"Distribution of $domainName with id $distributionId and ETag $distributionETag: ${e.getMessage}", e))
+    }
   }
 
   def tryConfig(id: String): Try[DistributionConfig] = tryById(id).map(_.getDistributionConfig)
@@ -144,6 +213,30 @@ trait CFImplicits {
         case nsoe: NoSuchOriginException =>
           throw new Exception(s"Origin with domain name '${origin.getDomainName}' and id '${origin.getId}' does not exist", nsoe)
       }
+    }
+  }
+
+  implicit class RichDistributionSummary(distributionSummary: DistributionSummary)(implicit cfClient: AmazonCloudFrontClient) {
+    def configResult: GetDistributionConfigResult = {
+      val getDistributionConfigRequest = new GetDistributionConfigRequest().withId(distributionSummary.getId)
+      cfClient.getDistributionConfig(getDistributionConfigRequest)
+    }
+
+    def enabled: Boolean = {
+      Logger.debug("Getting enabled from distributionSummary")
+      distributionSummary.getEnabled
+    }
+
+    def delete(eTag: String): Unit = {
+      Logger.debug(s"Deleting distribution with id ${distributionSummary.getId}")
+      val deleteDistributionRequest = new DeleteDistributionRequest().withId(distributionSummary.getId).withIfMatch(eTag)
+      Logger.debug(s"deleteDistributionRequest=${jsonPrettyPrint(deleteDistributionRequest)}")
+      cfClient.deleteDistribution(deleteDistributionRequest)
+    }
+
+    def status: String = {
+      Logger.debug(s"Getting status from distributionSummary with id ${distributionSummary.getId}")
+      distributionSummary.getStatus
     }
   }
 }
