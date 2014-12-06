@@ -1,16 +1,13 @@
 /* Copyright 2012-2014 Micronautics Research Corporation.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License. */
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License. */
 
 package com.micronautics.aws
 
@@ -30,6 +27,7 @@ import com.micronautics.aws.Util._
 import org.joda.time.{Duration, DateTime}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
+import com.amazonaws.services.identitymanagement.model.{User => IAMUser}
 
 /**
  * When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.
@@ -47,11 +45,6 @@ object S3 {
   def apply(implicit awsCredentials: AWSCredentials, s3Client: AmazonS3Client = new AmazonS3Client): S3 =
     new S3()(awsCredentials, s3Client)
 
-  /** @param key any leading slashes are removed so the key can be used as a relative path */
-  def relativize(key: String): String = sanitizePrefix(key)
-
-  def sanitizePrefix(key: String): String = key.substring(key.indexWhere(_ != '/')).replace("//", "/")
-
   protected def bucketPolicy(bucketName: String): String = s"""{
     |\t"Version": "2008-10-17",
     |\t"Statement": [
@@ -67,6 +60,16 @@ object S3 {
     |\t]
     |}
     |""".stripMargin
+
+  /** @param key any leading slashes are removed so the key can be used as a relative path */
+  def relativize(key: String): String = sanitizePrefix(key)
+
+  def safeNamesFor(bucket: Bucket): (String, String) = {
+    val lcBucketName = bucket.getName.toLowerCase
+    (lcBucketName, s"S3-$lcBucketName")
+  }
+
+  def sanitizePrefix(key: String): String = key.substring(key.indexWhere(_ != '/')).replace("//", "/")
 }
 
 class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Client=new AmazonS3Client) {
@@ -96,6 +99,12 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
   }
 
   def bucketExists(bucketName: String): Boolean = s3Client.listBuckets.asScala.exists(_.getName==bucketName)
+
+  def maybeBucketFor(bucketName: String): Option[Bucket] = try {
+    s3Client.listBuckets().asScala.find(_.getName == bucketName)
+  } catch {
+    case e: Exception => None
+  }
 
   def bucketLocation(bucketName: String): String = s3Client.getBucketLocation(bucketName)
 
@@ -383,5 +392,116 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
     setContentType(key, metadata)
     s3Client.putObject(new PutObjectRequest (bucketName, sanitizedPrefix(key), stream, metadata))
     ()
+  }
+}
+
+trait S3Implicits {
+  implicit class RichBucket(val bucket: Bucket)(implicit val s3: S3) {
+    def allObjectData(prefix: String): List[S3ObjectSummary] = s3.allObjectData(bucket.getName, prefix)
+
+    def exists: Boolean = s3.bucketExists(bucket.getName)
+
+    def location: String = s3.bucketLocation(bucket.getName)
+
+    def create(): Bucket = s3.createBucket(bucket.getName)
+
+    @throws(classOf[AmazonClientException])
+    def delete(): Unit = s3.deleteBucket(bucket.getName)
+
+    def deleteObject(key: String): Unit = s3.deleteObject(bucket.getName, key)
+
+    def deletePrefix(prefix: String): Unit = s3.deletePrefix(bucket.getName, prefix)
+
+    def disableWebsite(): Unit = s3.disableWebsite(bucket.getName)
+
+    def downloadAsStream(key: String): InputStream = s3.downloadFile(bucket.getName, key)
+
+    def downloadAsString(key: String): String = io.Source.fromInputStream(downloadAsStream(key)).mkString
+
+    @throws(classOf[AmazonClientException])
+    def empty(): Unit = s3.emptyBucket(bucket.getName)
+
+    def enableCors(): Unit = s3.enableCors(bucket)
+
+    def enableWebsite(): Unit = s3.enableWebsite(bucket.getName)
+
+    def enableWebsite(errorPage: String): Unit = s3.enableWebsite(bucket.getName, errorPage)
+
+    /** Invalidate asset in all bucket distributions where it is present.
+        * @param assetPath The path of the objects to invalidate, relative to the distribution and must begin with a slash (/).
+        *                  If the path is a directory, all assets within in are invalidated
+        * @return number of asset invalidations */
+    def invalidate(assetPath: String)(implicit cf: CloudFront): Int = cf.invalidate(bucket, List(assetPath))
+
+    /** Invalidate asset in all bucket distributions where it is present.
+        * @param assetPaths The path of the objects to invalidate, relative to the distribution and must begin with a slash (/).
+        *                  If the path is a directory, all assets within in are invalidated
+        * @return number of asset invalidations */
+    def invalidate(assetPaths: List[String])(implicit cf: CloudFront): Int = cf.invalidate(bucket, assetPaths)
+
+    def isWebsiteEnabled: Boolean = s3.isWebsiteEnabled(bucket.getName)
+
+    def listObjectsByPrefix(prefix: String): List[String] = s3.listObjectsByPrefix(bucket.getName, prefix)
+
+    def listObjectsByPrefix(prefix: String, showSize: Boolean): List[String] = s3.listObjectsByPrefix(bucket.getName, prefix, showSize)
+
+    def move(oldKey: String, newKey: String): Unit = s3.move(bucket.getName, oldKey, newKey)
+
+    def move(oldKey: String, newBucketName: String, newKey: String): Unit = s3.move(bucket.getName, oldKey, newBucketName, newKey)
+
+    def name: String = bucket.getName
+
+    def policy_=(policyJson: String) = s3.setBucketPolicy(bucket, policyJson)
+
+    def policy_=(statements: List[Statement]) = s3.setBucketPolicy(bucket, statements)
+
+    def policy: BucketPolicy = s3.s3Client.getBucketPolicy(bucket.getName)
+
+    def policyAsJson: String = policy.getPolicyText
+
+    def policyEncoder(policyText: String, contentLength: Long, expiryDuration: Duration=Duration.standardHours(1)): String =
+      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyEncoder(policyText, contentLength)
+
+    def createPolicyText(key: String, contentLength: Long, acl: String="private", expiryDuration: Duration=Duration.standardHours(1)): String =
+      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyText(key, contentLength, acl)
+
+    def oneObjectData(prefix: String): Option[S3ObjectSummary] = s3.oneObjectData(bucket.getName, prefix)
+
+    def resourceUrl(key: String): String = s3.resourceUrl(bucket.getName, key)
+
+    def safeNames: (String, String) = S3.safeNamesFor(bucket)
+
+    def signAndEncodePolicy(key: String,
+                            contentLength: Long,
+                            acl: String=AWSUpload.privateAcl,
+                            awsSecretKey: String=s3.awsCredentials.getAWSSecretKey,
+                            expiryDuration: Duration=Duration.standardHours(1)): SignedAndEncoded =
+      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).signAndEncodePolicy(key, contentLength, acl, awsSecretKey)
+
+    def signPolicy(policyText: String, contentLength: Long, awsSecretKey: String, expiryDuration: Duration=Duration.standardHours(1)): String =
+      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).signPolicy(policyText, contentLength, awsSecretKey)
+
+    def signUrl(url: URL, minutesValid: Int=60): URL = s3.signUrl(bucket, url, minutesValid)
+
+    def signUrlStr(key: String, minutesValid: Int=0): URL = s3.signUrlStr(bucket, key, minutesValid)
+
+    def uploadFile(key: String, file: File): PutObjectResult = s3.uploadFile(bucket.getName, key, file)
+
+    def uploadFileOrDirectory(dest: String, file: File): Unit = s3.uploadFileOrDirectory(bucket.getName, dest, file)
+
+    def uploadString(key: String, contents: String): PutObjectResult =  s3.uploadString(bucket.getName, key, contents)
+
+    def uploadStream(key: String, stream: InputStream, length: Int): Unit = s3.uploadStream(bucket.getName, key, stream, length)
+  }
+
+  implicit class RichBucketIAM(val bucket: Bucket) {
+    import com.amazonaws.auth.policy.Principal
+    import com.amazonaws.auth.policy.actions.S3Actions
+
+    def allowAllStatement(principals: Seq[Principal], idString: String): Statement =
+      IAM.allowAllStatement(bucket, principals, idString)
+
+    def allowSomeStatement(principals: Seq[Principal], actions: Seq[S3Actions], idString: String): Statement =
+      IAM.allowSomeStatement(bucket, principals, actions, idString)
   }
 }

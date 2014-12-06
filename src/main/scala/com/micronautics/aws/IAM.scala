@@ -1,3 +1,14 @@
+/* Copyright 2012-2014 Micronautics Research Corporation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License. */
+
 package com.micronautics.aws
 
 import AwsCredentials._
@@ -125,4 +136,24 @@ class IAM()(implicit val awsCredentials: AWSCredentials, val iamClient: AmazonId
   }
 
   def maybePrincipal(userId: String): Option[Principal] = findUser(userId).map { aimUser => new Principal(aimUser.getArn) }
+}
+
+trait IAMImplicits {
+  implicit class RichIAMUser(val iamUser: IAMUser)(implicit iam: IAM) {
+    def createCredentials: AWSCredentials = {
+      import com.amazonaws.auth.BasicAWSCredentials
+      import com.amazonaws.services.identitymanagement.model.CreateAccessKeyRequest
+      val createAccessKeyRequest = new CreateAccessKeyRequest().withUserName(iamUser.getUserName)
+      val accessKeyResult = iam.iamClient.createAccessKey(createAccessKeyRequest)
+      new BasicAWSCredentials(accessKeyResult.getAccessKey.getAccessKeyId, accessKeyResult.getAccessKey.getSecretAccessKey)
+    }
+
+    def deleteAccessKeys(): Unit = iam.deleteAccessKeys(iamUser.getUserId)
+
+    def deleteGroups(): Unit = iam.deleteGroups(iamUser.getUserId)
+
+    def deleteLoginProfile(): Unit = iam.deleteLoginProfile(iamUser.getUserId)
+
+    def deleteUser(): Unit = iam.deleteIAMUser(iamUser.getUserId)
+  }
 }

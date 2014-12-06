@@ -1,38 +1,42 @@
-# AWS Library for Scala #
+# Idiomatic Scala AWS Library #
 
-This project is sponsored by [Micronautics Research Corporation](http://www.micronauticsresearch.com/)
+This project is sponsored by [Micronautics Research Corporation](http://www.micronauticsresearch.com/),
+the company behind [Cadenza](http://www.micronauticsresearch.com/products/cadenza/index.html) and [ScalaCourses.com](http://www.scalacourses.com).
 
-## Building ##
+## Idomatic Scala ##
+This library provides a functional interface to the [AWS Java library](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html).
+The exposed API is much simpler to use than Amazon's Java API, however you can mix calls to this library with calls to the underlying AWS Java library.
 
- 1. Java 7 or later is required.
- 2. Type the following into a bash console:
-````
-git clone https://github.com/mslinn/AwsS3.git
-cd AwsS3
-sbt publish-local # only for testing
-````
-## Publishing ##
+Container classes such as `CloudFront`, `IAM`, `S3`, and `SNS` have been defined that encapsulate top-level functionality.
+The container classes are defined using composition instead of inheritance.
 
-    bin/publish
+This library uses implicit values to simplify usage.
+Some AWS Java classes have been enhanced using implicit classes so they appear to have extra capability.
+Enhanced AWS classes include S3's `Bucket` and IAM's `User`.
+Most methods employ typed parameters so accidental mixing up of arguments cannot happen.
+Programmers using this library are encouraged to use named parameters for the few remaining untyped parameters.
+
+## Building and Running ##
+
+ 1. Java 8 is required.
+ 2. You need an AWS account.
+[Separate AWS accounts](http://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/consolidated-billing.html) for development and production are recommended.
+ 3. Your AWS keys must either be defined in environment variables called `AWS_ACCESS_KEY` and `AWS_SECRET_KEY`
+or you must have configured [AWS CLI](http://aws.amazon.com/cli/) with your AWS authentication credentials.
+If environment variables and the AWS CLI configuration file are all available, the environment variables have precedence.
+ 4. Type the following into a bash console:
+
+
+    git clone https://github.com/mslinn/AwsS3.git
+    cd AwsS3
+    sbt test
 
 ## Installation ##
 Add this to your project's `build.sbt`:
 
     resolvers += "Micronautics releases" at "http://www.mavenrepo.s3.amazonaws.com/releases"
-    
+
     libraryDependencies += "com.micronautics" % "awss3" % "0.2.0" withSources()
 
-## Notes ##
-When web site access is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
-and the keyed data.
-The keys must therefore consist of relative paths (relative directory name followed by a file name),
-and must not start with a leading slash.
-This program stores each file name (referred to by AWS as a key) without a leading slash.
-For example, assuming that the default file name is `index.html`,
-`http://domain.com` and `http://domain.com/` are translated to `http://domain.com/index.html`.
-
-As another example, the key for a file in a directory called `{WEBROOT}/blah/ick/yuck.html` is defined as `blah/ick/yuck.html`.
-
-For each directory, AWS creates a file of the same name, with the suffix `_$folder$`.
-If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
-These hidden files are ignored by this program; users never see them because they are for AWS S3 internal use only.
+## Sample Code ##
+See the unit tests for examples of how to use this library.
