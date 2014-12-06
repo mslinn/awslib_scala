@@ -25,11 +25,11 @@ Programmers using this library are encouraged to use named parameters for the fe
 or you must have configured [AWS CLI](http://aws.amazon.com/cli/) with your AWS authentication credentials.
 If environment variables and the AWS CLI configuration file are all available, the environment variables have precedence.
  4. Type the following into a bash console:
-
-
-    git clone https://github.com/mslinn/AwsS3.git
-    cd AwsS3
-    sbt test
+````
+git clone https://github.com/mslinn/AwsS3.git
+cd AwsS3
+sbt test
+````
 
 ## Installation ##
 Add this to your project's `build.sbt`:
