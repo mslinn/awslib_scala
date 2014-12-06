@@ -30,8 +30,6 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
   import CloudFront._
   import com.amazonaws.services.s3.model.Bucket
 
-  def configs: List[DistributionSummary] = cfClient.listDistributions(new ListDistributionsRequest).getDistributionList.getItems.asScala.toList
-
   def distributions: List[DistributionSummary] = cfClient.listDistributions(new ListDistributionsRequest).getDistributionList.getItems.asScala.toList
 
   /** @return List of CloudFront distributions for the specified bucket */
@@ -51,7 +49,7 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
     item         <- distribution.getOrigins.getItems.asScala // value: s"S3-$lcBucketName"
   } yield item.getId.substring(3)
 
-  def bucketsWithDistributions()(implicit s3: S3): List[Bucket] =
+  def bucketsWithDistributions(implicit s3: S3): List[Bucket] =
     for {
       bucketName <- bucketNamesWithDistributions
       bucket     <- s3.maybeBucketFor(bucketName).toList
@@ -81,10 +79,22 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
     counts.sum
   }
 
+  /** Enable/disable all distributions for the given bucketName */
+  def enableAllDistributions(bucket: Bucket, newStatus: Boolean=true)(implicit s3: S3): List[UpdateDistributionResult] = {
+    val distributions: List[DistributionSummary] = distributionsFor(bucket)
+    distributions.map { implicit distributionSummary =>
+        val configResult: GetDistributionConfigResult = distributionSummary.configResult
+        configResult.getDistributionConfig.setEnabled(newStatus)
+        val distributionETag = configResult.getETag // is the in the proper sequence?
+        val updateRequest = new UpdateDistributionRequest(configResult.getDistributionConfig, distributionSummary.getId, distributionETag)
+        cfClient.updateDistribution(updateRequest)
+    }
+  }
+
   /** Enable/disable the most recently created distribution for the given bucketName */
-  def enableDistribution(bucket: Bucket, newStatus: Boolean=true)(implicit s3: S3): Unit = {
+  def enableLastDistribution(bucket: Bucket, newStatus: Boolean=true)(implicit s3: S3): Option[UpdateDistributionResult] = {
     val distributions: Seq[DistributionSummary] = distributionsFor(bucket)
-    distributions.lastOption.foreach { implicit distributionSummary =>
+    distributions.lastOption.map { implicit distributionSummary =>
         val configResult: GetDistributionConfigResult = distributionSummary.configResult
         configResult.getDistributionConfig.setEnabled(newStatus)
         val distributionETag = configResult.getETag // is the in the proper sequence?
@@ -95,35 +105,31 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
 
   /** Remove the most recently created distribution for the given bucketName.
     * Can take 15 minutes to an hour to return. */
-  def removeDistribution(bucket: Bucket)(implicit s3: S3): Boolean = {
-    distributionsFor(bucket).lastOption.exists { implicit distributionSummary =>
-      val distributionId = distributionSummary.getId
-      val getDistributionConfigRequest = new GetDistributionConfigRequest().withId(distributionSummary.getId)
-      val distributionConfigResult = cfClient.getDistributionConfig(getDistributionConfigRequest)
-      distributionSummary.getOrigins.getItems.asScala.toList.map { origin =>
-        removeOrigin(distributionSummary, distributionId, distributionConfigResult, origin)
-      }.forall { case tryBoolean => tryBoolean.isSuccess }
+  def removeDistribution(bucket: Bucket)(implicit s3: S3): Boolean =
+    distributionsFor(bucket).lastOption.exists { implicit distSummary =>
+      val distributionId = distSummary.getId
+      val distConfigResult = cfClient.getDistributionConfig(new GetDistributionConfigRequest().withId(distSummary.getId))
+      distSummary.originItems.map { removeOrigin(distSummary, distributionId, distConfigResult, _) }.forall { _.isSuccess }
     }
-  }
 
-  def removeOrigin(distributionSummary: DistributionSummary, distributionId: String, distributionConfigResult: GetDistributionConfigResult, origin: Origin): Try[Boolean] = {
+  def removeOrigin(distSummary: DistributionSummary, distributionId: String, distConfigResult: GetDistributionConfigResult, origin: Origin): Try[Boolean] = {
     val domainName: String = origin.getDomainName
-    val distributionETag: String = distributionConfigResult.getETag
-    val config: DistributionConfig = distributionConfigResult.getDistributionConfig
+    val distributionETag: String = distConfigResult.getETag
+    val config: DistributionConfig = distConfigResult.getDistributionConfig
     // The explanation of how to find the eTag is wrong in the docs: http://docs.aws.amazon.com/AmazonCloudFront/latest/APIReference/DeleteDistribution.html
     // I think the correct explanation is that the eTag from the most recent GET or PUT operation is what is actually required
-    val eTag = if (distributionConfigResult.getDistributionConfig.getEnabled) {
+    val eTag = if (distConfigResult.getDistributionConfig.getEnabled) {
       Logger.debug(s"Disabling distribution of $domainName with id $$distributionId and ETag $distributionETag")
       config.setEnabled(false)
       Logger.debug(s"Distribution config after disabling=${jsonPrettyPrint(config)}")
       val updateRequest = new UpdateDistributionRequest(config, distributionId, distributionETag)
       val updateResult: UpdateDistributionResult = cfClient.updateDistribution(updateRequest)
       val updateETag = updateResult.getETag
-      Logger.debug(s"Update result ETag = $updateETag; enabled=${distributionSummary.enabled}; status=${distributionSummary.status}")
+      Logger.debug(s"Update result ETag = $updateETag; enabled=${distSummary.enabled}; status=${distSummary.status}")
       var i = 1
-      while (distributionSummary.status == "InProgress") {
+      while (distSummary.status == "InProgress") {
         Thread.sleep(oneMinute) // TODO don't tie up a thread like this
-        Logger.debug(s"  $i: Distribution enabled=${distributionSummary.enabled}; status=InProgress")
+        Logger.debug(s"  $i: Distribution enabled=${distSummary.enabled}; status=InProgress")
         i = i + 1
       }
       updateETag
@@ -135,7 +141,7 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
     // The distribution you are trying to delete has not been disabled.
     try {
       Logger.debug(s"Deleting distribution of $domainName with id $distributionId and ETag $eTag.")
-      distributionSummary.delete(eTag)
+      distSummary.delete(eTag)
       Success(true)
     } catch {
       case nsde: NoSuchDistributionException =>
@@ -205,7 +211,7 @@ trait CFImplicits {
         .withOrigins(origins)
         .withPriceClass(priceClass)
       val cdr = new CreateDistributionRequest().withDistributionConfig(distributionConfig)
-      //Logger.debug(s"cdr=${jsonPrettyPrint(cdr)}")
+      Logger.debug(s"cdr=${jsonPrettyPrint(cdr)}")
       try {
         val result: CreateDistributionResult = cfClient.createDistribution(cdr)
         result.getDistribution
@@ -217,6 +223,8 @@ trait CFImplicits {
   }
 
   implicit class RichDistributionSummary(distributionSummary: DistributionSummary)(implicit cfClient: AmazonCloudFrontClient) {
+    def config: DistributionConfig = configResult.getDistributionConfig
+
     def configResult: GetDistributionConfigResult = {
       val getDistributionConfigRequest = new GetDistributionConfigRequest().withId(distributionSummary.getId)
       cfClient.getDistributionConfig(getDistributionConfigRequest)
@@ -233,6 +241,10 @@ trait CFImplicits {
       Logger.debug(s"deleteDistributionRequest=${jsonPrettyPrint(deleteDistributionRequest)}")
       cfClient.deleteDistribution(deleteDistributionRequest)
     }
+
+    def eTag: String = configResult.getETag
+
+    def originItems: List[Origin] = config.getOrigins.getItems.asScala.toList
 
     def status: String = {
       Logger.debug(s"Getting status from distributionSummary with id ${distributionSummary.getId}")

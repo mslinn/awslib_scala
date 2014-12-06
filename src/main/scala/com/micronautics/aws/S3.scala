@@ -11,23 +11,25 @@
 
 package com.micronautics.aws
 
-import AwsCredentials._
 import java.io.{File, InputStream}
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
 import java.util.Date
+
 import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.auth.policy.{Statement, Policy}
+import com.amazonaws.auth.policy.{Policy, Statement}
 import com.amazonaws.event.ProgressEventType
+import com.amazonaws.services.identitymanagement.model.{User => IAMUser}
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
 import com.amazonaws.{AmazonClientException, HttpMethod, event}
+import com.micronautics.aws.AwsCredentials._
 import com.micronautics.aws.Util._
-import org.joda.time.{Duration, DateTime}
+import org.joda.time.{DateTime, Duration}
+
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
-import com.amazonaws.services.identitymanagement.model.{User => IAMUser}
 
 /**
  * When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.
@@ -73,6 +75,7 @@ object S3 {
 }
 
 class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Client=new AmazonS3Client) {
+
   import com.micronautics.aws.S3._
 
   /** @param prefix Any leading slashes are removed if a prefix is specified
@@ -110,6 +113,10 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
 
   /** List the buckets in the account */
   def bucketNames: List[String] = s3Client.listBuckets.asScala.map(_.getName).toList
+
+  def bucketNamesWithDistributions(implicit cf: CloudFront): List[String] = cf.bucketNamesWithDistributions
+
+  def bucketsWithDistributions(implicit cf: CloudFront): List[Bucket] = cf.bucketsWithDistributions(this)
 
   /** Create a new S3 bucket.
     * If the bucket name starts with "www.", make it publicly viewable and enable it as a web site.
@@ -397,6 +404,8 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
 
 trait S3Implicits {
   implicit class RichBucket(val bucket: Bucket)(implicit val s3: S3) {
+    import com.amazonaws.services.cloudfront.model.{DistributionSummary, UpdateDistributionResult}
+
     def allObjectData(prefix: String): List[S3ObjectSummary] = s3.allObjectData(bucket.getName, prefix)
 
     def exists: Boolean = s3.bucketExists(bucket.getName)
@@ -414,6 +423,8 @@ trait S3Implicits {
 
     def disableWebsite(): Unit = s3.disableWebsite(bucket.getName)
 
+    def distributions(implicit cf: CloudFront): List[DistributionSummary] = cf.distributionsFor(bucket)
+
     def downloadAsStream(key: String): InputStream = s3.downloadFile(bucket.getName, key)
 
     def downloadAsString(key: String): String = io.Source.fromInputStream(downloadAsStream(key)).mkString
@@ -422,6 +433,12 @@ trait S3Implicits {
     def empty(): Unit = s3.emptyBucket(bucket.getName)
 
     def enableCors(): Unit = s3.enableCors(bucket)
+
+    def enableAllDistributions(newStatus: Boolean=true)(implicit cf: CloudFront): List[UpdateDistributionResult] =
+      cf.enableAllDistributions(bucket, newStatus)
+
+    def enableLastDistribution(newStatus: Boolean=true)(implicit cf: CloudFront): Option[UpdateDistributionResult] =
+      cf.enableLastDistribution(bucket, newStatus)
 
     def enableWebsite(): Unit = s3.enableWebsite(bucket.getName)
 
@@ -466,6 +483,8 @@ trait S3Implicits {
       new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyText(key, contentLength, acl)
 
     def oneObjectData(prefix: String): Option[S3ObjectSummary] = s3.oneObjectData(bucket.getName, prefix)
+
+    def removeDistribution(bucket: Bucket)(implicit cf: CloudFront): Boolean = cf.removeDistribution(bucket)
 
     def resourceUrl(key: String): String = s3.resourceUrl(bucket.getName, key)
 
