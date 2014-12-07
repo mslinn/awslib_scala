@@ -22,7 +22,7 @@ import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 object IAM {
-  def apply(implicit awsCredentials: AWSCredentials, s3: S3): IAM = new IAM()
+  def apply(implicit awsCredentials: AWSCredentials): IAM = new IAM()
 
   def allowAllStatement(bucket: Bucket, principals: Seq[Principal], idString: String): Statement =
     allowSomeStatement(bucket, principals, List(S3Actions.AllS3Actions), idString)
@@ -38,7 +38,7 @@ object IAM {
       .withResources(resources: _*)
 }
 
-class IAM()(implicit val awsCredentials: AWSCredentials, s3: S3) {
+class IAM()(implicit val awsCredentials: AWSCredentials) {
   implicit lazy val iam = this
   implicit lazy val iamClient: AmazonIdentityManagementClient = new AmazonIdentityManagementClient
 
