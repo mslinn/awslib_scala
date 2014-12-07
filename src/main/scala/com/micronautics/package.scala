@@ -22,7 +22,7 @@ package com.micronautics
  For each directory, AWS creates a file of the same name, with the suffix `_$folder$`.
  If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
  These hidden files are ignored by this program; users never see them because they are for AWS S3 internal use only. */
-package object aws extends CFImplicits with IAMImplicits with S3Implicits with SNSImplicits {
+package object aws extends CFImplicits with ETImplicits with IAMImplicits with S3Implicits with SNSImplicits {
   import com.amazonaws.auth.AWSCredentials
   import com.amazonaws.util.json.JSONObject
   import org.slf4j.LoggerFactory
