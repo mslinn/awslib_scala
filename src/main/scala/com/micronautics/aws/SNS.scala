@@ -18,12 +18,12 @@ import com.amazonaws.services.sns.model._
 import scala.collection.JavaConverters._
 
 object SNS {
-  def apply(implicit awsCredentials: AWSCredentials, cf: CloudFront, et: ElasticTranscoder, iam: IAM, s3: S3): SNS = new SNS()
+  def apply(implicit awsCredentials: AWSCredentials): SNS = new SNS()
 }
 
-class SNS()(implicit val awsCredentials: AWSCredentials, cf: CloudFront, et: ElasticTranscoder, iam: IAM, s3: S3) {
-  implicit val sns = this
-  implicit val snsClient: AmazonSNSClient = new AmazonSNSClient
+class SNS()(implicit val awsCredentials: AWSCredentials) {
+  implicit lazy val sns = this
+  implicit lazy val snsClient: AmazonSNSClient = new AmazonSNSClient
 
   /** Creates a topic if it does not exist. Topics should contain a string unique to the AWS account, such as the publishing server's domain name
    * @return Some(ARN of the Topic) or None if error */

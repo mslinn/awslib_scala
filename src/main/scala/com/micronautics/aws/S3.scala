@@ -43,7 +43,7 @@ import scala.collection.JavaConverters._
  * Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only).
  */
 object S3 {
-  def apply(implicit awsCredentials: AWSCredentials, cf: CloudFront, et: ElasticTranscoder, iam: IAM, sns: SNS): S3 = new S3()
+  def apply(implicit awsCredentials: AWSCredentials): S3 = new S3()
 
   protected def bucketPolicy(bucketName: String): String = s"""{
     |\t"Version": "2008-10-17",
@@ -79,11 +79,11 @@ object S3 {
   def sanitizePrefix(key: String): String = key.substring(key.indexWhere(_ != '/')).replace("//", "/")
 }
 
-class S3()(implicit val awsCredentials: AWSCredentials, cf: CloudFront, et: ElasticTranscoder, iam: IAM, sns: SNS) {
+class S3()(implicit val awsCredentials: AWSCredentials) {
   import com.micronautics.aws.S3._
 
-  implicit val s3 = this
-  implicit val s3Client: AmazonS3Client = new AmazonS3Client
+  implicit lazy val s3 = this
+  implicit lazy val s3Client: AmazonS3Client = new AmazonS3Client
 
   /** @param prefix Any leading slashes are removed if a prefix is specified
     * @return collection of S3ObjectSummary; keys are relativized if prefix is adjusted */
@@ -115,9 +115,9 @@ class S3()(implicit val awsCredentials: AWSCredentials, cf: CloudFront, et: Elas
   /** List the buckets in the account */
   def bucketNames: List[String] = s3Client.listBuckets.asScala.map(_.getName).toList
 
-  def bucketNamesWithDistributions: List[String] = cf.bucketNamesWithDistributions
+  def bucketNamesWithDistributions(implicit cf: CloudFront): List[String] = cf.bucketNamesWithDistributions
 
-  def bucketsWithDistributions: List[Bucket] = cf.bucketsWithDistributions
+  def bucketsWithDistributions(implicit cf: CloudFront): List[Bucket] = cf.bucketsWithDistributions
 
   /** Create a new S3 bucket.
     * If the bucket name starts with "www.", make it publicly viewable and enable it as a web site.
@@ -146,7 +146,10 @@ class S3()(implicit val awsCredentials: AWSCredentials, cf: CloudFront, et: Elas
   }
 
   /** Normal use case is to delete a directory and all its contents */
-  def deletePrefix(bucketName: String, prefix: String): Unit = S3Scala.deletePrefix(this, bucketName, prefix)
+  def deletePrefix(bucketName: String, prefix: String): Unit =
+    s3.allObjectData(bucketName, prefix).map { _.getKey } foreach { objName =>
+      s3.deleteObject(bucketName, objName)
+    }
 
   /** Delete an object - if they key has any leading slashes, they are removed.
     * Unless versioning has been turned on for the bucket, there is no way to undelete an object. */

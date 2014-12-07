@@ -22,7 +22,7 @@ import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 object IAM {
-  def apply(implicit awsCredentials: AWSCredentials, cf: CloudFront, et: ElasticTranscoder, s3: S3, sns: SNS): IAM = new IAM()
+  def apply(implicit awsCredentials: AWSCredentials, s3: S3): IAM = new IAM()
 
   def allowAllStatement(bucket: Bucket, principals: Seq[Principal], idString: String): Statement =
     allowSomeStatement(bucket, principals, List(S3Actions.AllS3Actions), idString)
@@ -38,9 +38,9 @@ object IAM {
       .withResources(resources: _*)
 }
 
-class IAM()(implicit val awsCredentials: AWSCredentials, cf: CloudFront, et: ElasticTranscoder, s3: S3, sns: SNS) {
-  implicit val iam = this
-  implicit val iamClient: AmazonIdentityManagementClient = new AmazonIdentityManagementClient
+class IAM()(implicit val awsCredentials: AWSCredentials, s3: S3) {
+  implicit lazy val iam = this
+  implicit lazy val iamClient: AmazonIdentityManagementClient = new AmazonIdentityManagementClient
 
   /** (Re)creates an AWS IAM user with the given `userId`. Only PrivilegedUsers can have an associated IAM user.
     * @param maybeCredentials might contain new AWS IAM credentials */

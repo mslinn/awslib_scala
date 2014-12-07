@@ -15,7 +15,10 @@ import java.io.File
 import com.micronautics.aws.S3._
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpec}
 
-class S3Test extends WordSpec with Init with Matchers with BeforeAndAfter with BeforeAndAfterAll with Fixtures {
+class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll {
+  import com.amazonaws.auth.AWSCredentials
+  import com.amazonaws.services.s3.model.Bucket
+
   val file1Name = "index.html"
   val file2Name = "index2.html"
   val file1 = new File(file1Name)
@@ -24,6 +27,25 @@ class S3Test extends WordSpec with Init with Matchers with BeforeAndAfter with B
   val publisher1UserId = "testPublisher1UserId"
   val instructor1UserId = "testInstructor1UserId"
   val instructor2UserId = "testInstructor2UserId"
+
+  lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv.getOrElse(
+                                                       maybeCredentialsFromFile.getOrElse(
+                                                         sys.error("No AWS credentials found in environment variables and no .s3 file was found in the working directory, or a parent directory.")))
+  lazy implicit val s3: S3 = new S3()
+  lazy implicit val cf: CloudFront = new CloudFront()
+  lazy implicit val et: ElasticTranscoder = new ElasticTranscoder()
+  lazy implicit val iam: IAM = new IAM()
+  lazy implicit val sns: SNS = new SNS()
+
+  val bucketName = s"www.test${new java.util.Date().getTime}.com"
+  var bucket: Bucket = try {
+      println(s"Creating bucket $bucketName")
+      implicitly[S3].createBucket(bucketName)
+    } catch {
+      case e: Exception =>
+        val awsCredentials = implicitly[S3].awsCredentials
+        fail(s"Error creating bucket with accessKey=${awsCredentials.getAWSAccessKeyId} and secretKey=${awsCredentials.getAWSSecretKey}\n${e.getMessage}")
+    }
 
   private def saveToFile(file: java.io.File, string: String): Unit = {
     val printWriter = new java.io.PrintWriter(file)
@@ -35,7 +57,6 @@ class S3Test extends WordSpec with Init with Matchers with BeforeAndAfter with B
   }
 
   override def beforeAll(): Unit = {
-    super.beforeAll()
     saveToFile(file1, """<h1>Test 1 of AWS S3</h1>
                         |<p>This is index.html</p>
                         |""".stripMargin)
@@ -46,7 +67,7 @@ class S3Test extends WordSpec with Init with Matchers with BeforeAndAfter with B
   }
 
   override def afterAll(): Unit = {
-    super.afterAll()
+    implicitly[S3].deleteBucket(bucketName)
     if (file1.exists)
       file1.delete
     if (file2.exists)

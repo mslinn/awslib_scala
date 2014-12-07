@@ -15,11 +15,6 @@ import java.io.File
 
 // TODO this file may not be required any more
 object S3Scala {
-  /** Normal use case is to delete a directory and all its contents */
-  def deletePrefix(s3: S3, bucketName: String, prefix: String): Unit =
-    s3.allObjectData(bucketName, prefix).map { _.getKey } foreach { objName =>
-      s3.deleteObject(bucketName, objName)
-    }
 
   /** Recursive upload to AWS S3 bucket
     * @param file or directory to copy
