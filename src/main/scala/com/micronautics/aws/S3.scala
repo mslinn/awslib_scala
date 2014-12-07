@@ -11,6 +11,7 @@
 
 package com.micronautics.aws
 
+import AclEnum._
 import java.io.{File, InputStream}
 import java.net.URL
 import java.nio.file.Files
@@ -446,13 +447,13 @@ trait S3Implicits {
         * @param assetPath The path of the objects to invalidate, relative to the distribution and must begin with a slash (/).
         *                  If the path is a directory, all assets within in are invalidated
         * @return number of asset invalidations */
-    def invalidate(assetPath: String)(implicit cf: CloudFront): Int = cf.invalidate(bucket, List(assetPath))
+    def invalidate(assetPath: String)(implicit cf: CloudFront): Int = cf.invalidateMany(bucket, List(assetPath))
 
     /** Invalidate asset in all bucket distributions where it is present.
         * @param assetPaths The path of the objects to invalidate, relative to the distribution and must begin with a slash (/).
         *                  If the path is a directory, all assets within in are invalidated
         * @return number of asset invalidations */
-    def invalidate(assetPaths: List[String])(implicit cf: CloudFront): Int = cf.invalidate(bucket, assetPaths)
+    def invalidateMany(assetPaths: List[String])(implicit cf: CloudFront): Int = cf.invalidateMany(bucket, assetPaths)
 
     def isWebsiteEnabled: Boolean = s3.isWebsiteEnabled(bucket.getName)
 
@@ -477,7 +478,7 @@ trait S3Implicits {
     def policyEncoder(policyText: String, contentLength: Long, expiryDuration: Duration=Duration.standardHours(1)): String =
       new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyEncoder(policyText, contentLength)
 
-    def createPolicyText(key: String, contentLength: Long, acl: String="private", expiryDuration: Duration=Duration.standardHours(1)): String =
+    def createPolicyText(key: String, contentLength: Long, acl: AclEnum=privateAcl, expiryDuration: Duration=Duration.standardHours(1)): String =
       new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyText(key, contentLength, acl)
 
     def oneObjectData(prefix: String): Option[S3ObjectSummary] = s3.oneObjectData(bucket.getName, prefix)
@@ -490,7 +491,7 @@ trait S3Implicits {
 
     def signAndEncodePolicy(key: String,
                             contentLength: Long,
-                            acl: String=AWSUpload.privateAcl,
+                            acl: AclEnum=privateAcl,
                             awsSecretKey: String=s3.awsCredentials.getAWSSecretKey,
                             expiryDuration: Duration=Duration.standardHours(1)): SignedAndEncoded =
       new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).signAndEncodePolicy(key, contentLength, acl, awsSecretKey)

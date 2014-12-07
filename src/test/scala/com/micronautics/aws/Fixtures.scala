@@ -17,14 +17,14 @@ import org.scalatest.BeforeAndAfterAll
 
 /** Tests that mix this trait in will fail unless a file called AwsCredentials.properties is created in src/test/resources, or
   * environment variables AWS_ACCESS_KEY and AWS_SECRET_KEY are properly set. */
-trait Fixtures { this: BeforeAndAfterAll =>
+trait Fixtures { this: Init with BeforeAndAfterAll =>
   val bucketName = s"www.test${new java.util.Date().getTime}.com"
   val bucket: Bucket = try {
       println(s"Creating bucket $bucketName")
-      s3.createBucket(bucketName)
+      implicitly[S3].createBucket(bucketName)
     } catch {
       case e: Exception =>
-        val awsCredentials = s3.awsCredentials
+        val awsCredentials = implicitly[S3].awsCredentials
         fail(s"Error creating bucket with accessKey=${awsCredentials.getAWSAccessKeyId} and secretKey=${awsCredentials.getAWSSecretKey}\n${e.getMessage}")
     }
 

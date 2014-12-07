@@ -58,14 +58,14 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
     * @param assetPath The path of the objects to invalidate, relative to the distribution and must begin with a slash (/).
     *                  If the path is a directory, all assets within in are invalidated
     * @return number of asset invalidations */
-  def invalidate(bucket: Bucket, assetPath: String)(implicit s3: S3): Int = invalidate(bucket, List(assetPath))
+  def invalidate(bucket: Bucket, assetPath: String)(implicit s3: S3): Int = invalidateMany(bucket, List(assetPath))
 
   /** Invalidate asset in all bucket distributions where it is present.
     * @param assetPaths The path of the objects to invalidate, relative to the distribution and must begin with a slash (/).
     *                   If the path is a directory, all assets within in are invalidated
     * @return number of asset invalidations
     * @see http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/cloudfront/model/InvalidationBatch.html#InvalidationBatch(com.amazonaws.services.cloudfront.model.Paths,%20java.lang.String) */
-  def invalidate(bucket: Bucket, assetPaths: List[String])(implicit s3: S3): Int = {
+  def invalidateMany(bucket: Bucket, assetPaths: List[String])(implicit s3: S3): Int = {
     val foundAssets: List[String] = assetPaths.filter(bucket.oneObjectData(_).isDefined)
     val foundPaths: Paths = new Paths().withItems(foundAssets.asJava).withQuantity(foundAssets.size)
     val counts: List[Int] = distributionsFor(bucket) map { distributionSummary =>

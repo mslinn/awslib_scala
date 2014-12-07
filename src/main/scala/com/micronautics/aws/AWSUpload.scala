@@ -26,18 +26,12 @@ case class SignedAndEncoded(
   contentType: String
 )
 
-object AWSUpload {
-  val Logger = LoggerFactory.getLogger("AWSUpload")
-  val publicAcl = "public-read"
-  val privateAcl = "private"
-}
-
 /** @param expiryDuration times out policy in one hour by default */
 class AWSUpload(val bucket: Bucket, val expiryDuration: Duration=Duration.standardHours(1))(implicit awsCredentials: AWSCredentials) {
-  import com.micronautics.aws.AWSUpload._
+  import com.micronautics.aws.AclEnum._
 
   /** @param key has path, without leading slash, including filetype */
-  def policyText(key: String, contentLength: Long, acl: String="private"): String = {
+  def policyText(key: String, contentLength: Long, acl: AclEnum=privateAcl): String = {
     val expiryDT = new DateTime(DateTimeZone.UTC).plus(expiryDuration)
     val expiryFormatted = ISODateTimeFormat.dateHourMinuteSecond().print(expiryDT)
     val lastSlash = key.lastIndexOf("/")
@@ -76,7 +70,7 @@ class AWSUpload(val bucket: Bucket, val expiryDuration: Duration=Duration.standa
   /** @param key has path, without leading slash, including filetype
     * @param acl must either be "public" or "public-read"
     * @return tuple containing encoded policy and signed policy for given key and contentLength */
-  def signAndEncodePolicy(key: String, contentLength: Long, acl: String = privateAcl,
+  def signAndEncodePolicy(key: String, contentLength: Long, acl: AclEnum = privateAcl,
                           awsSecretKey: String = awsCredentials.getAWSSecretKey): SignedAndEncoded = {
     assert(!key.startsWith("/"))
     assert(acl==publicAcl || acl==privateAcl)

@@ -28,17 +28,7 @@ package object aws extends CFImplicits with IAMImplicits with S3Implicits with S
   import org.slf4j.LoggerFactory
   import play.api.libs.json.Json
 
-  lazy val Logger = LoggerFactory.getLogger("AWS")
-
-  lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv.getOrElse(
-                                                       maybeCredentialsFromFile.getOrElse(
-                                                         sys.error("No AWS credentials found in environment variables and no .s3 file was found in the working directory, or a parent directory.")))
-
-  lazy implicit val s3: S3         = S3(awsCredentials)
-  lazy implicit val cf: CloudFront = CloudFront(awsCredentials)
-  lazy implicit val iam: IAM       = IAM(awsCredentials)
-  lazy implicit val sns: SNS       = SNS(awsCredentials)
-
+  private[aws] lazy val Logger = LoggerFactory.getLogger("AWS")
 
   private val contentTypeMap = Map(
     "css" -> "text/css",

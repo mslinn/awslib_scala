@@ -15,7 +15,7 @@ import java.io.File
 import com.micronautics.aws.S3._
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpec}
 
-class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll with Fixtures {
+class S3Test extends WordSpec with Init with Matchers with BeforeAndAfter with BeforeAndAfterAll with Fixtures {
   val file1Name = "index.html"
   val file2Name = "index2.html"
   val file1 = new File(file1Name)
