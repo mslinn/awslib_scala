@@ -23,14 +23,16 @@ package com.micronautics
  If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
  These hidden files are ignored by this program; users never see them because they are for AWS S3 internal use only. */
 package object aws extends CFImplicits with ETImplicits with IAMImplicits with S3Implicits with SNSImplicits {
-  import com.amazonaws.auth.AWSCredentials
+  import java.io.File
+  import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials}
   import com.amazonaws.util.json.JSONObject
+  import com.typesafe.config.ConfigFactory
   import org.slf4j.LoggerFactory
   import play.api.libs.json.Json
+  import scala.collection.JavaConverters._
+  import scala.language.implicitConversions
 
-  private[aws] lazy val Logger = LoggerFactory.getLogger("AWS")
-
-  private val contentTypeMap = Map(
+  private lazy val contentTypeMap = Map(
     "css" -> "text/css",
     "doc" -> "application/vnd.ms-word",
     "dot" -> "application/vnd.ms-word",
@@ -77,6 +79,54 @@ package object aws extends CFImplicits with ETImplicits with IAMImplicits with S
     "zip" -> "application/zip"
   ).withDefaultValue("application/octet-stream")
 
+  private[aws] lazy val Logger = LoggerFactory.getLogger("AWS")
+
+  private[aws] lazy val confMap: Map[String, String] = {
+    val dotAws = System.getProperty("user.home") + "/.aws/config"
+    val awsConf = io.Source.fromFile(dotAws).getLines
+      .map(_.replace("\n", ""))
+      .map(_.replace(" ", ""))
+      .map(removeOuterParens)
+      .filter(x => !x.startsWith("[") && !x.endsWith("]") && x.length > 0)
+      .mkString("  ", "\"\n  ", "\"\n")
+      .replace("=", "=\"")
+    val confStr = s"""aws = {\n$awsConf\n}"""
+    assert(new File(dotAws).exists)
+
+    val config = ConfigFactory.parseString(confStr)
+    if (Logger.isDebugEnabled)
+      config.entrySet.asScala.map(_.getKey) foreach {
+        Logger.debug
+      }
+
+    val accessKey = config.getString("aws.aws_access_key_id")
+    assert(accessKey.nonEmpty)
+    Logger.debug(s"accessKey=$accessKey")
+
+    val secretKey = config.getString("aws.aws_secret_access_key")
+    assert(secretKey.nonEmpty)
+    Logger.debug(s"Fixtures - secretKey=$secretKey")
+
+    val testConf = ConfigFactory.parseResources("test.conf")
+    val testMap: Map[String, String] = testConf.resolve.entrySet.asScala.map { x =>
+      (x.getKey, removeOuterParens(x.getValue.render).toString)
+    }.toList.toMap
+
+    testMap + ("aws.aws_access_key_id" -> accessKey) + ("aws.aws_secret_key_id" -> secretKey)
+  }
+
+  lazy val maybeCredentialsFromEnv: Option[AWSCredentials] =
+    for {
+      accessKey <- Some(System.getenv("AWS_ACCESS_KEY")) if accessKey.nonEmpty
+      secretKey <- Some(System.getenv("AWS_SECRET_KEY")) if secretKey.nonEmpty
+    } yield new BasicAWSCredentials(accessKey, secretKey)
+
+  lazy val maybeCredentialsFromFile: Option[AWSCredentials] =
+    for {
+      accessKey <- confMap.get("aws.aws_access_key_id").map(_.toString)
+      secretKey <- confMap.get("aws.aws_secret_key_id").map(_.toString)
+    } yield new BasicAWSCredentials(accessKey, secretKey)
+
   def guessContentType(key: String): String = {
     val keyLC: String = key.substring(math.max(0, key.lastIndexOf('.') + 1)).trim.toLowerCase
     contentTypeMap(keyLC)
@@ -85,17 +135,25 @@ package object aws extends CFImplicits with ETImplicits with IAMImplicits with S
   /** Helpful for debugging AWS requests and responses */
   def jsonPrettyPrint(awsObject: Object) = Json.prettyPrint(Json.parse(new JSONObject(awsObject).toString))
 
-  def maybeCredentialsFromEnv: Option[AWSCredentials] = for {
-    accessKey <- Some(System.getenv("AWS_ACCESS_KEY")) if accessKey.nonEmpty
-    secretKey <- Some(System.getenv("AWS_SECRET_KEY")) if secretKey.nonEmpty
-  } yield new com.amazonaws.auth.BasicAWSCredentials(accessKey, secretKey)
-
-  // TODO make this read from ~/.aws/config instead of .s3
-  def maybeCredentialsFromFile: Option[AWSCredentials] = for {
-    s3File      <- Util.readS3File()
-    credentials <- Util.getAuthentication(s3File.accountName)
-  } yield  credentials
-
   /** UUID / GUID generator */
   def uuid = java.util.UUID.randomUUID.toString
+
+  def removeOuterParens(string: String): String =
+    if (string.startsWith("\"") && string.endsWith("\"")) string.substring(1, string.length - 1) else string
+
+  implicit class RichException(exception: Exception) {
+    def prefixMsg(msg: String): Exception = ExceptTrace(msg + "\n" +exception.getMessage)
+  }
+}
+
+package aws {
+  import scala.util.control.NoStackTrace
+
+  class ExceptTrace(msg: String) extends Exception(msg) with NoStackTrace
+
+  object ExceptTrace {
+    def apply(msg: String): ExceptTrace = new ExceptTrace(msg)
+
+    def apply(msg: String, exception: Exception): ExceptTrace = new ExceptTrace(msg)
+  }
 }

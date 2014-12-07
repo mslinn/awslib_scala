@@ -13,6 +13,7 @@ package com.micronautics.aws
 
 import java.io.File
 
+// TODO this file may not be required any more
 object S3Scala {
   /** Normal use case is to delete a directory and all its contents */
   def deletePrefix(s3: S3, bucketName: String, prefix: String): Unit =

@@ -25,7 +25,6 @@ import com.amazonaws.services.identitymanagement.model.{User => IAMUser}
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
 import com.amazonaws.{AmazonClientException, HttpMethod, event}
-import com.micronautics.aws.Util._
 import org.joda.time.{DateTime, Duration}
 
 import scala.annotation.tailrec
@@ -44,8 +43,7 @@ import scala.collection.JavaConverters._
  * Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only).
  */
 object S3 {
-  def apply(implicit awsCredentials: AWSCredentials, s3Client: AmazonS3Client = new AmazonS3Client): S3 =
-    new S3()(awsCredentials, s3Client)
+  def apply(implicit awsCredentials: AWSCredentials, cf: CloudFront, et: ElasticTranscoder, iam: IAM, sns: SNS): S3 = new S3()
 
   protected def bucketPolicy(bucketName: String): String = s"""{
     |\t"Version": "2008-10-17",
@@ -63,6 +61,13 @@ object S3 {
     |}
     |""".stripMargin
 
+  def latestFileTime(file: File): Long = {
+    val fileAttributeView = Files.getFileAttributeView(file.toPath, classOf[BasicFileAttributeView])
+    val creationTime = fileAttributeView.readAttributes.creationTime.toMillis
+    val lastModifiedTime = fileAttributeView.readAttributes.lastModifiedTime.toMillis
+    math.max(creationTime, lastModifiedTime)
+  }
+
   /** @param key any leading slashes are removed so the key can be used as a relative path */
   def relativize(key: String): String = sanitizePrefix(key)
 
@@ -74,8 +79,11 @@ object S3 {
   def sanitizePrefix(key: String): String = key.substring(key.indexWhere(_ != '/')).replace("//", "/")
 }
 
-class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Client=new AmazonS3Client) {
+class S3()(implicit val awsCredentials: AWSCredentials, cf: CloudFront, et: ElasticTranscoder, iam: IAM, sns: SNS) {
   import com.micronautics.aws.S3._
+
+  implicit val s3 = this
+  implicit val s3Client: AmazonS3Client = new AmazonS3Client
 
   /** @param prefix Any leading slashes are removed if a prefix is specified
     * @return collection of S3ObjectSummary; keys are relativized if prefix is adjusted */
@@ -102,26 +110,21 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
 
   def bucketExists(bucketName: String): Boolean = s3Client.listBuckets.asScala.exists(_.getName==bucketName)
 
-  def maybeBucketFor(bucketName: String): Option[Bucket] = try {
-    s3Client.listBuckets().asScala.find(_.getName == bucketName)
-  } catch {
-    case e: Exception => None
-  }
-
   def bucketLocation(bucketName: String): String = s3Client.getBucketLocation(bucketName)
 
   /** List the buckets in the account */
   def bucketNames: List[String] = s3Client.listBuckets.asScala.map(_.getName).toList
 
-  def bucketNamesWithDistributions(implicit cf: CloudFront): List[String] = cf.bucketNamesWithDistributions
+  def bucketNamesWithDistributions: List[String] = cf.bucketNamesWithDistributions
 
-  def bucketsWithDistributions(implicit cf: CloudFront): List[Bucket] = cf.bucketsWithDistributions(this)
+  def bucketsWithDistributions: List[Bucket] = cf.bucketsWithDistributions
 
   /** Create a new S3 bucket.
     * If the bucket name starts with "www.", make it publicly viewable and enable it as a web site.
     * Amazon S3 bucket names are globally unique, so once a bucket repoName has been
     * taken by any user, you can't create another bucket with that same repoName.
     * You can optionally specify a location for your bucket if you want to keep your data closer to your applications or users. */
+  // TODO return Try[Bucket]
   def createBucket(bucketName: String): Bucket = {
     val bnSanitized: String = bucketName.toLowerCase.replaceAll("[^A-Za-z0-9.]", "")
     if (bucketName!=bnSanitized)
@@ -217,6 +220,12 @@ class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Cl
   def enableWebsite(bucketName: String, errorPage: String): Unit = {
     val configuration: BucketWebsiteConfiguration = new BucketWebsiteConfiguration("index.html", errorPage)
     s3Client.setBucketWebsiteConfiguration(bucketName, configuration)
+  }
+
+  def findByName(bucketName: String): Option[Bucket] = try {
+    s3Client.listBuckets().asScala.find(_.getName == bucketName)
+  } catch {
+    case e: Exception => None
   }
 
   /** Requires property com.amazonaws.sdk.disableCertChecking to have a value (any value will do) */

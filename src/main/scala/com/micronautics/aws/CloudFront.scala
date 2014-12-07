@@ -21,18 +21,20 @@ import scala.util.{Failure, Success, Try}
 object CloudFront {
   val oneMinute = 1L * 60L * 1000L
 
-  def apply(implicit awsCredentials: AWSCredentials, cfClient: AmazonCloudFrontClient=new AmazonCloudFrontClient): CloudFront =
-    new CloudFront()(awsCredentials, cfClient)
+  def apply(implicit awsCredentials: AWSCredentials, et: ElasticTranscoder, iam: IAM, s3: S3, sns: SNS): CloudFront = new CloudFront()
 }
 
-class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: AmazonCloudFrontClient=new AmazonCloudFrontClient) extends CFImplicits {
+class CloudFront()(implicit val awsCredentials: AWSCredentials, et: ElasticTranscoder, iam: IAM, s3: S3, sns: SNS) extends CFImplicits {
   import CloudFront._
   import com.amazonaws.services.s3.model.Bucket
+
+  implicit val cf = this
+  implicit val cfClient: AmazonCloudFrontClient = new AmazonCloudFrontClient
 
   def distributions: List[DistributionSummary] = cfClient.listDistributions(new ListDistributionsRequest).getDistributionList.getItems.asScala.toList
 
   /** @return List of CloudFront distributions for the specified bucket */
-  def distributionsFor(bucket: Bucket)(implicit s3: S3): List[DistributionSummary] = {
+  def distributionsFor(bucket: Bucket): List[DistributionSummary] = {
       val (_, bucketOriginId) = bucket.safeNames
       val distributionSummaries: List[DistributionSummary] = distributions.filter { distribution =>
         val origins: Seq[Origin] = distribution.getOrigins.getItems.asScala
@@ -48,24 +50,24 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
     item         <- distribution.getOrigins.getItems.asScala // value: s"S3-$lcBucketName"
   } yield item.getId.substring(3)
 
-  def bucketsWithDistributions(implicit s3: S3): List[Bucket] =
+  def bucketsWithDistributions: List[Bucket] =
     for {
       bucketName <- bucketNamesWithDistributions
-      bucket     <- s3.maybeBucketFor(bucketName).toList
+      bucket     <- s3.findByName(bucketName).toList
   } yield bucket
 
   /** Invalidate asset in all bucket distributions where it is present.
     * @param assetPath The path of the objects to invalidate, relative to the distribution and must begin with a slash (/).
     *                  If the path is a directory, all assets within in are invalidated
     * @return number of asset invalidations */
-  def invalidate(bucket: Bucket, assetPath: String)(implicit s3: S3): Int = invalidateMany(bucket, List(assetPath))
+  def invalidate(bucket: Bucket, assetPath: String): Int = invalidateMany(bucket, List(assetPath))
 
   /** Invalidate asset in all bucket distributions where it is present.
     * @param assetPaths The path of the objects to invalidate, relative to the distribution and must begin with a slash (/).
     *                   If the path is a directory, all assets within in are invalidated
     * @return number of asset invalidations
     * @see http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/cloudfront/model/InvalidationBatch.html#InvalidationBatch(com.amazonaws.services.cloudfront.model.Paths,%20java.lang.String) */
-  def invalidateMany(bucket: Bucket, assetPaths: List[String])(implicit s3: S3): Int = {
+  def invalidateMany(bucket: Bucket, assetPaths: List[String]): Int = {
     val foundAssets: List[String] = assetPaths.filter(bucket.oneObjectData(_).isDefined)
     val foundPaths: Paths = new Paths().withItems(foundAssets.asJava).withQuantity(foundAssets.size)
     val counts: List[Int] = distributionsFor(bucket) map { distributionSummary =>
@@ -79,7 +81,7 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
   }
 
   /** Enable/disable all distributions for the given bucketName */
-  def enableAllDistributions(bucket: Bucket, newStatus: Boolean=true)(implicit s3: S3): List[UpdateDistributionResult] = {
+  def enableAllDistributions(bucket: Bucket, newStatus: Boolean=true): List[UpdateDistributionResult] = {
     val distributions: List[DistributionSummary] = distributionsFor(bucket)
     distributions.map { implicit distributionSummary =>
         val configResult: GetDistributionConfigResult = distributionSummary.configResult
@@ -91,7 +93,7 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
   }
 
   /** Enable/disable the most recently created distribution for the given bucketName */
-  def enableLastDistribution(bucket: Bucket, newStatus: Boolean=true)(implicit s3: S3): Option[UpdateDistributionResult] = {
+  def enableLastDistribution(bucket: Bucket, newStatus: Boolean=true): Option[UpdateDistributionResult] = {
     val distributions: Seq[DistributionSummary] = distributionsFor(bucket)
     distributions.lastOption.map { implicit distributionSummary =>
         val configResult: GetDistributionConfigResult = distributionSummary.configResult
@@ -104,7 +106,7 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
 
   /** Remove the most recently created distribution for the given bucketName.
     * Can take 15 minutes to an hour to return. */
-  def removeDistribution(bucket: Bucket)(implicit s3: S3): Boolean =
+  def removeDistribution(bucket: Bucket): Boolean =
     distributionsFor(bucket).lastOption.exists { implicit distSummary =>
       val distributionId = distSummary.getId
       val distConfigResult = cfClient.getDistributionConfig(new GetDistributionConfigRequest().withId(distSummary.getId))
@@ -144,10 +146,10 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
       Success(true)
     } catch {
       case nsde: NoSuchDistributionException =>
-        Failure(new Exception(s"Distribution of $domainName with id $distributionId and ETag $distributionETag does not exist", nsde))
+        Failure(nsde.prefixMsg(s"Distribution of $domainName with id $distributionId and ETag $distributionETag does not exist"))
 
       case e: Exception =>
-        Failure(new Exception(s"Distribution of $domainName with id $distributionId and ETag $distributionETag: ${e.getMessage}", e))
+        Failure(e.prefixMsg(s"Distribution of $domainName with id $distributionId and ETag $distributionETag: ${e.getMessage}"))
     }
   }
 
@@ -157,10 +159,10 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials, val cfClient: Am
     Success(cfClient.getDistribution(new GetDistributionRequest().withId(id)).getDistribution)
   } catch {
     case nsde: NoSuchDistributionException =>
-      Failure(new Exception(s"Distribution with id $id does not exist", nsde))
+      Failure(nsde.prefixMsg(s"Distribution with id $id does not exist"))
 
     case e: Exception =>
-      Failure(new Exception(s"Distribution of with id $id: ${e.getMessage}", e))
+      Failure(e.prefixMsg(s"Distribution of with id $id: ${e.getMessage}"))
   }
 }
 

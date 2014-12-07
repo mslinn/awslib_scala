@@ -13,49 +13,6 @@ package com.micronautics.aws
 
 import com.amazonaws.auth.BasicAWSCredentials
 
-import collection.mutable.MutableList
-import java.util.regex.Pattern
-import org.joda.time.DateTime
-import org.codehaus.jackson.annotate.JsonIgnore
-
 case class Credentials(awsAccountName: String, accessKey: String, secretKey: String) extends BasicAWSCredentials(accessKey, secretKey) {
   lazy val asBasicAWSCredentials: BasicAWSCredentials = new BasicAWSCredentials(accessKey, secretKey)
-}
-
-class AllCredentials extends MutableList[Credentials] {
-  def addAll(credArray: Array[Credentials]): AllCredentials = {
-    credArray foreach { credentials => this += credentials }
-    this
-  }
-
-  def defines(accountName: String): Boolean = groupBy(_.awsAccountName).keySet.contains(accountName)
-}
-
-object AllCredentials {
-  def apply(credArray: Array[Credentials]): AllCredentials = {
-    val allCredentials = new AllCredentials()
-    allCredentials.addAll(credArray)
-  }
-}
-
-object AWS {
-  // todo provide user-friendly means to edit the .s3 file regexes
-  /** Regexes; these get saved to .s3 files */
-  val defaultIgnores = Seq(".*~", ".*.com.micronautics.aws", ".*.git", ".*.s3", ".*.svn", ".*.swp", ".*.tmp", "cvs")
-  var allCredentials = new AllCredentials()
-}
-
-object AuthAction extends Enumeration {
-   type AuthAction = Value
-   val add, delete, list, modify = Value
- }
-
-case class S3File(accountName: String,
-                  bucketName: String,
-                  lastSyncOption: Option[DateTime]=None,
-                  ignores: Seq[String]=AWS.defaultIgnores,
-                  endpoint: String = ".s3.amazonaws.com") {
-  @JsonIgnore val ignoredPatterns: Seq[Pattern] = ignores.map { x => Pattern.compile(x) }
-
-  @JsonIgnore def endpointUrl: String = "https://" + bucketName + "." + endpoint;
 }

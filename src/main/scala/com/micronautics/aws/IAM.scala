@@ -22,8 +22,7 @@ import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 object IAM {
-  def apply(implicit awsCredentials: AWSCredentials): IAM =
-    new IAM()(awsCredentials)
+  def apply(implicit awsCredentials: AWSCredentials, cf: CloudFront, et: ElasticTranscoder, s3: S3, sns: SNS): IAM = new IAM()
 
   def allowAllStatement(bucket: Bucket, principals: Seq[Principal], idString: String): Statement =
     allowSomeStatement(bucket, principals, List(S3Actions.AllS3Actions), idString)
@@ -39,9 +38,9 @@ object IAM {
       .withResources(resources: _*)
 }
 
-class IAM()(implicit val awsCredentials: AWSCredentials) {
+class IAM()(implicit val awsCredentials: AWSCredentials, cf: CloudFront, et: ElasticTranscoder, s3: S3, sns: SNS) {
   implicit val iam = this
-  val iamClient: AmazonIdentityManagementClient = new AmazonIdentityManagementClient
+  implicit val iamClient: AmazonIdentityManagementClient = new AmazonIdentityManagementClient
 
   /** (Re)creates an AWS IAM user with the given `userId`. Only PrivilegedUsers can have an associated IAM user.
     * @param maybeCredentials might contain new AWS IAM credentials */
@@ -60,11 +59,11 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
           Success((iamUserNew, credentials))
         } catch {
           case e: Exception =>
-            Failure(new Exception(s"${e.getMessage}\nAWS IAM user $userId did not previously exist"))
+            Failure(ExceptTrace(s"${e.getMessage}\nAWS IAM user $userId did not previously exist"))
         }
 
       case e: Exception =>
-        Failure(new Exception(e.getMessage))
+        Failure(e)
     }
   }
 

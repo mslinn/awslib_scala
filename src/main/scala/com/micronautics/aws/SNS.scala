@@ -11,7 +11,6 @@
 
 package com.micronautics.aws
 
-import AwsCredentials._
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.sns.AmazonSNSClient
 import com.amazonaws.services.sns.model._
@@ -19,11 +18,13 @@ import com.amazonaws.services.sns.model._
 import scala.collection.JavaConverters._
 
 object SNS {
-  def apply(implicit awsCredentials: AWSCredentials, iamClient: AmazonSNSClient=new AmazonSNSClient): SNS =
-    new SNS()(awsCredentials, iamClient)
+  def apply(implicit awsCredentials: AWSCredentials, cf: CloudFront, et: ElasticTranscoder, iam: IAM, s3: S3): SNS = new SNS()
 }
 
-class SNS()(implicit val awsCredentials: AWSCredentials, val snsClient: AmazonSNSClient=new AmazonSNSClient) {
+class SNS()(implicit val awsCredentials: AWSCredentials, cf: CloudFront, et: ElasticTranscoder, iam: IAM, s3: S3) {
+  implicit val sns = this
+  implicit val snsClient: AmazonSNSClient = new AmazonSNSClient
+
   /** Creates a topic if it does not exist. Topics should contain a string unique to the AWS account, such as the publishing server's domain name
    * @return Some(ARN of the Topic) or None if error */
   def findOrCreateTopic(name: String): Option[String] = {
