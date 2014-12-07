@@ -145,15 +145,3 @@ package object aws extends CFImplicits with ETImplicits with IAMImplicits with S
     def prefixMsg(msg: String): Exception = ExceptTrace(msg + "\n" +exception.getMessage)
   }
 }
-
-package aws {
-  import scala.util.control.NoStackTrace
-
-  class ExceptTrace(msg: String) extends Exception(msg) with NoStackTrace
-
-  object ExceptTrace {
-    def apply(msg: String): ExceptTrace = new ExceptTrace(msg)
-
-    def apply(msg: String, exception: Exception): ExceptTrace = new ExceptTrace(msg)
-  }
-}

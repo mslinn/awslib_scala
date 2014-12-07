@@ -12,7 +12,16 @@
 package com.micronautics.aws
 
 import com.amazonaws.auth.BasicAWSCredentials
+import scala.util.control.NoStackTrace
 
 case class Credentials(awsAccountName: String, accessKey: String, secretKey: String) extends BasicAWSCredentials(accessKey, secretKey) {
   lazy val asBasicAWSCredentials: BasicAWSCredentials = new BasicAWSCredentials(accessKey, secretKey)
+}
+
+class ExceptTrace(msg: String) extends Exception(msg) with NoStackTrace
+
+object ExceptTrace {
+  def apply(msg: String): ExceptTrace = new ExceptTrace(msg)
+
+  def apply(msg: String, exception: Exception): ExceptTrace = new ExceptTrace(msg)
 }

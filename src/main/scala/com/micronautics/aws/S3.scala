@@ -380,8 +380,15 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
   /** Recursive upload to AWS S3 bucket
     * @param file or directory to copy
     * @param dest path to copy to on AWS S3 */
-  def uploadFileOrDirectory(bucketName: String, dest: String, file: File): Unit =
-    S3Scala.uploadFileOrDirectory(this, bucketName, dest, file)
+  def uploadFileOrDirectory(bucketName: String, dest: String, file: File): Unit = {
+    val newDest = if (dest=="") file.getName else s"$dest/${file.getName}"
+    assert(!newDest.startsWith("/")) // verify this is a relative path
+    if (file.isDirectory)
+      file.listFiles.toSeq.foreach { file2 => uploadFileOrDirectory(bucketName, newDest, file2) }
+    else
+      s3.uploadFile(bucketName, newDest, file)
+    ()
+  }
 
   def uploadString(bucketName: String, key: String, contents: String): PutObjectResult = {
     import com.amazonaws.util.StringInputStream

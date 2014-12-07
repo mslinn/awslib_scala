@@ -13,7 +13,7 @@ package com.micronautics.aws
 
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, WordSpec, Matchers}
 
-class SNSTest extends WordSpec with Init with Matchers with BeforeAndAfter with BeforeAndAfterAll with Fixtures {
+class SNSTest extends WordSpec with Init with Matchers with BeforeAndAfter with BeforeAndAfterAll {
   "Blah" must {
     "blah" in {
     }
