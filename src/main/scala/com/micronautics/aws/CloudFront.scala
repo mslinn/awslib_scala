@@ -17,7 +17,6 @@ import com.amazonaws.services.cloudfront.model._
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
-import AwsCredentials.Logger
 
 object CloudFront {
   val oneMinute = 1L * 60L * 1000L

@@ -23,8 +23,22 @@ package com.micronautics
  If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
  These hidden files are ignored by this program; users never see them because they are for AWS S3 internal use only. */
 package object aws extends CFImplicits with IAMImplicits with S3Implicits with SNSImplicits {
+  import com.amazonaws.auth.AWSCredentials
   import com.amazonaws.util.json.JSONObject
+  import org.slf4j.LoggerFactory
   import play.api.libs.json.Json
+
+  lazy val Logger = LoggerFactory.getLogger("AWS")
+
+  lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv.getOrElse(
+                                                       maybeCredentialsFromFile.getOrElse(
+                                                         sys.error("No AWS credentials found in environment variables and no .s3 file was found in the working directory, or a parent directory.")))
+
+  lazy implicit val s3: S3         = S3(awsCredentials)
+  lazy implicit val cf: CloudFront = CloudFront(awsCredentials)
+  lazy implicit val iam: IAM       = IAM(awsCredentials)
+  lazy implicit val sns: SNS       = SNS(awsCredentials)
+
 
   private val contentTypeMap = Map(
     "css" -> "text/css",
@@ -80,6 +94,17 @@ package object aws extends CFImplicits with IAMImplicits with S3Implicits with S
 
   /** Helpful for debugging AWS requests and responses */
   def jsonPrettyPrint(awsObject: Object) = Json.prettyPrint(Json.parse(new JSONObject(awsObject).toString))
+
+  def maybeCredentialsFromEnv: Option[AWSCredentials] = for {
+    accessKey <- Some(System.getenv("AWS_ACCESS_KEY")) if accessKey.nonEmpty
+    secretKey <- Some(System.getenv("AWS_SECRET_KEY")) if secretKey.nonEmpty
+  } yield new com.amazonaws.auth.BasicAWSCredentials(accessKey, secretKey)
+
+  // TODO make this read from ~/.aws/config instead of .s3
+  def maybeCredentialsFromFile: Option[AWSCredentials] = for {
+    s3File      <- Util.readS3File()
+    credentials <- Util.getAuthentication(s3File.accountName)
+  } yield  credentials
 
   /** UUID / GUID generator */
   def uuid = java.util.UUID.randomUUID.toString

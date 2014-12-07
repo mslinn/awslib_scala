@@ -11,11 +11,10 @@
 
 package com.micronautics.aws
 
-import AwsCredentials._
 import com.amazonaws.auth.policy.Statement.Effect
 import com.amazonaws.auth.policy.actions.S3Actions
 import com.amazonaws.auth.policy.{Principal, Resource, Statement}
-import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials}
+import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient
 import com.amazonaws.services.identitymanagement.model.{User => IAMUser, _}
 import com.amazonaws.services.s3.model._
@@ -41,7 +40,6 @@ object IAM {
 }
 
 class IAM()(implicit val awsCredentials: AWSCredentials, val iamClient: AmazonIdentityManagementClient=new AmazonIdentityManagementClient) {
-  implicit val implicitIAM = this
 
   /** (Re)creates an AWS IAM user with the given `userId`. Only PrivilegedUsers can have an associated IAM user.
     * @param maybeCredentials might contain new AWS IAM credentials */

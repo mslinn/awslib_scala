@@ -9,8 +9,6 @@ import org.slf4j.LoggerFactory
 import scala.util.{Failure, Success, Try}
 
 object AwsCredentials {
-  lazy val Logger = LoggerFactory.getLogger("AWS")
-
   def apply: Try[(AWSCredentials, AmazonS3Client)] = {
     try {
       val awsCredentials = new BasicAWSCredentials(System.getenv("accessKey"), System.getenv("secretKey"))

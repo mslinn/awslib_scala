@@ -24,7 +24,6 @@ import com.amazonaws.services.identitymanagement.model.{User => IAMUser}
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
 import com.amazonaws.{AmazonClientException, HttpMethod, event}
-import com.micronautics.aws.AwsCredentials._
 import com.micronautics.aws.Util._
 import org.joda.time.{DateTime, Duration}
 
@@ -75,7 +74,6 @@ object S3 {
 }
 
 class S3()(implicit val awsCredentials: AWSCredentials, val s3Client: AmazonS3Client=new AmazonS3Client) {
-
   import com.micronautics.aws.S3._
 
   /** @param prefix Any leading slashes are removed if a prefix is specified
