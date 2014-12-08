@@ -81,7 +81,7 @@ package object aws extends CFImplicits with ETImplicits with IAMImplicits with S
 
   private[aws] lazy val Logger = LoggerFactory.getLogger("AWS")
 
-  private[aws] lazy val confMap: Map[String, String] = {
+  lazy val awsConfMap: Map[String, String] = {
     val dotAws = System.getProperty("user.home") + "/.aws/config"
     val awsConf = io.Source.fromFile(dotAws).getLines
       .map(_.replace("\n", ""))
@@ -123,8 +123,8 @@ package object aws extends CFImplicits with ETImplicits with IAMImplicits with S
 
   lazy val maybeCredentialsFromFile: Option[AWSCredentials] =
     for {
-      accessKey <- confMap.get("aws.aws_access_key_id").map(_.toString)
-      secretKey <- confMap.get("aws.aws_secret_key_id").map(_.toString)
+      accessKey <- awsConfMap.get("aws.aws_access_key_id").map(_.toString)
+      secretKey <- awsConfMap.get("aws.aws_secret_key_id").map(_.toString)
     } yield new BasicAWSCredentials(accessKey, secretKey)
 
   def guessContentType(key: String): String = {
