@@ -85,19 +85,6 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
     }
   }
 
-  def deleteIAMUser(userName: String): Unit = try {
-     val deleteAccessKeyRequest = new DeleteAccessKeyRequest().withUserName(userName)
-     iamClient.deleteAccessKey(deleteAccessKeyRequest)
-
-     val deleteLoginProfileRequest = new DeleteLoginProfileRequest().withUserName(userName)
-     iamClient.deleteLoginProfile(deleteLoginProfileRequest)
-
-     val deleteUserRequest = new DeleteUserRequest().withUserName(userName)
-     iamClient.deleteUser(deleteUserRequest)
-
-     Logger.debug(s"Deleted AWS IAM user $userName")
-   } catch { case e: Throwable => }
-
   def deleteLoginProfile(userName: String): Unit = try {
     iamClient.deleteLoginProfile(new DeleteLoginProfileRequest(userName))
   } catch {
@@ -121,7 +108,7 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
       Logger.warn(e.getMessage)
       false
 
-    case e: DeleteConflictException => // Request rejected because it attempted to delete a resource with attached subordinate entities.
+    case e: DeleteConflictException =>
       Logger.error(e.getMessage)
       false
 
@@ -154,11 +141,11 @@ trait IAMImplicits {
 
     def deleteAccessKeys(): Unit = iam.deleteAccessKeys(iamUser.getUserName)
 
-    def deleteGroups(): Unit = iam.deleteGroups(iamUser.getUserId)
+    def deleteGroups(): Unit = iam.deleteGroups(iamUser.getUserName)
 
-    def deleteLoginProfile(): Unit = iam.deleteLoginProfile(iamUser.getUserId)
+    def deleteLoginProfile(): Unit = iam.deleteLoginProfile(iamUser.getUserName)
 
-    def deleteUser(): Unit = iam.deleteIAMUser(iamUser.getUserId)
+    def deleteUser(): Boolean = iam.deleteUser(iamUser.getUserName)
 
     def principal: Principal = new Principal(iamUser.getArn)
   }

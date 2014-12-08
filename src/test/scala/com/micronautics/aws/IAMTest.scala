@@ -38,15 +38,19 @@ class IAMTest extends WordSpec with Matchers with BeforeAndAfter with BeforeAndA
         fail(s"Error creating bucket with accessKey=${awsCredentials.getAWSAccessKeyId} and secretKey=${awsCredentials.getAWSSecretKey}\n${e.getMessage}")
     }
 
-  val iamUserName = "iamUser1"
-  val Success((iamUser1, iamUser1Creds)) = iam.createIAMUser(iamUserName)
+  val iamUser1Name = "iamUser1"
+  val Success((iamUser1, iamUser1Creds)) = iam.createIAMUser(iamUser1Name)
 
-  "Blah" must {
-    "blah" in {
+  "IAMUsers" must {
+    "be manipulable" in {
       import com.amazonaws.auth.policy.Statement
       val stmt1: Statement = IAM.allowAllStatement(bucket, List(iamUser1.principal), "This is a test")
       bucket.policy = List(stmt1)
       assert(bucket.policyAsJson==s"""{"Version":"2012-10-17","Statement":[{"Sid":"This is a test","Effect":"Allow","Principal":{"AWS":"arn:aws:iam::031372724784:user/iamUser1"},"Action":"s3:*","Resource":"arn:aws:s3:::$bucketName"}]}""")
+
+      assert(iam.findUser(iamUser1Name).isDefined)
+      iamUser1.deleteUser()
+      assert(iam.findUser(iamUser1Name).isEmpty)
     }
   }
 }
