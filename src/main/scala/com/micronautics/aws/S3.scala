@@ -502,7 +502,7 @@ trait S3Implicits {
 
     def oneObjectData(prefix: String): Option[S3ObjectSummary] = s3.oneObjectData(bucket.getName, prefix)
 
-    def removeDistribution(bucket: Bucket)(implicit cf: CloudFront): Boolean = cf.removeDistribution(bucket)
+    def removeDistribution()(implicit cf: CloudFront): Boolean = cf.removeDistribution(bucket)
 
     def resourceUrl(key: String): String = s3.resourceUrl(bucket.getName, key)
 

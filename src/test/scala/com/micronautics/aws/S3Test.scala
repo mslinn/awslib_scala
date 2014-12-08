@@ -12,22 +12,12 @@
 package com.micronautics.aws
 
 import java.io.File
+import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.services.s3.model.Bucket
 import com.micronautics.aws.S3._
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpec}
 
 class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll {
-  import com.amazonaws.auth.AWSCredentials
-  import com.amazonaws.services.s3.model.Bucket
-
-  val file1Name = "index.html"
-  val file2Name = "index2.html"
-  val file1 = new File(file1Name)
-  val file2 = new File(file2Name)
-
-  val publisher1UserId = "testPublisher1UserId"
-  val instructor1UserId = "testInstructor1UserId"
-  val instructor2UserId = "testInstructor2UserId"
-
   lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv.getOrElse(
                                                        maybeCredentialsFromFile.getOrElse(
                                                          sys.error("No AWS credentials found in environment variables and no .s3 file was found in the working directory, or a parent directory.")))
@@ -46,6 +36,15 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
         val awsCredentials = implicitly[S3].awsCredentials
         fail(s"Error creating bucket with accessKey=${awsCredentials.getAWSAccessKeyId} and secretKey=${awsCredentials.getAWSSecretKey}\n${e.getMessage}")
     }
+
+  val file1Name = "index.html"
+  val file2Name = "index2.html"
+  val file1 = new File(file1Name)
+  val file2 = new File(file2Name)
+
+  val publisher1UserId = "testPublisher1UserId"
+  val instructor1UserId = "testInstructor1UserId"
+  val instructor2UserId = "testInstructor2UserId"
 
   private def saveToFile(file: java.io.File, string: String): Unit = {
     val printWriter = new java.io.PrintWriter(file)
@@ -67,7 +66,7 @@ class S3Test extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAf
   }
 
   override def afterAll(): Unit = {
-    implicitly[S3].deleteBucket(bucketName)
+    s3.deleteBucket(bucketName)
     if (file1.exists)
       file1.delete
     if (file2.exists)

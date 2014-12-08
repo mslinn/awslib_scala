@@ -12,9 +12,9 @@
 package com.micronautics.aws
 
 import com.amazonaws.auth.AWSCredentials
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, WordSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpec}
 
-class SNSTest extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll {
+class ETTest extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll {
   lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv.getOrElse(
                                                        maybeCredentialsFromFile.getOrElse(
                                                          sys.error("No AWS credentials found in environment variables and no .s3 file was found in the working directory, or a parent directory.")))

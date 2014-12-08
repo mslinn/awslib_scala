@@ -134,7 +134,7 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
       None
   }
 
-  def maybePrincipal(userId: String): Option[Principal] = findUser(userId).map { aimUser => new Principal(aimUser.getArn) }
+  def maybePrincipal(userId: String): Option[Principal] = findUser(userId).map { iamUser => new Principal(iamUser.getArn) }
 }
 
 trait IAMImplicits {
@@ -142,6 +142,7 @@ trait IAMImplicits {
     def createCredentials: AWSCredentials = {
       import com.amazonaws.auth.BasicAWSCredentials
       import com.amazonaws.services.identitymanagement.model.CreateAccessKeyRequest
+
       val createAccessKeyRequest = new CreateAccessKeyRequest().withUserName(iamUser.getUserName)
       val accessKeyResult = iam.iamClient.createAccessKey(createAccessKeyRequest)
       new BasicAWSCredentials(accessKeyResult.getAccessKey.getAccessKeyId, accessKeyResult.getAccessKey.getSecretAccessKey)
@@ -154,5 +155,7 @@ trait IAMImplicits {
     def deleteLoginProfile(): Unit = iam.deleteLoginProfile(iamUser.getUserId)
 
     def deleteUser(): Unit = iam.deleteIAMUser(iamUser.getUserId)
+
+    def newPrincipal(): Principal = new Principal(iamUser.getArn)
   }
 }
