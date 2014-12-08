@@ -15,6 +15,10 @@ import com.amazonaws.auth.AWSCredentials
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpec}
 
 class IAMTest extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll {
+  import com.amazonaws.services.identitymanagement.model.{User=>IAMUser}
+  import com.amazonaws.services.s3.model.Bucket
+  import scala.util.{Success, Try}
+
   lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv.getOrElse(
                                                        maybeCredentialsFromFile.getOrElse(
                                                          sys.error("No AWS credentials found in environment variables and no .s3 file was found in the working directory, or a parent directory.")))
@@ -24,8 +28,25 @@ class IAMTest extends WordSpec with Matchers with BeforeAndAfter with BeforeAndA
   lazy implicit val iam: IAM = new IAM()
   lazy implicit val sns: SNS = new SNS()
 
+  val bucketName = s"www.test${new java.util.Date().getTime}.com"
+  var bucket: Bucket = try {
+      println(s"Creating bucket $bucketName")
+      implicitly[S3].createBucket(bucketName)
+    } catch {
+      case e: Exception =>
+        val awsCredentials = implicitly[S3].awsCredentials
+        fail(s"Error creating bucket with accessKey=${awsCredentials.getAWSAccessKeyId} and secretKey=${awsCredentials.getAWSSecretKey}\n${e.getMessage}")
+    }
+
+  val iamUserName = "iamUser1"
+  val Success((iamUser1, iamUser1Creds)) = iam.createIAMUser(iamUserName)
+
   "Blah" must {
     "blah" in {
+      import com.amazonaws.auth.policy.Statement
+      val stmt1: Statement = IAM.allowAllStatement(bucket, List(iamUser1.principal), "This is a test")
+      bucket.policy = List(stmt1)
+      assert(bucket.policyAsJson==s"""[{"Version":"2012-10-17","Statement":[{"Sid":"This is a test","Effect":"Allow","Principal":{"AWS":"arn:aws:iam::031372724784:user/iamUser1"},"Action":"s3:*","Resource":"arn:aws:s3:::www.$bucketName.com"}]}]""")
     }
   }
 }

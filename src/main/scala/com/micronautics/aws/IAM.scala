@@ -43,23 +43,27 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
   implicit lazy val iamClient: AmazonIdentityManagementClient = new AmazonIdentityManagementClient
 
   /** (Re)creates an AWS IAM user with the given `userId`. Only PrivilegedUsers can have an associated IAM user.
+    * Any pre-existing credentials are replaced.
     * @param maybeCredentials might contain new AWS IAM credentials */
-  def createIAMUser(userId: String, maybeCredentials: Option[AWSCredentials]=None): Try[(IAMUser, AWSCredentials)] = {
+  def createIAMUser(userName: String, maybeCredentials: Option[AWSCredentials]=None): Try[(IAMUser, AWSCredentials)] = {
     try {
-      val oldIamUser = iamClient.getUser(new GetUserRequest().withUserName(userId)).getUser
-      val credentials = maybeCredentials.getOrElse(oldIamUser.createCredentials)
+      val oldIamUser: IAMUser = iamClient.getUser(new GetUserRequest().withUserName(userName)).getUser
+      try { oldIamUser.deleteAccessKeys() } catch { case ignored: Exception => Logger.info(ignored.getMessage) }
+      oldIamUser.createCredentials
+      val credentials: AWSCredentials = maybeCredentials.getOrElse(oldIamUser.createCredentials)
       Success((oldIamUser, credentials))
     } catch {
       case e: NoSuchEntityException => // this is normal, if the IAM user does not exist create it
         try {
-          val createUserRequest = new CreateUserRequest().withUserName(userId)
+          Logger.info(e.getMessage)
+          val createUserRequest = new CreateUserRequest().withUserName(userName)
           val iamUserNew: IAMUser = iamClient.createUser(createUserRequest).getUser
           val credentials = iamUserNew.createCredentials
-          Logger.debug(s"New AWS IAM user $userId has path ${iamUserNew.getPath} and credentials $credentials")
+          Logger.debug(s"New AWS IAM user $userName has path ${iamUserNew.getPath} and credentials $credentials")
           Success((iamUserNew, credentials))
         } catch {
           case e: Exception =>
-            Failure(ExceptTrace(s"${e.getMessage}\nAWS IAM user $userId did not previously exist"))
+            Failure(ExceptTrace(s"${e.getMessage}\nAWS IAM user $userName did not previously exist"))
         }
 
       case e: Exception =>
@@ -67,50 +71,50 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
     }
   }
 
-  def deleteAccessKeys(userId: String): Unit = {
-    val listAccessKeysRequest = new ListAccessKeysRequest().withUserName(userId)
+  def deleteAccessKeys(userName: String): Unit = {
+    val listAccessKeysRequest = new ListAccessKeysRequest().withUserName(userName)
     iamClient.listAccessKeys(listAccessKeysRequest).getAccessKeyMetadata.asScala.foreach { accessKey =>
-      val deleteAccessKeyRequest = new DeleteAccessKeyRequest().withUserName(userId).withAccessKeyId(accessKey.getAccessKeyId)
+      val deleteAccessKeyRequest = new DeleteAccessKeyRequest().withUserName(userName).withAccessKeyId(accessKey.getAccessKeyId)
       iamClient.deleteAccessKey(deleteAccessKeyRequest)
     }
   }
 
-  def deleteGroups(userId: String): Unit = try {
-    iamClient.listGroupsForUser(new ListGroupsForUserRequest(userId)).getGroups.asScala.foreach { group =>
-      iamClient.removeUserFromGroup(new RemoveUserFromGroupRequest().withUserName(userId).withGroupName(group.getGroupName))
+  def deleteGroups(userName: String): Unit = try {
+    iamClient.listGroupsForUser(new ListGroupsForUserRequest(userName)).getGroups.asScala.foreach { group =>
+      iamClient.removeUserFromGroup(new RemoveUserFromGroupRequest().withUserName(userName).withGroupName(group.getGroupName))
     }
   }
 
-  def deleteIAMUser(userId: String): Unit = try {
-     val deleteAccessKeyRequest = new DeleteAccessKeyRequest().withUserName(userId)
+  def deleteIAMUser(userName: String): Unit = try {
+     val deleteAccessKeyRequest = new DeleteAccessKeyRequest().withUserName(userName)
      iamClient.deleteAccessKey(deleteAccessKeyRequest)
 
-     val deleteLoginProfileRequest = new DeleteLoginProfileRequest().withUserName(userId)
+     val deleteLoginProfileRequest = new DeleteLoginProfileRequest().withUserName(userName)
      iamClient.deleteLoginProfile(deleteLoginProfileRequest)
 
-     val deleteUserRequest = new DeleteUserRequest().withUserName(userId)
+     val deleteUserRequest = new DeleteUserRequest().withUserName(userName)
      iamClient.deleteUser(deleteUserRequest)
 
-     Logger.debug(s"Deleted AWS IAM user $userId")
+     Logger.debug(s"Deleted AWS IAM user $userName")
    } catch { case e: Throwable => }
 
-  def deleteLoginProfile(userId: String): Unit = try {
-    iamClient.deleteLoginProfile(new DeleteLoginProfileRequest(userId))
+  def deleteLoginProfile(userName: String): Unit = try {
+    iamClient.deleteLoginProfile(new DeleteLoginProfileRequest(userName))
   } catch {
     case e: NoSuchEntityException => // no problem if this happens
       Logger.debug(e.getMessage)
   }
 
-  def deleteUser(userId: String): Boolean = try {
-    deleteAccessKeys(userId)
-    deleteLoginProfile(userId)
-    deleteGroups(userId)
+  def deleteUser(userName: String): Boolean = try {
+    deleteAccessKeys(userName)
+    deleteLoginProfile(userName)
+    deleteGroups(userName)
 
     // The user must not belong to any groups, have any keys or signing certificates, or have any attached policies.
-    val deleteUserRequest = new DeleteUserRequest().withUserName(userId)
+    val deleteUserRequest = new DeleteUserRequest().withUserName(userName)
     iamClient.deleteUser(deleteUserRequest)
 
-    Logger.debug(s"Deleted AWS IAM user $userId")
+    Logger.debug(s"Deleted AWS IAM user $userName")
     true
   } catch {
     case e: NoSuchEntityException => // no such user, non-fatal warning
@@ -126,15 +130,15 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
       false
   }
 
-  def findUser(userId: String): Option[IAMUser] = try {
-    Some(iamClient.getUser(new GetUserRequest().withUserName(userId)).getUser)
+  def findUser(userName: String): Option[IAMUser] = try {
+    Some(iamClient.getUser(new GetUserRequest().withUserName(userName)).getUser)
   } catch {
     case e: Exception =>
       Logger.warn(e.getMessage)
       None
   }
 
-  def maybePrincipal(userId: String): Option[Principal] = findUser(userId).map { iamUser => new Principal(iamUser.getArn) }
+  def maybePrincipal(userName: String): Option[Principal] = findUser(userName).map { iamUser => new Principal(iamUser.getArn) }
 }
 
 trait IAMImplicits {
@@ -148,7 +152,7 @@ trait IAMImplicits {
       new BasicAWSCredentials(accessKeyResult.getAccessKey.getAccessKeyId, accessKeyResult.getAccessKey.getSecretAccessKey)
     }
 
-    def deleteAccessKeys(): Unit = iam.deleteAccessKeys(iamUser.getUserId)
+    def deleteAccessKeys(): Unit = iam.deleteAccessKeys(iamUser.getUserName)
 
     def deleteGroups(): Unit = iam.deleteGroups(iamUser.getUserId)
 
@@ -156,6 +160,6 @@ trait IAMImplicits {
 
     def deleteUser(): Unit = iam.deleteIAMUser(iamUser.getUserId)
 
-    def newPrincipal(): Principal = new Principal(iamUser.getArn)
+    def principal: Principal = new Principal(iamUser.getArn)
   }
 }
