@@ -46,7 +46,7 @@ class IAMTest extends WordSpec with Matchers with BeforeAndAfter with BeforeAndA
       import com.amazonaws.auth.policy.Statement
       val stmt1: Statement = IAM.allowAllStatement(bucket, List(iamUser1.principal), "This is a test")
       bucket.policy = List(stmt1)
-      assert(bucket.policyAsJson==s"""[{"Version":"2012-10-17","Statement":[{"Sid":"This is a test","Effect":"Allow","Principal":{"AWS":"arn:aws:iam::031372724784:user/iamUser1"},"Action":"s3:*","Resource":"arn:aws:s3:::www.$bucketName.com"}]}]""")
+      assert(bucket.policyAsJson==s"""{"Version":"2012-10-17","Statement":[{"Sid":"This is a test","Effect":"Allow","Principal":{"AWS":"arn:aws:iam::031372724784:user/iamUser1"},"Action":"s3:*","Resource":"arn:aws:s3:::$bucketName"}]}""")
     }
   }
 }
