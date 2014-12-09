@@ -26,8 +26,8 @@ or you must have configured [AWS CLI](http://aws.amazon.com/cli/) with your AWS 
 If environment variables and the AWS CLI configuration file are all available, the environment variables have precedence.
  4. Type the following into a bash console:
 ````
-git clone https://github.com/mslinn/AwsS3.git
-cd AwsS3
+git clone https://github.com/mslinn/awslib_scala.git
+cd awslib_scala
 sbt test
 ````
 
@@ -36,7 +36,7 @@ Add this to your project's `build.sbt`:
 
     resolvers += "Micronautics releases" at "http://www.mavenrepo.s3.amazonaws.com/releases"
 
-    libraryDependencies += "com.micronautics" % "awss3" % "0.2.0" withSources()
+    libraryDependencies += "com.micronautics" % "awslib_scala" % "0.2.0" withSources()
 
 ## Sample Code ##
 See the unit tests for examples of how to use this library.
