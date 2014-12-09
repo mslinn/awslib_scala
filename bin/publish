@@ -1,3 +1,9 @@
 #!/bin/bash
 
-sbt test && clearSbtCacheItem && s3publish com/micronautics/awss3_2.10 && commit
+if [ "$1" != NOTEST ]; then
+  sbt test
+  if [ "$?" != 0 ]; then
+    exit 1
+  fi
+fi
+clearSbtCacheItem && s3publish com/micronautics/awslib.scala_2.10 && commit

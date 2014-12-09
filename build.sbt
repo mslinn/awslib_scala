@@ -1,7 +1,7 @@
 import sbt.Keys._
 
 version := "0.2.0"
-name := "awss3"
+name := "awslib.scala"
 organization := "com.micronautics"
 //crossPaths := false
 scalaVersion := "2.10.4"
@@ -14,7 +14,7 @@ javacOptions ++= Seq("-Xlint:deprecation", "-Xlint:unchecked", "-source", "1.8",
 scalacOptions in (Compile, doc) <++= baseDirectory.map {
   (bd: File) => Seq[String](
      "-sourcepath", bd.getAbsolutePath,
-     "-doc-source-url", "https://github.com/mslinn/AwsS3/tree/master€{FILE_PATH}.scala"
+     "-doc-source-url", "https://github.com/mslinn/awslib.scala/tree/master€{FILE_PATH}.scala"
   )
 }
 
