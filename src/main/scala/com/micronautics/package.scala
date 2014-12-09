@@ -115,11 +115,17 @@ package object aws extends CFImplicits with ETImplicits with IAMImplicits with S
     testMap + ("aws.aws_access_key_id" -> accessKey) + ("aws.aws_secret_key_id" -> secretKey)
   }
 
-  lazy val maybeCredentialsFromEnv: Option[AWSCredentials] =
+  /** @param prefix might be "TEST_" so unit tests could use a dedicated AWS account with
+    *               credentials specified by environment variables `TEST_AWS_ACCESS_KEY` and `TEST_AWS_SECRET_KEY`;
+    *               similarly, the quality control prefix might be "QC_" in order to use a dedicated AWS account with
+    *               credentials specified by environment variables `QC_AWS_ACCESS_KEY` and `QC_AWS_SECRET_KEY` */
+  def maybeCredentialsFromEnv(prefix: String=""): Option[AWSCredentials] = {
+    val x = Option(System.getenv(s"${prefix}AWS_ACCESS_KEY"))
     for {
-      accessKey <- Some(System.getenv("AWS_ACCESS_KEY")) if accessKey.nonEmpty
-      secretKey <- Some(System.getenv("AWS_SECRET_KEY")) if secretKey.nonEmpty
+      accessKey <- Option(System.getenv(s"${prefix}AWS_ACCESS_KEY")) if accessKey.nonEmpty
+      secretKey <- Option(System.getenv(s"${prefix}AWS_SECRET_KEY")) if secretKey.nonEmpty
     } yield new BasicAWSCredentials(accessKey, secretKey)
+}
 
   lazy val maybeCredentialsFromFile: Option[AWSCredentials] =
     for {

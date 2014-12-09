@@ -11,22 +11,10 @@
 
 package com.micronautics.aws
 
-import com.amazonaws.auth.AWSCredentials
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpec}
-
-class IAMTest extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll {
+class IAMTest extends TestBase {
   import com.amazonaws.services.identitymanagement.model.{User=>IAMUser}
   import com.amazonaws.services.s3.model.Bucket
-  import scala.util.{Success, Try}
-
-  lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv.getOrElse(
-                                                       maybeCredentialsFromFile.getOrElse(
-                                                         sys.error("No AWS credentials found in environment variables and no .s3 file was found in the working directory, or a parent directory.")))
-  lazy implicit val s3: S3 = new S3()
-  lazy implicit val cf: CloudFront = new CloudFront()
-  lazy implicit val et: ElasticTranscoder = new ElasticTranscoder()
-  lazy implicit val iam: IAM = new IAM()
-  lazy implicit val sns: SNS = new SNS()
+  import scala.util.Success
 
   val bucketName = s"www.test${new java.util.Date().getTime}.com"
   var bucket: Bucket = try {
@@ -41,16 +29,36 @@ class IAMTest extends WordSpec with Matchers with BeforeAndAfter with BeforeAndA
   val iamUser1Name = "iamUser1"
   val Success((iamUser1, iamUser1Creds)) = iam.createIAMUser(iamUser1Name)
 
+  val iamUser2Name = "iamUser2"
+  val Success((iamUser2, iamUser2Creds)) = iam.createIAMUser(iamUser2Name)
+
+
   "IAMUsers" must {
     "be manipulable" in {
       import com.amazonaws.auth.policy.Statement
-      val stmt1: Statement = IAM.allowAllStatement(bucket, List(iamUser1.principal), "This is a test")
+
+      val msg1 = "allowAllStatement with iamUser1"
+      val stmt1: Statement = IAM.allowAllStatement(bucket, List(iamUser1.principal), msg1)
       bucket.policy = List(stmt1)
-      assert(bucket.policyAsJson==s"""{"Version":"2012-10-17","Statement":[{"Sid":"This is a test","Effect":"Allow","Principal":{"AWS":"arn:aws:iam::031372724784:user/iamUser1"},"Action":"s3:*","Resource":"arn:aws:s3:::$bucketName"}]}""")
+      val json1 = bucket.policyAsJson
+      assert(json1.contains(s""""Sid":"$msg1""""))
+      assert(json1.contains(s""":user/iamUser1"""))
+      assert(json1.contains(s""""Action":"s3:*""""))
+      assert(json1.contains(s""""Resource":"arn:aws:s3:::$bucketName""""))
+
+      val msg2 = "allowAllStatement with iamUser1 and iamuser2"
+      val stmt2: Statement = IAM.allowAllStatement(bucket, List(iamUser1.principal, iamUser2.principal), msg2)
+      bucket.policy = List(stmt2)
+      val json2 = bucket.policyAsJson
+      assert(json2.contains(s""""Sid":"$msg2""""))
+      assert(json2.contains(s""":user/iamUser1"""))
+      assert(json2.contains(s""":user/iamUser2"""))
 
       assert(iam.findUser(iamUser1Name).isDefined)
       iamUser1.deleteUser()
       assert(iam.findUser(iamUser1Name).isEmpty)
+      iamUser2.deleteUser()
+      ()
     }
   }
 }

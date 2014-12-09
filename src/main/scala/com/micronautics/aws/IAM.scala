@@ -147,6 +147,6 @@ trait IAMImplicits {
 
     def deleteUser(): Boolean = iam.deleteUser(iamUser.getUserName)
 
-    def principal: Principal = new Principal(iamUser.getArn)
+    def principal: Principal = new Principal(iamUser.getArn) // specify account id instead of user arn?!?!
   }
 }
