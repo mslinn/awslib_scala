@@ -6,4 +6,4 @@ if [ "$1" != NOTEST ]; then
     exit 1
   fi
 fi
-clearSbtCacheItem && s3publish com/micronautics/awslib.scala_2.10 && commit
+clearSbtCacheItem && s3publish com/micronautics/awslib_scala_2.10 && commit
