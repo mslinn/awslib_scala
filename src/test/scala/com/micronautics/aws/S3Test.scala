@@ -19,7 +19,7 @@ class S3Test extends TestBase {
   val bucketName = s"www.test${new java.util.Date().getTime}.com"
   var bucket: Bucket = try {
       println(s"Creating bucket $bucketName")
-      implicitly[S3].createBucket(bucketName)
+      s3.createBucket(bucketName)
     } catch {
       case e: Exception =>
         val awsCredentials = implicitly[S3].awsCredentials
