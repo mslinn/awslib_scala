@@ -38,7 +38,7 @@ object ElasticTranscoder {
       |  ]
       |}""".stripMargin
 
-  def apply(implicit awsCredentials: AWSCredentials): ElasticTranscoder = new ElasticTranscoder()
+  def apply(implicit awsCredentials: AWSCredentials): ElasticTranscoder = new ElasticTranscoder()(awsCredentials)
 }
 
 class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
@@ -47,7 +47,7 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
   import com.amazonaws.services.s3.model.Bucket
   import util.Try
 
-  implicit val etClient: AmazonElasticTranscoderClient = new AmazonElasticTranscoderClient
+  implicit val etClient: AmazonElasticTranscoderClient = new AmazonElasticTranscoderClient(awsCredentials)
   implicit val et = this
 
   def allPresets: List[Preset] =

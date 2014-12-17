@@ -43,7 +43,7 @@ import scala.collection.JavaConverters._
  * Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only).
  */
 object S3 {
-  def apply(implicit awsCredentials: AWSCredentials): S3 = new S3()
+  def apply(implicit awsCredentials: AWSCredentials): S3 = new S3()(awsCredentials)
 
   protected def bucketPolicy(bucketName: String): String = s"""{
     |\t"Version": "2008-10-17",
@@ -83,7 +83,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
   import com.micronautics.aws.S3._
 
   implicit lazy val s3 = this
-  implicit lazy val s3Client: AmazonS3Client = new AmazonS3Client
+  implicit lazy val s3Client: AmazonS3Client = new AmazonS3Client(awsCredentials)
 
   /** @param prefix Any leading slashes are removed if a prefix is specified
     * @return collection of S3ObjectSummary; keys are relativized if prefix is adjusted */

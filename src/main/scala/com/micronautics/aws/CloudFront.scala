@@ -21,7 +21,7 @@ import scala.util.{Failure, Success, Try}
 object CloudFront {
   val oneMinute = 1L * 60L * 1000L
 
-  def apply(implicit awsCredentials: AWSCredentials): CloudFront = new CloudFront()
+  def apply(implicit awsCredentials: AWSCredentials): CloudFront = new CloudFront()(awsCredentials)
 }
 
 class CloudFront()(implicit val awsCredentials: AWSCredentials) extends CFImplicits {
@@ -29,7 +29,7 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials) extends CFImplic
   import com.amazonaws.services.s3.model.Bucket
 
   implicit lazy val cf = this
-  implicit lazy val cfClient: AmazonCloudFrontClient = new AmazonCloudFrontClient
+  implicit lazy val cfClient: AmazonCloudFrontClient = new AmazonCloudFrontClient(awsCredentials)
 
   def distributions: List[DistributionSummary] =
     cfClient.listDistributions(new ListDistributionsRequest).getDistributionList.getItems.asScala.toList
