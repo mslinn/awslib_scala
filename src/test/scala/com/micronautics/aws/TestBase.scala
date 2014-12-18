@@ -9,12 +9,13 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License. */
 
- package com.micronautics.aws
+package com.micronautics.aws
 
-import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpec}
 
 trait TestBase extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll {
+//  lazy implicit val awsCredentials: AWSCredentials = new BasicAWSCredentials("blahblah", "blahblah")
   lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv("TEST_").getOrElse(
                                                        maybeCredentialsFromFile.getOrElse(
                                                          sys.error("No AWS credentials found in environment variables and no .s3 file was found in the working directory, or a parent directory.")))
