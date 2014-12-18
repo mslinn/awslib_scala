@@ -34,7 +34,7 @@ class IAMTest extends TestBase {
 
 
   "IAMUsers" must {
-    "be manipulable" in {
+    "be manipulable" ignore {
       import com.amazonaws.auth.policy.Statement
 
       val msg1 = "allowAllStatement with iamUser1"
