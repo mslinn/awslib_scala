@@ -83,7 +83,11 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
   import com.micronautics.aws.S3._
 
   implicit val s3 = this
-  implicit val s3Client: AmazonS3Client = new AmazonS3Client(awsCredentials)
+  implicit val s3Client: AmazonS3Client = {
+    val s3Client = new AmazonS3Client(awsCredentials)
+    println(s"s3Client created with awsCredentials= $awsCredentials")
+    s3Client
+  }
 
   /** @param prefix Any leading slashes are removed if a prefix is specified
     * @return collection of S3ObjectSummary; keys are relativized if prefix is adjusted */
