@@ -108,7 +108,10 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
     again(objectListing, List.empty[S3ObjectSummary])
   }
 
-  def bucketExists(bucketName: String): Boolean = s3Client.listBuckets.asScala.exists(_.getName==bucketName)
+  def bucketExists(bucketName: String): Boolean = {
+    val x = s3Client.listBuckets
+    x
+  }.asScala.exists(_.getName==bucketName)
 
   def bucketLocation(bucketName: String): String = s3Client.getBucketLocation(bucketName)
 
