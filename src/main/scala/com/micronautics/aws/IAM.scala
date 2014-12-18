@@ -39,8 +39,8 @@ object IAM {
 }
 
 class IAM()(implicit val awsCredentials: AWSCredentials) {
-  implicit lazy val iam = this
-  implicit lazy val iamClient: AmazonIdentityManagementClient = new AmazonIdentityManagementClient(awsCredentials)
+  implicit val iam = this
+  implicit val iamClient: AmazonIdentityManagementClient = new AmazonIdentityManagementClient(awsCredentials)
 
   /** (Re)creates an AWS IAM user with the given `userId`. Only PrivilegedUsers can have an associated IAM user.
     * Any pre-existing credentials are replaced.

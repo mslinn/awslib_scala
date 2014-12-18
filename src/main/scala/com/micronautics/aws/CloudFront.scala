@@ -28,8 +28,8 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials) extends CFImplic
   import CloudFront._
   import com.amazonaws.services.s3.model.Bucket
 
-  implicit lazy val cf = this
-  implicit lazy val cfClient: AmazonCloudFrontClient = new AmazonCloudFrontClient(awsCredentials)
+  implicit val cf = this
+  implicit val cfClient: AmazonCloudFrontClient = new AmazonCloudFrontClient(awsCredentials)
 
   def distributions: List[DistributionSummary] =
     cfClient.listDistributions(new ListDistributionsRequest).getDistributionList.getItems.asScala.toList

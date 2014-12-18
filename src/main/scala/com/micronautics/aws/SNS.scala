@@ -22,8 +22,8 @@ object SNS {
 }
 
 class SNS()(implicit val awsCredentials: AWSCredentials) {
-  implicit lazy val sns = this
-  implicit lazy val snsClient: AmazonSNSClient = new AmazonSNSClient(awsCredentials)
+  implicit val sns = this
+  implicit val snsClient: AmazonSNSClient = new AmazonSNSClient(awsCredentials)
 
   /** Creates a topic if it does not exist. Topics should contain a string unique to the AWS account, such as the publishing server's domain name
    * @return Some(ARN of the Topic) or None if error */
