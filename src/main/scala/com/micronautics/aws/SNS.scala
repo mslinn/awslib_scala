@@ -25,6 +25,13 @@ class SNS()(implicit val awsCredentials: AWSCredentials) {
   implicit val sns = this
   implicit val snsClient: AmazonSNSClient = new AmazonSNSClient(awsCredentials)
 
+  /** @return Option[String] containing SubscriptionId */
+  def confirmSubscription(token: String, arn: String): Option[String] = {
+    val subscriptionId = Option(snsClient.confirmSubscription(new ConfirmSubscriptionRequest().withTopicArn(arn).withToken(token)).getSubscriptionArn)
+    Logger.trace(s"SNS Confirmation $subscriptionId")
+    subscriptionId
+  }
+
   /** Creates a topic if it does not exist. Topics should contain a string unique to the AWS account, such as the publishing server's domain name
    * @return Some(ARN of the Topic) or None if error */
   def findOrCreateTopic(name: String): Option[String] = {
@@ -43,10 +50,16 @@ class SNS()(implicit val awsCredentials: AWSCredentials) {
     }
   }
 
+  def publish(arn: String, message: String) = {
+    Logger.debug(s"Publishing SNS message $message")
+    snsClient.publish(new PublishRequest().withTopicArn(arn).withMessage(message))
+  }
+
   /** @param protocol is most likely "http" or "https"
     * @param endpoint is URL that will receive HTTP POST of ConfirmSubscription action */
-  def subscribe(arn: String, protocol: String, endpoint: String) = {
-    snsClient.subscribe(new SubscribeRequest(arn, protocol, endpoint))
+  def subscribe(arn: String, protocol: String, endpoint: String): String = {
+    Logger.debug(s"Subscribing to SNS endpoint $endpoint")
+    snsClient.subscribe(new SubscribeRequest(arn, protocol, endpoint)).getSubscriptionArn
   }
 }
 
