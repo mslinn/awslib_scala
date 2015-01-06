@@ -11,7 +11,9 @@
 
 package com.micronautics.aws
 
-class IAMTest extends TestBase {
+import org.scalatest.WordSpec
+
+class IAMTest extends WordSpec with TestBase {
   import com.amazonaws.services.identitymanagement.model.{User=>IAMUser}
   import com.amazonaws.services.s3.model.Bucket
   import scala.util.Success

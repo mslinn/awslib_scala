@@ -11,9 +11,56 @@
 
 package com.micronautics.aws
 
-class SNSTest extends TestBase {
-  "Blah" must {
-    "blah" in {
+import org.scalatest._
+import org.scalatestplus.play._
+import play.api.mvc.Results
+import play.api.test._
+import scala.concurrent.duration._
+import scala.concurrent.Await
+import scala.language.postfixOps
+
+class SNSTest extends PlaySpecServer {
+  import play.api.libs.ws.WS
+  import play.api.mvc._
+  import play.api.test.FakeApplication
+  import play.api.libs.ws.WSResponse
+
+  // Override app if you need a FakeApplication with other than default parameters.
+  implicit override lazy val app: FakeApplication =
+    FakeApplication(
+      //additionalConfiguration = Map("ehcacheplugin" -> "disabled"),
+      withRoutes = {
+        case ("GET", "/") =>
+          Action { Ok("Got root") }
+
+        case ("GET", "/lectures/sns/transcodingDone") =>
+//          topic.publish("Hello from Amazon SNS!")
+//          topic.delete()
+          Action { Ok("Got callback") }
+      }
+    )
+
+  implicit val snsClient = sns.snsClient
+  val subscriberUrl = Option(System.getenv("TRANSCODER_SUBSCRIPTION_URL")).getOrElse("http://bear64.no-ip.info:9000")
+
+  "blah" must {
+    "test server logic" in {
+      val myPublicAddress = s"localhost:$port"
+      val testURL = s"http://$myPublicAddress"
+      // The test payment gateway requires a callback to this server before it returns a result...
+      val callbackURL = s"http://$myPublicAddress/callback"
+      // await is from play.api.test.FutureAwaits
+      val response: WSResponse = Await.result(WS.url(testURL).withQueryString("callbackURL" -> callbackURL).get(), 10 seconds)
+      //response.status mustBe OK
+    }
+  }
+
+  "SNS" must {
+    "manipulate topics" in {
+      sns.findOrCreateTopic("TestTopic").map { topic =>
+        topic.subscribe(s"$subscriberUrl/lectures/sns/transcodingDone".asUrl)
+      }.orElse { fail() }
+      ()
     }
   }
 }

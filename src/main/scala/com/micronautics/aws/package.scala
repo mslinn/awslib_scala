@@ -14,6 +14,16 @@ package com.micronautics.aws
 import com.amazonaws.auth.BasicAWSCredentials
 import scala.util.control.NoStackTrace
 
+/** @param arnString Typical value: arn:aws:sns:us-east-1:031372724784:transcoderComplete */
+case class Arn(arnString: String) {
+  import com.amazonaws.services.sns.model.Topic
+
+  println(s"arnString=$arnString")
+  val Array(_, _, serviceName, region, amiOwnerId, name) = arnString.split(":")
+
+  def asTopic: Topic = new Topic().withTopicArn(arnString)
+}
+
 case class Credentials(awsAccountName: String, accessKey: String, secretKey: String) extends BasicAWSCredentials(accessKey, secretKey) {
   val asBasicAWSCredentials: BasicAWSCredentials = new BasicAWSCredentials(accessKey, secretKey)
 }
@@ -24,4 +34,18 @@ object ExceptTrace {
   def apply(msg: String): ExceptTrace = new ExceptTrace(msg)
 
   def apply(msg: String, exception: Exception): ExceptTrace = new ExceptTrace(msg)
+}
+
+case class Subscription(arn: Arn) {
+  import com.amazonaws.services.sns.AmazonSNSClient
+
+  /** @return Option[String] containing SubscriptionId */
+  def confirm(token: String)(implicit snsClient: AmazonSNSClient): Option[Arn] = {
+    import com.amazonaws.services.sns.model.ConfirmSubscriptionRequest
+
+    val request = new ConfirmSubscriptionRequest().withTopicArn(arn.arnString).withToken(token)
+    val maybeSubscriptionArn = Option(snsClient.confirmSubscription(request).getSubscriptionArn.asArn)
+    Logger.trace(s"SNS Subscription confirmed with Arn ${maybeSubscriptionArn.get}")
+    maybeSubscriptionArn
+  }
 }

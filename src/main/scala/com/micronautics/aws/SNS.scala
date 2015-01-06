@@ -14,7 +14,7 @@ package com.micronautics.aws
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.sns.AmazonSNSClient
 import com.amazonaws.services.sns.model._
-
+import java.net.URL
 import scala.collection.JavaConverters._
 
 object SNS {
@@ -25,44 +25,84 @@ class SNS()(implicit val awsCredentials: AWSCredentials) {
   implicit val sns = this
   implicit val snsClient: AmazonSNSClient = new AmazonSNSClient(awsCredentials)
 
-  /** @return Option[String] containing SubscriptionId */
-  def confirmSubscription(token: String, arn: String): Option[String] = {
-    val subscriptionId = Option(snsClient.confirmSubscription(new ConfirmSubscriptionRequest().withTopicArn(arn).withToken(token)).getSubscriptionArn)
-    Logger.trace(s"SNS Confirmation $subscriptionId")
-    subscriptionId
-  }
+  def deleteTopic(topic: Topic): Unit = topic.delete()
 
-  /** Creates a topic if it does not exist. Topics should contain a string unique to the AWS account, such as the publishing server's domain name
-   * @return Some(ARN of the Topic) or None if error */
-  def findOrCreateTopic(name: String): Option[String] = {
+  /** Creates a topic.
+    * Topics should contain a string unique to the AWS account, such as the publishing server's domain name
+    * @return desired topic */
+  def createTopic(name: String): Option[Topic] =
     try {
-      val ltr: ListTopicsResult = snsClient.listTopics(new ListTopicsRequest)
-      val maybeTopic = ltr.getTopics.asScala.toList.find(_.getTopicArn.endsWith(":" + name))
-      maybeTopic.map(_.getTopicArn).orElse {
-        val ctr: CreateTopicResult = snsClient.createTopic(new CreateTopicRequest(name))
-        Some(ctr.getTopicArn)
-      }
+      val topic = Some(snsClient.createTopic(new CreateTopicRequest(name)).getTopicArn.asTopic)
+      Logger.debug(s"Created SNS topic $topic")
+      println(s"Created SNS topic $topic")
+      topic
     } catch {
       case e: Exception =>
         Logger.warn(e.getMessage)
         println(e.toString)
         None
     }
-  }
 
-  def publish(arn: String, message: String) = {
-    Logger.debug(s"Publishing SNS message $message")
-    snsClient.publish(new PublishRequest().withTopicArn(arn).withMessage(message))
-  }
+  /** Creates a topic if it does not exist.
+    * Topics should contain a string unique to the AWS account, such as the publishing server's domain name
+    * @return newly created topic */
+  def findOrCreateTopic(name: String): Option[Topic] = findTopic(name) orElse { createTopic(name) }
 
-  /** @param protocol is most likely "http" or "https"
-    * @param endpoint is URL that will receive HTTP POST of ConfirmSubscription action */
-  def subscribe(arn: String, protocol: String, endpoint: String): String = {
-    Logger.debug(s"Subscribing to SNS endpoint $endpoint")
-    snsClient.subscribe(new SubscribeRequest(arn, protocol, endpoint)).getSubscriptionArn
-  }
+  /** @return the topic with the given name if it exists. */
+  def findTopic(name: String): Option[Topic] =
+    try {
+      val topic = snsClient.listTopics(new ListTopicsRequest).getTopics.asScala.find(_.name==name)
+      Logger.debug(s"Found SNS topic $topic")
+      println(s"Found SNS topic $topic")
+      topic
+    } catch {
+      case e: Exception =>
+        Logger.warn(e.getMessage)
+        println(e.toString)
+        None
+    }
+
+  def publish(topic: Topic, message: String): Arn = topic.publish(message)
+
+  def subscribe(topic: Topic, url: URL): Unit = topic.subscribe(url)
 }
 
-trait SNSImplicits {
+trait  SNSImplicits {
+  implicit class RichString(string: String) {
+    def asArn: Arn = Arn(string)
 
+    def asTopic: Topic = new Topic().withTopicArn(string)
+
+    def asUrl: URL = new URL(string)
+  }
+
+  implicit class RichTopic(topic: Topic) {
+    def arn: Arn = topic.getTopicArn.asArn
+
+    def delete()(implicit snsClient: AmazonSNSClient): Unit =
+      try {
+       snsClient.deleteTopic(topic.getTopicArn)
+       Logger.debug(s"SNS topic ${topic.getTopicArn} was deleted")
+      } catch {
+        case e: Exception =>
+          Logger.warn(e.getMessage)
+          println(e.toString)
+      }
+
+    def name: String = topic.arn.name
+
+    /** @return published message id */
+    def publish(message: String)(implicit snsClient: AmazonSNSClient): Arn = {
+      val arn = snsClient.publish(new PublishRequest().withTopicArn(topic.getTopicArn).withMessage(message)).getMessageId.asArn
+      Logger.debug(s"Published SNS message $message")
+      arn
+    }
+
+    /** @param url will receive HTTP POST of ConfirmSubscription action
+      * @return ARN of subscription */
+    def subscribe(url: URL)(implicit snsClient: AmazonSNSClient): Unit = {
+      snsClient.subscribe(new SubscribeRequest(topic.getTopicArn, url.getProtocol, url.toString))
+      Logger.debug(s"Subscribed to SNS endpoint $url")
+    }
+  }
 }

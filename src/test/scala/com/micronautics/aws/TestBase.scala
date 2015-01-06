@@ -11,10 +11,29 @@
 
 package com.micronautics.aws
 
-import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials}
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, Matchers, WordSpec}
+import com.amazonaws.auth.AWSCredentials
+import org.scalatest.concurrent.AsyncAssertions
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, MustMatchers, Suite}
+import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 
-trait TestBase extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll {
+
+trait TestBase extends MustMatchers with BeforeAndAfter with BeforeAndAfterAll with SNSImplicits { this: BeforeAndAfterAll with Suite =>
+//  lazy implicit val awsCredentials: AWSCredentials = new BasicAWSCredentials("blahblah", "blahblah")
+  lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv("TEST_").getOrElse(
+                                                       maybeCredentialsFromFile.getOrElse(
+                                                         sys.error("No AWS credentials found in environment variables and no .s3 file was found in the working directory, or a parent directory.")))
+  lazy implicit val s3: S3 = new S3()
+  lazy implicit val cf: CloudFront = new CloudFront()
+  lazy implicit val et: ElasticTranscoder = new ElasticTranscoder()
+  lazy implicit val iam: IAM = new IAM()
+  lazy implicit val sns: SNS = new SNS()
+}
+
+abstract class PlaySpecServer extends PlaySpec
+                              with OneServerPerSuite
+                              with AsyncAssertions
+                              with play.api.mvc.Results
+                              with SNSImplicits {
 //  lazy implicit val awsCredentials: AWSCredentials = new BasicAWSCredentials("blahblah", "blahblah")
   lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv("TEST_").getOrElse(
                                                        maybeCredentialsFromFile.getOrElse(

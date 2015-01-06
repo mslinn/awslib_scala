@@ -11,7 +11,9 @@
 
 package com.micronautics.aws
 
-class CFTest extends TestBase {
+import org.scalatest.WordSpec
+
+class CFTest extends WordSpec with TestBase {
   "Blah" must {
     "blah" in {
     }
