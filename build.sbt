@@ -33,9 +33,9 @@ libraryDependencies ++= Seq(
   "org.slf4j"                     %  "slf4j-api"           % "1.7.5"  withSources(),
   "ch.qos.logback"                %  "logback-classic"     % "1.1.2"  withSources(),
   //
-  "com.typesafe.play"             %% "play"                % "2.3.7" % "test" withSources(),
-//  "com.typesafe.play"             %% "play-json"           % "2.3.7" % "test" withSources(),
-  "com.typesafe.play"             %% "play-ws"             % "2.3.7" % "test" withSources(),
+  "com.typesafe.play"             %% "play"                % "2.2.6" % "test" withSources(),
+//  "com.typesafe.play"             %% "play-json"           % "2.2.6" % "test" withSources(),
+//  "com.typesafe.play"             %% "play-ws"             % "2.3.7" % "test" withSources(),
   "org.scalatestplus"             %% "play"                % "1.2.0" % "test" withSources(),
   "junit"                         %  "junit"               % "4.11"  % "test",
   "org.scalatest"                 %% "scalatest"           % "2.2.1" % "test"  withSources(),
