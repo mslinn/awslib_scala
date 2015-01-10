@@ -25,6 +25,13 @@ class SNS()(implicit val awsCredentials: AWSCredentials) {
   implicit val sns = this
   implicit val snsClient: AmazonSNSClient = new AmazonSNSClient(awsCredentials)
 
+  /** @return Option[String] containing SubscriptionId */
+  def confirmSubscription(token: String, arn: String): Option[String] = {
+    val subscriptionId = Option(snsClient.confirmSubscription(new ConfirmSubscriptionRequest().withTopicArn(arn).withToken(token)).getSubscriptionArn)
+    Logger.trace(s"SNS Confirmation $subscriptionId")
+    subscriptionId
+  }
+
   def deleteTopic(topic: Topic): Unit = topic.delete()
 
   /** Creates a topic.

@@ -23,7 +23,6 @@ class SNSTest extends PlaySpecServer {
   import play.api.libs.ws.WS
   import play.api.mvc._
   import play.api.test.FakeApplication
-  import play.api.libs.ws.WSResponse
 
   // Override app if you need a FakeApplication with other than default parameters.
   implicit override lazy val app: FakeApplication =
@@ -50,7 +49,7 @@ class SNSTest extends PlaySpecServer {
       // The test payment gateway requires a callback to this server before it returns a result...
       val callbackURL = s"http://$myPublicAddress/callback"
       // await is from play.api.test.FutureAwaits
-      val response: WSResponse = Await.result(WS.url(testURL).withQueryString("callbackURL" -> callbackURL).get(), 10 seconds)
+      val response = Await.result(WS.url(testURL).withQueryString("callbackURL" -> callbackURL).get(), 10 seconds)
       //response.status mustBe OK
     }
   }
