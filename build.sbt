@@ -1,10 +1,12 @@
 import sbt.Keys._
 
-version := "0.2.0"
+// Builds with Scala 2.11.x, Play 2.3.x
+
+version := "0.2.1"
 name := "awslib_scala"
 organization := "com.micronautics"
 //crossPaths := false
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.5"
 
 scalacOptions ++= Seq("-deprecation", "-encoding", "UTF-8", "-feature", "-target:jvm-1.7", "-unchecked",
     "-Ywarn-adapted-args", "-Ywarn-value-discard", "-Xlint")
@@ -25,7 +27,7 @@ resolvers ++= Seq(
 libraryDependencies ++= Seq(
   "org.codehaus.jackson"          %  "jackson-mapper-asl"  % "1.9.13",
   "com.amazonaws"                 %  "aws-java-sdk"        % "1.9.13",
-  "com.typesafe.play"             %% "play-json"           % "2.2.6"  withSources(),
+  "com.typesafe.play"             %% "play-json"           % "2.3.7"  withSources(),
   "commons-io"                    %  "commons-io"          % "2.4"    withSources(),
   "commons-lang"                  %  "commons-lang"        % "2.6"    withSources(),
   "org.clapper"                   %  "grizzled-scala_2.10" % "1.2"    withSources(),
@@ -33,9 +35,8 @@ libraryDependencies ++= Seq(
   "org.slf4j"                     %  "slf4j-api"           % "1.7.5"  withSources(),
   "ch.qos.logback"                %  "logback-classic"     % "1.1.2"  withSources(),
   //
-  "com.typesafe.play"             %% "play"                % "2.2.6" % "test" withSources(),
-//  "com.typesafe.play"             %% "play-json"           % "2.2.6" % "test" withSources(),
-//  "com.typesafe.play"             %% "play-ws"             % "2.3.7" % "test" withSources(),
+  "com.typesafe.play"             %% "play"                % "2.3.7" % "test" withSources(),
+  "com.typesafe.play"             %% "play-ws"             % "2.3.7" % "test" withSources(),
   "org.scalatestplus"             %% "play"                % "1.2.0" % "test" withSources(),
   "junit"                         %  "junit"               % "4.11"  % "test",
   "org.scalatest"                 %% "scalatest"           % "2.2.1" % "test"  withSources(),

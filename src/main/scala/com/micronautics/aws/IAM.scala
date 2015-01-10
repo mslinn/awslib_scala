@@ -83,6 +83,8 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
     iamClient.listGroupsForUser(new ListGroupsForUserRequest(userName)).getGroups.asScala.foreach { group =>
       iamClient.removeUserFromGroup(new RemoveUserFromGroupRequest().withUserName(userName).withGroupName(group.getGroupName))
     }
+  } finally {
+    // todo why is this a try block?
   }
 
   def deleteLoginProfile(userName: String): Unit = try {

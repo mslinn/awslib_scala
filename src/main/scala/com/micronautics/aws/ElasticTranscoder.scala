@@ -86,7 +86,7 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
     * TODO listen for job completion and if the output file existed previously, invalidate the output file so CloudFront can distribute the new version. */
   def createJob(bucket: Bucket, pipelineId: String, inputKey: String, outputKey: String, presetId: String)(implicit s3: S3): Try[Job] = {
     if (s3.listObjectsByPrefix(bucket.getName, inputKey, showSize=false).size==0) {
-      Failure(ExceptTrace("Error: $inputKey does not exist in bucket ${bucket.getName}. Transcoding not attempted"))
+      Failure(ExceptTrace(s"Error: $inputKey does not exist in bucket ${bucket.getName}. Transcoding not attempted"))
     } else if (findJobByOutputKeyName(outputKey, pipelineId).isDefined) {
       Failure(ExceptTrace(s"Error: Job is still running with same output key ($outputKey)"))
     } else {
@@ -94,7 +94,7 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
         import com.amazonaws.services.elastictranscoder.model.{CreateJobRequest, CreateJobOutput, JobInput}
         val files = s3.listObjectsByPrefix(bucket.getName, outputKey, showSize=false).toSeq
         files.foreach { file =>
-          Logger.debug("Deleting ${bucket.getName}, $file")
+          Logger.debug(s"Deleting ${bucket.getName}, $file")
           s3.deleteObject(bucket.getName, file)
         }
         val input = new JobInput().withKey(inputKey).withAspectRatio("auto").withContainer("auto").withFrameRate("auto").
