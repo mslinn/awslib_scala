@@ -64,6 +64,31 @@ parallelExecution in Test := false
 
 // define the statements initially evaluated when entering 'console', 'console-quick', or 'console-project'
 initialCommands := """
+  |import com.micronautics.aws._
+  |import com.micronautics.aws.AclEnum._
+  |import com.amazonaws.auth.AWSCredentials
+  |import com.amazonaws.auth.policy.{Policy, Statement}
+  |import com.amazonaws.event.ProgressEventType
+  |import com.amazonaws.services.identitymanagement.model.{User => IAMUser}
+  |import com.amazonaws.services.s3.AmazonS3Client
+  |import com.amazonaws.services.s3.model._
+  |import com.amazonaws.{AmazonClientException, HttpMethod, event}
+  |import org.joda.time.{DateTime, Duration}
+  |import java.io.{File, InputStream}
+  |import java.net.URL
+  |import java.nio.file.Files
+  |import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
+  |import java.util.Date
+  |import scala.annotation.tailrec
+  |import scala.collection.JavaConverters._
+  |lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv("TEST_").getOrElse(
+  |  maybeCredentialsFromFile.getOrElse(
+  |    sys.error("No AWS credentials found in environment variables and no .s3 file was found in the working directory, or a parent directory.")))
+  |lazy implicit val s3: S3 = new S3()
+  |lazy implicit val cf: CloudFront = new CloudFront()
+  |lazy implicit val et: ElasticTranscoder = new ElasticTranscoder()
+  |lazy implicit val iam: IAM = new IAM()
+  |lazy implicit val sns: SNS = new SNS()
   |""".stripMargin
 
 // Only show warnings and errors on the screen for compilations.

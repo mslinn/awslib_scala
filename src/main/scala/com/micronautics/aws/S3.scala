@@ -243,24 +243,18 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
       case e: Exception => false
     }
 
-  /** List objects in given bucketName by prefix, followed by number of bytes.
-    * @param prefix Any leading slashes are removed if a prefix is specified */
-  def listObjectsByPrefix(bucketName: String, prefix: String): List[String] =
-    listObjectsByPrefix(bucketName, prefix, showSize=true)
-
   /** List objects in given bucketName by prefix; number of bytes is included if showSize is true.
-    * @param prefix Any leading slashes are removed if a prefix is specified */
-  def listObjectsByPrefix(bucketName: String, prefix: String, showSize: Boolean): List[String] = {
+    * @param prefix Any leading slashes are removed if a prefix is specified
+    * @param suffix optional secondary filter */
+  def listObjectsByPrefix(bucketName: String, prefix: String, suffix: String="", showSize: Boolean=false): List[String] = {
     @tailrec def again(objectListing: ObjectListing, accum: List[String]): List[String] = {
       val result: List[String] = for {
-        s3ObjectSummary <- objectListing.getObjectSummaries.asScala.toList
-      } yield {
-        s3ObjectSummary.getKey + (if (showSize) s" (size = ${s3ObjectSummary.getSize})" else "")
-      }
+        s3ObjectSummary <- objectListing.getObjectSummaries.asScala.toList if s3ObjectSummary.getKey.endsWith(suffix)
+      } yield s3ObjectSummary.getKey + (if (showSize) s" (size = ${s3ObjectSummary.getSize})" else "")
       if (objectListing.isTruncated)
         again(s3Client.listNextBatchOfObjects(objectListing), accum ::: result)
       else
-        result
+        accum ::: result
     }
 
     val objectListing: ObjectListing = s3Client.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(sanitizedPrefix(prefix)))
@@ -480,9 +474,9 @@ trait S3Implicits {
 
     def isWebsiteEnabled: Boolean = s3.isWebsiteEnabled(bucket.getName)
 
-    def listObjectsByPrefix(prefix: String): List[String] = s3.listObjectsByPrefix(bucket.getName, prefix)
-
-    def listObjectsByPrefix(prefix: String, showSize: Boolean): List[String] = s3.listObjectsByPrefix(bucket.getName, prefix, showSize)
+    /** @param suffix optional secondary filter */
+    def listObjectsByPrefix(prefix: String, suffix: String="", showSize: Boolean=false): List[String] =
+      s3.listObjectsByPrefix(bucket.getName, prefix, suffix, showSize)
 
     def move(oldKey: String, newKey: String): Unit = s3.move(bucket.getName, oldKey, newKey)
 
