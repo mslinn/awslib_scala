@@ -18,7 +18,7 @@ import play.api.test._
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import scala.language.postfixOps
-
+/*
 class SNSTest extends PlaySpecServer {
   import play.api.libs.ws.WS
   import play.api.mvc._
@@ -63,3 +63,4 @@ class SNSTest extends PlaySpecServer {
     }
   }
 }
+*/

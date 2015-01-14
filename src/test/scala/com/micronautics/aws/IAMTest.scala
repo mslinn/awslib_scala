@@ -56,10 +56,10 @@ class IAMTest extends WordSpec with TestBase {
       assert(json2.contains(s""":user/iamUser1"""))
       assert(json2.contains(s""":user/iamUser2"""))
 
-      assert(iam.findUser(iamUser1Name).isDefined)
-      iamUser1.deleteUser()
-      assert(iam.findUser(iamUser1Name).isEmpty)
-      iamUser2.deleteUser()
+      assert(iam.findUser(iamUser1Name).isSuccess)
+      assert(iamUser1.deleteUser().isSuccess)
+      assert(iam.findUser(iamUser1Name).isSuccess)
+      assert(iamUser2.deleteUser().isSuccess)
       ()
     }
   }
