@@ -1,5 +1,6 @@
 # Idiomatic Scala AWS Library #
 
+![awslib_scala Logo](https://raw.githubusercontent.com/mslinn/awslib_scala/master/images/awsLib_76x78.png)
 This project is sponsored by [Micronautics Research Corporation](http://www.micronauticsresearch.com/),
 the company behind [Cadenza](http://www.micronauticsresearch.com/products/cadenza/index.html) and [ScalaCourses.com](http://www.scalacourses.com).
 
