@@ -16,7 +16,6 @@ import org.scalatest.concurrent.AsyncAssertions
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, MustMatchers, Suite}
 import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 
-
 trait TestBase extends MustMatchers with BeforeAndAfter with BeforeAndAfterAll with SNSImplicits { this: BeforeAndAfterAll with Suite =>
 //  lazy implicit val awsCredentials: AWSCredentials = new BasicAWSCredentials("blahblah", "blahblah")
   lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv("TEST_").getOrElse(

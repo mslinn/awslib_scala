@@ -71,30 +71,28 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
     }
   }
 
-  def deleteAccessKeys(userName: String): Unit = {
+  def deleteAccessKeys(userName: String): Try[Boolean] = Try {
     val listAccessKeysRequest = new ListAccessKeysRequest().withUserName(userName)
-    iamClient.listAccessKeys(listAccessKeysRequest).getAccessKeyMetadata.asScala.foreach { accessKey =>
+    iamClient.listAccessKeys(listAccessKeysRequest).getAccessKeyMetadata.asScala.map { accessKey =>
       val deleteAccessKeyRequest = new DeleteAccessKeyRequest().withUserName(userName).withAccessKeyId(accessKey.getAccessKeyId)
       iamClient.deleteAccessKey(deleteAccessKeyRequest)
-    }
+      true
+    }.forall(_==true)
   }
 
-  def deleteGroups(userName: String): Unit = try {
-    iamClient.listGroupsForUser(new ListGroupsForUserRequest(userName)).getGroups.asScala.foreach { group =>
+  def deleteGroups(userName: String): Try[Boolean] = Try {
+    iamClient.listGroupsForUser(new ListGroupsForUserRequest(userName)).getGroups.asScala.map { group =>
       iamClient.removeUserFromGroup(new RemoveUserFromGroupRequest().withUserName(userName).withGroupName(group.getGroupName))
-    }
-  } finally {
-    // todo why is this a try block?
+      true
+    }.forall(_==true)
   }
 
-  def deleteLoginProfile(userName: String): Unit = try {
+  def deleteLoginProfile(userName: String): Try[Boolean] = Try {
     iamClient.deleteLoginProfile(new DeleteLoginProfileRequest(userName))
-  } catch {
-    case e: NoSuchEntityException => // no problem if this happens
-      Logger.debug(e.getMessage)
+    true
   }
 
-  def deleteUser(userName: String): Boolean = try {
+  def deleteUser(userName: String): Try[Boolean] = Try {
     deleteAccessKeys(userName)
     deleteLoginProfile(userName)
     deleteGroups(userName)
@@ -105,29 +103,14 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
 
     Logger.debug(s"Deleted AWS IAM user $userName")
     true
-  } catch {
-    case e: NoSuchEntityException => // no such user, non-fatal warning
-      Logger.warn(e.getMessage)
-      false
-
-    case e: DeleteConflictException =>
-      Logger.error(e.getMessage)
-      false
-
-    case e: Exception =>
-      Logger.error(e.getMessage)
-      false
   }
 
-  def findUser(userName: String): Option[IAMUser] = try {
-    Some(iamClient.getUser(new GetUserRequest().withUserName(userName)).getUser)
-  } catch {
-    case e: Exception =>
-      Logger.warn(e.getMessage)
-      None
+  def findUser(userName: String): Try[IAMUser] = Try {
+    iamClient.getUser(new GetUserRequest().withUserName(userName)).getUser
   }
 
-  def maybePrincipal(userName: String): Option[Principal] = findUser(userName).map { iamUser => new Principal(iamUser.getArn) }
+  def maybePrincipal(userName: String): Try[Principal] =
+    findUser(userName).map { iamUser => new Principal(iamUser.getArn) }
 }
 
 trait IAMImplicits {
@@ -141,13 +124,13 @@ trait IAMImplicits {
       new BasicAWSCredentials(accessKeyResult.getAccessKey.getAccessKeyId, accessKeyResult.getAccessKey.getSecretAccessKey)
     }
 
-    def deleteAccessKeys(): Unit = iam.deleteAccessKeys(iamUser.getUserName)
+    def deleteAccessKeys():  Try[Boolean] = iam.deleteAccessKeys(iamUser.getUserName)
 
-    def deleteGroups(): Unit = iam.deleteGroups(iamUser.getUserName)
+    def deleteGroups():  Try[Boolean] = iam.deleteGroups(iamUser.getUserName)
 
-    def deleteLoginProfile(): Unit = iam.deleteLoginProfile(iamUser.getUserName)
+    def deleteLoginProfile(): Try[Boolean] = iam.deleteLoginProfile(iamUser.getUserName)
 
-    def deleteUser(): Boolean = iam.deleteUser(iamUser.getUserName)
+    def deleteUser(): Try[Boolean] = iam.deleteUser(iamUser.getUserName)
 
     def principal: Principal = new Principal(iamUser.getArn) // specify account id instead of user arn?!?!
   }

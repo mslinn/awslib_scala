@@ -19,7 +19,7 @@ package com.micronautics
 
  As another example, the key for a file in a directory called `{WEBROOT}/blah/ick/yuck.html` is defined as `blah/ick/yuck.html`.
 
- For each directory, AWS creates a file of the same name, with the suffix `_$folder$`.
+ For each directory, AWS creates a file of the same name, with the suffix `_$$folder$$`.
  If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
  These hidden files are ignored by this program; users never see them because they are for AWS S3 internal use only. */
 package object aws extends CFImplicits with ETImplicits with IAMImplicits with S3Implicits with SNSImplicits {
