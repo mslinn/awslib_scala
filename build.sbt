@@ -1,4 +1,5 @@
 import sbt.Keys._
+import bintray.Keys._
 
 // Builds with Scala 2.10 and Play 2.2.6
 
@@ -8,9 +9,11 @@ name := "awslib_scala"
 
 organization := "com.micronautics"
 
-//crossPaths := false
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 
 scalaVersion := "2.10.4"
+
+crossScalaVersions := Seq("2.10.4", "2.11.5")
 
 scalacOptions ++= Seq("-deprecation", "-encoding", "UTF-8", "-feature", "-target:jvm-1.7", "-unchecked",
     "-Ywarn-adapted-args", "-Ywarn-value-discard", "-Xlint")
@@ -53,6 +56,14 @@ updateOptions := updateOptions.value.withCachedResolution(cachedResoluton = true
 publishTo := Some(Resolver.file("file", new File(Path.userHome.absolutePath + "/.ivy2/local")))
 
 publishMavenStyle := true
+
+bintrayPublishSettings
+
+bintrayOrganization in bintray := Some("micronautics")
+
+repository in bintray := "scala"
+
+publishArtifact in Test := false
 
 logBuffered in Test := false
 
