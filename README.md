@@ -34,7 +34,7 @@ sbt test
 ## Installation ##
 Add this to your project's `build.sbt`:
 
-    resolvers += "Micronautics releases" at "http://www.mavenrepo.s3.amazonaws.com/releases"
+    resolvers += "micronautics/scala on bintray" at "http://dl.bintray.com/micronautics/scala"
 
     libraryDependencies += "com.micronautics" % "awslib_scala" % "0.2.0" withSources()
 
