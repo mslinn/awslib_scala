@@ -85,7 +85,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
   implicit val s3 = this
   implicit val s3Client: AmazonS3Client = {
     val s3Client = new AmazonS3Client(awsCredentials)
-    println(s"s3Client created with awsCredentials= $awsCredentials")
+    Logger.debug(s"s3Client created with awsCredentials= $awsCredentials")
     s3Client
   }
 
@@ -132,7 +132,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
   def createBucket(bucketName: String): Bucket = {
     val bnSanitized: String = bucketName.toLowerCase.replaceAll("[^A-Za-z0-9.]", "")
     if (bucketName!=bnSanitized)
-      println(s"Invalid characters removed from bucket name; modified to $bnSanitized")
+      Logger.warn(s"Invalid characters removed from bucket name; modified to $bnSanitized")
     if (bucketExists(bnSanitized))
       throw new Exception(s"Error: Bucket '$bnSanitized' exists.")
     val bucket: Bucket = s3Client.createBucket(bnSanitized)
@@ -357,9 +357,9 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
         putObjectRequest.setGeneralProgressListener(new event.ProgressListener {
           def progressChanged(progressEvent: event.ProgressEvent): Unit = {
             if (progressEvent.getEventType eq ProgressEventType.TRANSFER_COMPLETED_EVENT)
-              println(" " + progressEvent.getBytesTransferred + " bytes; ")
+              Logger.info(" " + progressEvent.getBytesTransferred + " bytes; ")
             else
-              println(".")
+              Logger.info(".")
           }
         })
       }
@@ -370,7 +370,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
       result
     } catch {
       case e: Exception =>
-        println(e.getMessage)
+        Logger.warn(e.getMessage)
         new PutObjectResult
     }
   }
@@ -401,7 +401,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
       s3Client.putObject (putObjectRequest)
     } catch {
       case e: Exception =>
-        println(e.getMessage)
+        Logger.warn(e.getMessage)
         new PutObjectResult
     }
   }

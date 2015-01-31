@@ -41,12 +41,10 @@ class SNS()(implicit val awsCredentials: AWSCredentials) {
     try {
       val topic = Some(snsClient.createTopic(new CreateTopicRequest(name)).getTopicArn.asTopic)
       Logger.debug(s"Created SNS topic $topic")
-      println(s"Created SNS topic $topic")
       topic
     } catch {
       case e: Exception =>
         Logger.warn(e.getMessage)
-        println(e.toString)
         None
     }
 
@@ -60,12 +58,10 @@ class SNS()(implicit val awsCredentials: AWSCredentials) {
     try {
       val topic = snsClient.listTopics(new ListTopicsRequest).getTopics.asScala.find(_.name==name)
       Logger.debug(s"Found SNS topic $topic")
-      println(s"Found SNS topic $topic")
       topic
     } catch {
       case e: Exception =>
         Logger.warn(e.getMessage)
-        println(e.toString)
         None
     }
 
@@ -93,7 +89,6 @@ trait  SNSImplicits {
       } catch {
         case e: Exception =>
           Logger.warn(e.getMessage)
-          println(e.toString)
       }
 
     def name: String = topic.arn.name
