@@ -18,34 +18,36 @@ scalacOptions in (Compile, doc) <++= baseDirectory.map {
      "-sourcepath", bd.getAbsolutePath,
      "-doc-source-url", "https://github.com/mslinn/awslib_scala/tree/master€{FILE_PATH}.scala"
   )
-} 
+}
 
 resolvers ++= Seq(
   "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases"
 )
 
-libraryDependencies <++= scalaVersion { 
+libraryDependencies <++= scalaVersion {
   case sv if sv.startsWith("2.11") => // Builds with Scala 2.11.x, Play 2.3.x
+    val playV = "2.3.7"
     Seq(
-      "com.typesafe.play"    %% "play-json"           % "2.3.7"  withSources(),
+      "com.typesafe.play"    %% "play-json"           % playV   withSources(),
       //
-      "com.typesafe.play"    %% "play"                % "2.3.7" % "test" withSources(),
-      "com.typesafe.play"    %% "play-ws"             % "2.3.7" % "test" withSources(),
+      "com.typesafe.play"    %% "play"                % playV   % "test" withSources(),
+      "com.typesafe.play"    %% "play-ws"             % playV   % "test" withSources(),
       "org.scalatestplus"    %% "play"                % "1.2.0" % "test" withSources()
     )
 
   case sv if sv.startsWith("2.10") => // Builds with Scala 2.10.x, Play 2.2.x
+    val playV = "2.2.6"
     Seq(
-      "com.typesafe.play"    %% "play-json"           % "2.2.6"  withSources(),
+      "com.typesafe.play"    %% "play-json"           % playV   withSources(),
       //
-      "com.typesafe.play"    %% "play"                % "2.2.6" % "test" withSources(),
+      "com.typesafe.play"    %% "play"                % playV   % "test" withSources(),
       "org.scalatestplus"    %% "play"                % "1.0.0" % "test" withSources()
     )
 }
 
 libraryDependencies ++= Seq(
   "org.codehaus.jackson"   %  "jackson-mapper-asl"  % "1.9.13",
-  "com.amazonaws"          %  "aws-java-sdk"        % "1.9.15",
+  "com.amazonaws"          %  "aws-java-sdk"        % "1.9.17",
   "commons-io"             %  "commons-io"          % "2.4"   withSources(),
   "commons-lang"           %  "commons-lang"        % "2.6"   withSources(),
   "org.clapper"            %  "grizzled-scala_2.10" % "1.2"   withSources(),
