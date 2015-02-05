@@ -51,7 +51,7 @@ libraryDependencies ++= Seq(
   "commons-io"             %  "commons-io"          % "2.4"   withSources(),
   "commons-lang"           %  "commons-lang"        % "2.6"   withSources(),
   "org.clapper"            %  "grizzled-scala_2.10" % "1.2"   withSources(),
-  "com.github.nscala-time" %  "nscala-time_2.10"    % "1.6.0" withSources(),
+  "com.github.nscala-time" %  "nscala-time_2.10"    % "1.8.0" withSources(),
   "org.slf4j"              %  "slf4j-api"           % "1.7.5" withSources(),
   "ch.qos.logback"         %  "logback-classic"     % "1.1.2" withSources(),
   //
