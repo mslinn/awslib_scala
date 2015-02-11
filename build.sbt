@@ -1,7 +1,7 @@
 import sbt.Keys._
 import bintray.Keys._
 
-version := "1.0.0"
+version := "1.0.1"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
@@ -47,7 +47,7 @@ libraryDependencies <++= scalaVersion {
 
 libraryDependencies ++= Seq(
   "org.codehaus.jackson"   %  "jackson-mapper-asl"  % "1.9.13",
-  "com.amazonaws"          %  "aws-java-sdk"        % "1.9.17",
+  "com.amazonaws"          %  "aws-java-sdk"        % "1.9.18",
   "commons-io"             %  "commons-io"          % "2.4"   withSources(),
   "commons-lang"           %  "commons-lang"        % "2.6"   withSources(),
   "org.clapper"            %  "grizzled-scala_2.10" % "1.2"   withSources(),
