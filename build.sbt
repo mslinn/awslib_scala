@@ -26,7 +26,7 @@ resolvers ++= Seq(
 
 libraryDependencies <++= scalaVersion {
   case sv if sv.startsWith("2.11") => // Builds with Scala 2.11.x, Play 2.3.x
-    val playV = "2.3.7"
+    val playV = "2.3.8"
     Seq(
       "com.typesafe.play"    %% "play-json"           % playV   withSources(),
       //
