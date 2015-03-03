@@ -3,6 +3,6 @@ resolvers += Resolver.url(
   url("http://dl.bintray.com/content/sbt/sbt-plugin-releases"))(
     Resolver.ivyStylePatterns)
 
-addSbtPlugin("me.lessis" % "bintray-sbt" % "0.1.2")
+addSbtPlugin("me.lessis" % "bintray-sbt" % "0.2.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-start-script" % "0.10.0")
