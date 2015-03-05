@@ -5,8 +5,8 @@ version := "1.0.1"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-scalaVersion := "2.10.4"
-crossScalaVersions := Seq("2.10.4", "2.11.5")
+scalaVersion := "2.10.5"
+crossScalaVersions := Seq("2.10.5", "2.11.6")
 
 scalacOptions ++= Seq("-deprecation", "-encoding", "UTF-8", "-feature", "-target:jvm-1.7", "-unchecked",
     "-Ywarn-adapted-args", "-Ywarn-value-discard", "-Xlint")
