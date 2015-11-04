@@ -1,12 +1,11 @@
 import sbt.Keys._
-import bintray.Keys._
 
-version := "1.0.2"
+version := "1.0.3"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-scalaVersion := "2.10.5"
-crossScalaVersions := Seq("2.10.5", "2.11.6")
+scalaVersion := "2.11.7"
+crossScalaVersions := Seq("2.10.6", "2.11.7")
 
 scalacOptions ++= Seq("-deprecation", "-encoding", "UTF-8", "-feature", "-target:jvm-1.7", "-unchecked",
     "-Ywarn-adapted-args", "-Ywarn-value-discard", "-Xlint")
@@ -25,46 +24,46 @@ resolvers ++= Seq(
 )
 
 libraryDependencies <++= scalaVersion {
-  case sv if sv.startsWith("2.11") => // Builds with Scala 2.11.x, Play 2.3.x
-    val playV = "2.3.8"
+  case sv if sv.startsWith("2.11") => // Builds with Scala 2.11.x, Play 2.4.2
+    val playV = "2.4.2"
     Seq(
-      "com.typesafe.play"    %% "play-json"           % playV   withSources(),
+      "com.typesafe.play"      %% "play-json"      % playV   withSources(),
+      "com.github.nscala-time" %% "nscala-time"    % "2.4.0" withSources(),
+      "org.clapper"            %% "grizzled-scala" % "1.3"   withSources(),
       //
-      "com.typesafe.play"    %% "play"                % playV   % "test" withSources(),
-      "com.typesafe.play"    %% "play-ws"             % playV   % "test" withSources(),
-      "org.scalatestplus"    %% "play"                % "1.2.0" % "test" withSources()
+      "com.typesafe.play"      %% "play"           % playV      % "test" withSources(),
+      "com.typesafe.play"      %% "play-ws"        % playV      % "test" withSources(),
+      "org.scalatestplus"      %% "play"           % "1.4.0-M4" % "test" withSources()
     )
 
-  case sv if sv.startsWith("2.10") => // Builds with Scala 2.10.x, Play 2.2.x
+  case sv if sv.startsWith("2.10") => // Builds with Scala 2.10.x, Play 2.2.6
     val playV = "2.2.6"
     Seq(
-      "com.typesafe.play"    %% "play-json"           % playV   withSources(),
+      "com.typesafe.play"      %% "play-json"           % playV   withSources(),
+      //"com.github.nscala-time" %  "nscala-time_2.10"    % "2.2.0" withSources(),
+      // temporary for JDK 1.8u60 bug:
+      "com.github.nscala-time" %% "nscala-time"         % "2.4.0" exclude("joda-time", "joda-time"),
+      "joda-time"              % "joda-time"            % "2.8.2",
       //
-      "com.typesafe.play"    %% "play"                % playV   % "test" withSources(),
-      "org.scalatestplus"    %% "play"                % "1.0.0" % "test" withSources()
+      "org.clapper"            %  "grizzled-scala_2.10" % "1.3"   withSources(),
+      //
+      "com.typesafe.play"      %% "play"                % playV      % "test" withSources(),
+      "org.scalatestplus"      %% "play"                % "1.4.0-M4" % "test" withSources()
     )
 }
 
 libraryDependencies ++= Seq(
   "org.codehaus.jackson"   %  "jackson-mapper-asl"  % "1.9.13",
-  "com.amazonaws"          % "aws-java-sdk-osgi"    % "1.9.31" withSources(),
-  "commons-io"             %  "commons-io"          % "2.4"    withSources(),
-  "commons-lang"           %  "commons-lang"        % "2.6"    withSources(),
-  "org.clapper"            %  "grizzled-scala_2.10" % "1.2"    withSources(),
-  "com.github.nscala-time" %  "nscala-time_2.10"    % "1.8.0"  withSources(),
-  "org.slf4j"              %  "slf4j-api"           % "1.7.5"  withSources(),
-  "ch.qos.logback"         %  "logback-classic"     % "1.1.2"  withSources(),
+  "com.amazonaws"          %  "aws-java-sdk-osgi"   % "1.10.31" withSources(),
+  "commons-io"             %  "commons-io"          % "2.4"     withSources(),
+  "commons-lang"           %  "commons-lang"        % "2.6"     withSources(),
+  "org.slf4j"              %  "slf4j-api"           % "1.7.5"   withSources(),
+  "ch.qos.logback"         %  "logback-classic"     % "1.1.2"   withSources(),
   //
-  "junit"                  %  "junit"               % "4.11"  % "test",
-  "org.scalatest"          %% "scalatest"           % "2.2.1" % "test" withSources(),
+  "junit"                  %  "junit"               % "4.12"  % "test",
+  "org.scalatest"          %% "scalatest"           % "2.2.5" % "test" withSources(),
   "org.scalautils"         %% "scalautils"          % "2.1.7" % "test" withSources()
 )
-
-bintrayPublishSettings
-bintrayOrganization in bintray := Some("micronautics")
-repository in bintray := "scala"
-
-publishArtifact in Test := false
 
 updateOptions := updateOptions.value.withCachedResolution(cachedResoluton = true)
 logBuffered in Test := false
@@ -80,3 +79,7 @@ initialCommands := """
 // This applies to both test:compile and compile and is Info by default
 //logLevel in compile := Level.Warn
 logLevel in test := Level.Info // Level.INFO is needed to see detailed output when running tests
+
+bintrayOrganization := Some("micronautics")
+bintrayRepository := "scala"
+
