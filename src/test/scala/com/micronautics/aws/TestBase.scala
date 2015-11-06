@@ -25,6 +25,7 @@ trait TestBase extends MustMatchers with BeforeAndAfter with BeforeAndAfterAll w
   lazy implicit val cf: CloudFront = new CloudFront()
   lazy implicit val et: ElasticTranscoder = new ElasticTranscoder()
   lazy implicit val iam: IAM = new IAM()
+  lazy implicit val r53: Route53 = new Route53()
   lazy implicit val sns: SNS = new SNS()
 }
 
@@ -41,5 +42,6 @@ abstract class PlaySpecServer extends PlaySpec
   lazy implicit val cf: CloudFront = new CloudFront()
   lazy implicit val et: ElasticTranscoder = new ElasticTranscoder()
   lazy implicit val iam: IAM = new IAM()
+  lazy implicit val r53: Route53 = new Route53()
   lazy implicit val sns: SNS = new SNS()
 }

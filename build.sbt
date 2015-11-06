@@ -1,6 +1,6 @@
 import sbt.Keys._
 
-version := "1.0.3"
+version := "1.0.4"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
@@ -20,7 +20,8 @@ scalacOptions in (Compile, doc) <++= baseDirectory.map {
 }
 
 resolvers ++= Seq(
-  "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases"
+  "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases",
+  "micronautics/scala on bintray" at "http://dl.bintray.com/micronautics/scala"
 )
 
 libraryDependencies <++= scalaVersion {
@@ -55,6 +56,7 @@ libraryDependencies <++= scalaVersion {
 libraryDependencies ++= Seq(
   "org.codehaus.jackson"   %  "jackson-mapper-asl"  % "1.9.13",
   "com.amazonaws"          %  "aws-java-sdk-osgi"   % "1.10.31" withSources(),
+  "com.micronautics"       %% "scalacourses-utils"  % "0.2.11"  withSources(),
   "commons-io"             %  "commons-io"          % "2.4"     withSources(),
   "commons-lang"           %  "commons-lang"        % "2.6"     withSources(),
   "org.slf4j"              %  "slf4j-api"           % "1.7.5"   withSources(),
@@ -82,4 +84,3 @@ logLevel in test := Level.Info // Level.INFO is needed to see detailed output wh
 
 bintrayOrganization := Some("micronautics")
 bintrayRepository := "scala"
-

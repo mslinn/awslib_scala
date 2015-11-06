@@ -11,6 +11,8 @@
 
 package com.micronautics.aws
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 import AclEnum._
 import java.io.{File, InputStream}
 import java.net.URL
@@ -21,27 +23,40 @@ import java.util.Date
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.auth.policy.{Policy, Statement}
 import com.amazonaws.event.ProgressEventType
-import com.amazonaws.services.identitymanagement.model.{User => IAMUser}
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
 import com.amazonaws.{AmazonClientException, HttpMethod, event}
+import com.micronautics.cache.{Memoizer0, Memoizer}
 import org.joda.time.{DateTime, Duration}
-
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
+import scala.language.postfixOps
 
-/**
- * When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.
- *
- * Keys of assets that were uploaded by other clients might start with leading slashes, or a dit; those assets can
- * not be fetched by web browsers.
- *
- * AWS does not respect the last-modified metadata provided when uploading; it uses the upload timestamp instead.
- * After uploading, the last-modified timestamp of the uploaded file is read and applied to the local copy of the file
- * so the timestamps match.
- *
- * Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only).
- */
+trait CloudFrontAlias
+
+case class StaticCFAlias(cname: String) extends CloudFrontAlias  {
+  override val toString = cname
+}
+
+case class StreamingCFAlias(cname: String) extends CloudFrontAlias {
+  override val toString = cname
+}
+
+/** This package is optimized for buckets that are read-mostly.
+  * Either the app must be restarted or the cache must be cleared (by calling the `clearCaches` method) if a bucket or
+  * an object in a bucket is created or modified after a method is called, otherwise the old data will always be returned by that method.
+  * Methods that are cached are denoted by **cached**.
+  *
+  * When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.
+  *
+  * Keys of assets that were uploaded by other clients might start with leading slashes, or a dit; those assets can
+  * not be fetched by web browsers.
+  *
+  * AWS does not respect the last-modified metadata provided when uploading; it uses the upload timestamp instead.
+  * After uploading, the last-modified timestamp of the uploaded file is read and applied to the local copy of the file
+  * so the timestamps match.
+  *
+  * Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only). */
 object S3 {
   def apply(implicit awsCredentials: AWSCredentials): S3 = new S3()(awsCredentials)
 
@@ -61,12 +76,18 @@ object S3 {
     |}
     |""".stripMargin
 
-  def latestFileTime(file: File): Long = {
-    val fileAttributeView = Files.getFileAttributeView(file.toPath, classOf[BasicFileAttributeView])
-    val creationTime = fileAttributeView.readAttributes.creationTime.toMillis
-    val lastModifiedTime = fileAttributeView.readAttributes.lastModifiedTime.toMillis
-    math.max(creationTime, lastModifiedTime)
-  }
+  val _latestFileTime = Memoizer( (file: File) =>
+    {
+      val fileAttributeView = Files.getFileAttributeView(file.toPath, classOf[BasicFileAttributeView])
+      val creationTime = fileAttributeView.readAttributes.creationTime.toMillis
+      val lastModifiedTime = fileAttributeView.readAttributes.lastModifiedTime.toMillis
+      math.max(creationTime, lastModifiedTime)
+    }
+  )
+
+  /** **cached**
+    * @return creation time or last modified time, whichever is more recent */
+  def latestFileTime(file: File): Long = _latestFileTime(file)
 
   /** @param key any leading slashes are removed so the key can be used as a relative path */
   def relativize(key: String): String = sanitizePrefix(key)
@@ -82,6 +103,8 @@ object S3 {
 class S3()(implicit val awsCredentials: AWSCredentials) {
   import com.micronautics.aws.S3._
 
+  val cacheIsDirty = new AtomicBoolean(false)
+
   implicit val s3 = this
   implicit val s3Client: AmazonS3Client = {
     val s3Client = new AmazonS3Client(awsCredentials)
@@ -89,39 +112,82 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
     s3Client
   }
 
-  /** @param prefix Any leading slashes are removed if a prefix is specified
-    * @return collection of S3ObjectSummary; keys are relativized if prefix is adjusted */
-  def allObjectData(bucketName: String, prefix: String): List[S3ObjectSummary] = {
-    val sanitizedPre = sanitizedPrefix(prefix)
+  protected val _allObjectData: Memoizer[(String, String), List[S3ObjectSummary]] =
+    Memoizer( args => {
+      val (bucketName, prefix) = args
+      val sanitizedPre = sanitizedPrefix(prefix)
 
-    @tailrec def again(objectListing: ObjectListing, accum: List[S3ObjectSummary]): List[S3ObjectSummary] = {
-      val result: List[S3ObjectSummary] = for {
-        s3ObjectSummary <- objectListing.getObjectSummaries.asScala.toList
-      } yield {
-        if (sanitizedPre!=prefix)
-          s3ObjectSummary.setKey(S3.relativize(s3ObjectSummary.getKey))
-        s3ObjectSummary
+      @tailrec def again(objectListing: ObjectListing, accum: List[S3ObjectSummary]): List[S3ObjectSummary] = {
+        val result: List[S3ObjectSummary] = for {
+          s3ObjectSummary <- objectListing.getObjectSummaries.asScala.toList
+        } yield {
+          if (sanitizedPre!=prefix)
+            s3ObjectSummary.setKey(S3.relativize(s3ObjectSummary.getKey))
+          s3ObjectSummary
+        }
+        if (objectListing.isTruncated)
+          again(s3Client.listNextBatchOfObjects(objectListing), accum ::: result)
+        else
+          result
       }
-      if (objectListing.isTruncated)
-        again(s3Client.listNextBatchOfObjects(objectListing), accum ::: result)
-      else
-        result
-    }
 
-    val objectListing: ObjectListing = s3Client.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix))
-    again(objectListing, List.empty[S3ObjectSummary])
+      val objectListing: ObjectListing = s3Client.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(prefix))
+      again(objectListing, List.empty[S3ObjectSummary])
+    })
+
+  /** **cached**
+    * @param prefix Any leading slashes are removed if a prefix is specified
+    * @return collection of S3ObjectSummary; keys are relativized if prefix is adjusted */
+  def allObjectData(bucketName: String, prefix: String): List[S3ObjectSummary] =
+    _allObjectData((bucketName, prefix))
+
+  protected val _bucketExists: Memoizer[String, Boolean] = Memoizer( (bucketName: String) =>
+    s3Client.doesBucketExist(bucketName)
+  )
+
+  def bucketExists(bucketName: String): Boolean = _bucketExists(bucketName)
+
+  protected val _bucketLocation: Memoizer[String, String] = Memoizer((bucketName: String) =>
+    s3Client.getBucketLocation(bucketName)
+  )
+
+  /** **cached** */
+  def bucketLocation(bucketName: String): String = _bucketLocation(bucketName)
+
+  protected val _bucketNames: Memoizer0[List[String]] =
+    Memoizer(s3Client.listBuckets.asScala.map(_.getName).toList)
+
+  /** **cached** List the buckets in the account. */
+  def bucketNames: List[String] = _bucketNames.apply
+
+  protected def _bucketNamesWithDistributions(cf: CloudFront): List[String] = cf.bucketNamesWithDistributions
+
+  /** **cached** Either the memo cache must be cleared, or the app must be restarted if a bucket or distribution is created after this method is called,
+    * or the bucket or distribution will never be found */
+  def bucketNamesWithDistributions(implicit cf: CloudFront): Memoizer[CloudFront, List[String]] =
+    Memoizer(_bucketNamesWithDistributions)
+
+  protected val _bucketsWithDistributions: Memoizer[CloudFront, List[Bucket]] =
+    Memoizer( (cf: CloudFront) => cf.bucketsWithDistributions )
+
+  /** Either the memo cache must be cleared, or the app  must be restarted if a bucket or distribution is created after this method is called,
+    * or the bucket or distribution will never be found */
+  def bucketsWithDistributions(implicit cf: CloudFront): List[Bucket] = _bucketsWithDistributions(cf)
+
+  def clearCaches(): Unit = {
+    _allObjectData.clear()
+    _bucketExists.clear()
+    _bucketLocation.clear()
+    _bucketNames.clear()
+    _bucketsWithDistributions.clear()
+    _findByName.clear()
+    _isWebsiteEnabled.clear()
+    _latestFileTime.clear()
+    _listObjectsByPrefix.clear()
+    _oneObjectData.clear()
+    _resourceUrl.clear()
+    cacheIsDirty.set(false)
   }
-
-  def bucketExists(bucketName: String): Boolean = s3Client.doesBucketExist(bucketName)
-
-  def bucketLocation(bucketName: String): String = s3Client.getBucketLocation(bucketName)
-
-  /** List the buckets in the account */
-  def bucketNames: List[String] = s3Client.listBuckets.asScala.map(_.getName).toList
-
-  def bucketNamesWithDistributions(implicit cf: CloudFront): List[String] = cf.bucketNamesWithDistributions
-
-  def bucketsWithDistributions(implicit cf: CloudFront): List[Bucket] = cf.bucketsWithDistributions
 
   /** Create a new S3 bucket.
     * If the bucket name starts with "www.", make it publicly viewable and enable it as a web site.
@@ -139,6 +205,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
     s3Client.setBucketPolicy(bnSanitized, bucketPolicy(bnSanitized))
     if (bnSanitized.startsWith("www."))
       enableWebsite(bnSanitized)
+    cacheIsDirty.set(true)
     bucket
   }
 
@@ -147,21 +214,27 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
   def deleteBucket(bucketName: String): Unit = {
     emptyBucket(bucketName)
     s3Client.deleteBucket(bucketName)
+    cacheIsDirty.set(true)
   }
 
   /** Normal use case is to delete a directory and all its contents */
-  def deletePrefix(bucketName: String, prefix: String): Unit =
-    s3.allObjectData(bucketName, prefix).map { _.getKey } foreach { objName =>
+  def deletePrefix(bucketName: String, prefix: String): Unit = {
+    s3.allObjectData(bucketName, prefix).map(_.getKey).foreach { objName =>
       s3.deleteObject(bucketName, objName)
     }
+    cacheIsDirty.set(true)
+  }
 
   /** Delete an object - if they key has any leading slashes, they are removed.
     * Unless versioning has been turned on for the bucket, there is no way to undelete an object. */
-  def deleteObject(bucketName: String, key: String): Unit =
+  def deleteObject(bucketName: String, key: String): Unit = {
     s3Client.deleteObject(bucketName, sanitizedPrefix(key))
+    cacheIsDirty.set(true)
+  }
 
   def disableWebsite(bucketName: String): Unit = {
     s3Client.deleteBucketWebsiteConfiguration(bucketName)
+    cacheIsDirty.set(true)
     ()
   }
 
@@ -183,6 +256,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
   def emptyBucket(bucketName: String): Unit = {
     val items: List[S3ObjectSummary] = allObjectData(bucketName, null)
     items foreach { item => s3Client.deleteObject(bucketName, item.getKey) }
+    cacheIsDirty.set(true)
   }
 
   /**
@@ -221,50 +295,69 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
   def enableWebsite(bucketName: String): Unit = {
     val configuration: BucketWebsiteConfiguration = new BucketWebsiteConfiguration("index.html")
     s3Client.setBucketWebsiteConfiguration(bucketName, configuration)
+    cacheIsDirty.set(true)
     ()
   }
 
   def enableWebsite(bucketName: String, errorPage: String): Unit = {
     val configuration: BucketWebsiteConfiguration = new BucketWebsiteConfiguration("index.html", errorPage)
     s3Client.setBucketWebsiteConfiguration(bucketName, configuration)
+    cacheIsDirty.set(true)
   }
 
-  def findByName(bucketName: String): Option[Bucket] = try {
-    s3Client.listBuckets().asScala.find(_.getName == bucketName)
-  } catch {
-    case e: Exception => None
-  }
+  val _findByName: Memoizer[String, Option[Bucket]] = Memoizer( (bucketName: String) =>
+    try {
+      s3Client.listBuckets().asScala.find(_.getName == bucketName)
+    } catch {
+      case e: Exception => None
+    }
+  )
+
+  /** **cached** */
+  def findByName(bucketName: String): Option[Bucket] = _findByName(bucketName)
 
   /** Requires property com.amazonaws.sdk.disableCertChecking to have a value (any value will do) */
-  def isWebsiteEnabled(bucketName: String): Boolean =
+  val _isWebsiteEnabled: Memoizer[String, Boolean] = Memoizer( (bucketName: String) =>
     try {
       s3Client.getBucketWebsiteConfiguration(bucketName) != null
     } catch {
       case e: Exception => false
     }
+  )
 
-  /** List objects in given bucketName by prefix; number of bytes is included if showSize is true.
+  /** **cached** */
+  def isWebsiteEnabled(bucketName: String): Boolean = _isWebsiteEnabled.apply(bucketName)
+
+  val _listObjectsByPrefix: Memoizer[(String, String, String, Boolean), List[String]] =
+    Memoizer( args =>
+      {
+        val (bucketName, prefix, suffix, showSize) = args
+
+        @tailrec def again(objectListing: ObjectListing, accum: List[String]): List[String] = {
+          val result: List[String] = for {
+            s3ObjectSummary <- objectListing.getObjectSummaries.asScala.toList if s3ObjectSummary.getKey.endsWith(suffix)
+          } yield s3ObjectSummary.getKey + (if (showSize) s" (size = ${s3ObjectSummary.getSize})" else "")
+          if (objectListing.isTruncated)
+            again(s3Client.listNextBatchOfObjects(objectListing), accum ::: result)
+          else
+            accum ::: result
+        }
+
+        val objectListing: ObjectListing = s3Client.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(sanitizedPrefix(prefix)))
+        again(objectListing, List.empty[String])
+      }
+  )
+
+  /** ** cached ** List objects in given bucketName by prefix; number of bytes is included if showSize is true.
     * @param prefix Any leading slashes are removed if a prefix is specified
     * @param suffix optional secondary filter */
-  def listObjectsByPrefix(bucketName: String, prefix: String, suffix: String="", showSize: Boolean=false): List[String] = {
-    @tailrec def again(objectListing: ObjectListing, accum: List[String]): List[String] = {
-      val result: List[String] = for {
-        s3ObjectSummary <- objectListing.getObjectSummaries.asScala.toList if s3ObjectSummary.getKey.endsWith(suffix)
-      } yield s3ObjectSummary.getKey + (if (showSize) s" (size = ${s3ObjectSummary.getSize})" else "")
-      if (objectListing.isTruncated)
-        again(s3Client.listNextBatchOfObjects(objectListing), accum ::: result)
-      else
-        accum ::: result
-    }
-
-    val objectListing: ObjectListing = s3Client.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(sanitizedPrefix(prefix)))
-    again(objectListing, List.empty[String])
-  }
+  def listObjectsByPrefix(bucketName: String, prefix: String, suffix: String="", showSize: Boolean=false): List[String] =
+    _listObjectsByPrefix.apply((bucketName, prefix, suffix, showSize))
 
   /** Move oldKey in bucket with bucketName to newKey.
     * Object metadata is preserved. */
   def move(bucketName: String, oldKey: String, newKey: String): Unit =
-    move (bucketName, oldKey, bucketName, newKey)
+    move(bucketName, oldKey, bucketName, newKey)
 
   /** Move oldKey in bucket with bucketName to newBucket / newKey.
     * Object metadata is preserved. */
@@ -275,38 +368,84 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
     s3Client.deleteObject(deleteRequest)
   }
 
-  /** @param prefix Any leading slashes are removed if a prefix is specified
-    * @return Option[ObjectSummary] with leading "./", prepended if necessary */
-  def oneObjectData(bucketName: String, prefix: String): Option[S3ObjectSummary] = {
-    val sanitizedPre = sanitizedPrefix(prefix)
-    val objectListing: ObjectListing = s3Client.listObjects(new ListObjectsRequest().withBucketName (bucketName).withPrefix(sanitizedPre))
-    objectListing.getObjectSummaries.asScala.find { objectSummary =>
-      val key: String = objectSummary.getKey
-      if (key==sanitizedPre) {
-        objectSummary.setKey(S3.relativize(key))
-        true
-      } else false
+  val _oneObjectData: Memoizer[(String, String), Option[S3ObjectSummary]] = Memoizer( args =>
+    {
+      val (bucketName, prefix) = args
+      val sanitizedPre = sanitizedPrefix(prefix)
+      val objectListing: ObjectListing = s3Client.listObjects(new ListObjectsRequest().withBucketName(bucketName).withPrefix(sanitizedPre))
+      objectListing.getObjectSummaries.asScala.find { objectSummary =>
+        val key: String = objectSummary.getKey
+        if (key==sanitizedPre) {
+          objectSummary.setKey(S3.relativize(key))
+          true
+        } else false
+      }
     }
-  }
+  )
 
-  def resourceUrl(bucketName: String, key: String): String = s3Client.getResourceUrl(bucketName, key)
+  /** **cached**
+    * @param prefix Any leading slashes are removed if a prefix is specified
+    * @return Option[ObjectSummary] with leading "./", prepended if necessary */
+  def oneObjectData(bucketName: String, prefix: String): Option[S3ObjectSummary] =
+    _oneObjectData.apply((bucketName, prefix))
 
-  def sanitizedPrefix(key: String): String = if (key==null) null else key.substring(math.max(0, key.indexWhere(_!='/')))
+  val _resourceUrl: Memoizer[(String, String, Option[CloudFrontAlias]), String] = Memoizer( args =>
+    {
+      val (bucketName, key, maybeAlias) = args
+      (for {
+        bucket <- findByName(bucketName)
+      } yield {
+          val s3Url = s3Client.getResourceUrl(bucketName, key)
+          maybeAlias.map { alias =>
+            val url = new URL(s3Url)
+            val protocol = url.getProtocol
+            val path     = Option(url.getPath).getOrElse("")
+            val query    = Option(url.getQuery).map( "?" + _ ).getOrElse("")
+            s"""$protocol://$alias$path$query"""
+          }.getOrElse(s3Url)
+        }).getOrElse("")
+    })
+
+  /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or the referenced
+    * CloudFront distribution alias is created (by assigning a CNAME) after this method is first called,
+    * or the distribution with the desired cname will never be found */
+  def staticResourceUrl(bucketName: String, key: String)(implicit maybeAlias: Option[StaticCFAlias]): String =
+    _resourceUrl.apply((bucketName, key, maybeAlias))
+
+  /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or the referenced
+    * CloudFront distribution alias is created (by assigning a CNAME) after this method is first called,
+    * or the distribution with the desired cname will never be found */
+  def streamingResourceUrl(bucketName: String, key: String)(implicit maybeAlias: Option[StreamingCFAlias]): String =
+    _resourceUrl.apply((bucketName, key, maybeAlias))
+
+  /** **cached** The cache must be cleared or the app must be restarted if a bucket is created after this method is
+    * first called, or the bucket will never be found */
+  @deprecated("Use staticResourceUrl or streamingResourceUrl instead", "1.0.4") def resourceUrl(bucketName: String, key: String): String =
+    _resourceUrl.apply((bucketName, key, None))
+
+  def sanitizedPrefix(key: String): String =
+    if (key==null) null else key.substring(math.max(0, key.indexWhere(_!='/')))
 
   def setContentType(key: String): ObjectMetadata = {
     val metadata = new ObjectMetadata
-    setContentType(key, metadata)
+    val result = setContentType(key, metadata)
+    cacheIsDirty.set(true)
+    result
   }
 
   def setContentType(key: String, metadata: ObjectMetadata): ObjectMetadata = {
     metadata.setContentType(guessContentType(key))
+    cacheIsDirty.set(true)
     metadata
   }
 
   /** This method is idempotent
     * Side effect: sets policy for AWS S3 upload bucket */
-  def setBucketPolicy(bucket: Bucket, statements: List[Statement]): Bucket =
-    setBucketPolicy(bucket, new Policy().withStatements(statements: _*).toJson)
+  def setBucketPolicy(bucket: Bucket, statements: List[Statement]): Bucket = {
+    val result = setBucketPolicy(bucket, new Policy().withStatements(statements: _*).toJson)
+    cacheIsDirty.set(true)
+    result
+  }
 
   /** This method is idempotent
     * Side effect: sets policy for AWS S3 upload bucket */
@@ -318,6 +457,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
       case ignored: Exception =>
         Logger.debug(s"setBucketPolicy: $ignored")
     }
+    cacheIsDirty.set(true)
     bucket
   }
 
@@ -367,6 +507,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
       val m2: ObjectMetadata = s3Client.getObjectMetadata(bucketName, sanitizedKey)
       val time: FileTime = FileTime.fromMillis(m2.getLastModified.getTime)
       Files.getFileAttributeView(file.toPath, classOf[BasicFileAttributeView]).setTimes(time, null, time)
+      cacheIsDirty.set(true)
       result
     } catch {
       case e: Exception =>
@@ -385,6 +526,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
       file.listFiles.toSeq.foreach { file2 => uploadFileOrDirectory(bucketName, newDest, file2) }
     else
       s3.uploadFile(bucketName, newDest, file)
+    cacheIsDirty.set(true)
     ()
   }
 
@@ -398,7 +540,9 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
     try {
       val inputStream: InputStream = new StringInputStream(contents)
       val putObjectRequest: PutObjectRequest = new PutObjectRequest(bucketName, sanitizedPrefix(key), inputStream, metadata)
-      s3Client.putObject (putObjectRequest)
+      val result = s3Client.putObject(putObjectRequest)
+      cacheIsDirty.set(true)
+      result
     } catch {
       case e: Exception =>
         Logger.warn(e.getMessage)
@@ -414,6 +558,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
     metadata.setContentEncoding("utf-8")
     setContentType(key, metadata)
     s3Client.putObject(new PutObjectRequest (bucketName, sanitizedPrefix(key), stream, metadata))
+    cacheIsDirty.set(true)
     ()
   }
 }
@@ -439,7 +584,7 @@ trait S3Implicits {
 
     def disableWebsite(): Unit = s3.disableWebsite(bucket.getName)
 
-    def distributions(implicit cf: CloudFront): List[DistributionSummary] = cf.distributionsFor(bucket)
+    def distributions(implicit cf: CloudFront): List[DistributionSummary] = cf.distributions
 
     def downloadAsStream(key: String): InputStream = s3.downloadFile(bucket.getName, key)
 
@@ -502,7 +647,10 @@ trait S3Implicits {
 
     def removeDistribution()(implicit cf: CloudFront): Boolean = cf.removeDistribution(bucket)
 
-    def resourceUrl(key: String): String = s3.resourceUrl(bucket.getName, key)
+    /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or a a CloudFront distribution alias is created
+      * (by assigning a CNAME) after this method is first called, or the bucket will never be found */
+    def resourceUrl(key: String): String =
+      s3.resourceUrl(bucket.getName, key)
 
     def safeNames: (String, String) = S3.safeNamesFor(bucket)
 
@@ -519,6 +667,16 @@ trait S3Implicits {
     def signUrl(url: URL, minutesValid: Int=60): URL = s3.signUrl(bucket, url, minutesValid)
 
     def signUrlStr(key: String, minutesValid: Int=0): URL = s3.signUrlStr(bucket, key, minutesValid)
+
+    /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or a a CloudFront
+      * distribution alias is created (by assigning a CNAME) after this method is first called, or the bucket will never be found */
+    def staticResourceUrl(key: String)(implicit maybeAlias: Option[StaticCFAlias]): String =
+      s3.staticResourceUrl(bucket.getName, key)(maybeAlias)
+
+    /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or a a CloudFront
+      * distribution alias is created (by assigning a CNAME) after this method is first called, or the bucket will never be found */
+    def streamingResourceUrl(key: String)(implicit maybeAlias: Option[StreamingCFAlias]): String =
+      s3.streamingResourceUrl(bucket.getName, key)(maybeAlias)
 
     def uploadFile(key: String, file: File): PutObjectResult = s3.uploadFile(bucket.getName, key, file)
 

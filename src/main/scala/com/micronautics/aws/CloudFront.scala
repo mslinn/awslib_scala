@@ -14,7 +14,8 @@ package com.micronautics.aws
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.cloudfront.AmazonCloudFrontClient
 import com.amazonaws.services.cloudfront.model._
-
+import com.micronautics.cache.{Memoizer2, Memoizer0, Memoizer}
+import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
@@ -24,60 +25,96 @@ object CloudFront {
   def apply(implicit awsCredentials: AWSCredentials): CloudFront = new CloudFront()(awsCredentials)
 }
 
-class CloudFront()(implicit val awsCredentials: AWSCredentials) extends CFImplicits {
+class CloudFront()(implicit val awsCredentials: AWSCredentials) extends CFImplicits with S3Implicits {
   import CloudFront._
   import com.amazonaws.services.s3.model.Bucket
 
   implicit val cf = this
   implicit val cfClient: AmazonCloudFrontClient = new AmazonCloudFrontClient(awsCredentials)
 
-  def distributions: List[DistributionSummary] =
-    cfClient.listDistributions(new ListDistributionsRequest).getDistributionList.getItems.asScala.toList
+  val cacheIsDirty = new AtomicBoolean(false)
+
+  protected val _distributions: Memoizer0[List[DistributionSummary]] =
+    Memoizer(cfClient.listDistributions(new ListDistributionsRequest).getDistributionList.getItems.asScala.toList)
+
+  val distributions: List[DistributionSummary] = _distributions.apply
+
+  protected val _bucketNamesWithDistributions: Memoizer0[List[String]] =
+    Memoizer(
+      for {
+        distribution <- distributions
+        item         <- distribution.getOrigins.getItems.asScala // value: s"S3-$lcBucketName"
+      } yield item.getId.substring(3)
+    )
+
+  /** @return List of bucket names that have CloudFront distributions for this AWS account */
+  // id.getDomainName value: s"$lcBucketName.s3.amazonaws.com"
+  val bucketNamesWithDistributions: List[String] =
+    _bucketNamesWithDistributions.apply
+
+  protected val _bucketsWithDistributions: Memoizer[S3, List[Bucket]] = Memoizer( s3 =>
+    for {
+      bucketName <- bucketNamesWithDistributions
+      bucket     <- s3.findByName(bucketName).toList
+    } yield bucket
+  )
+
+  def bucketsWithDistributions(implicit s3: S3): List[Bucket] =
+    _bucketsWithDistributions(s3)
 
   /** @return List of CloudFront distributions for the specified bucket */
-  def distributionsFor(bucket: Bucket)(implicit s3: S3): List[DistributionSummary] = {
-      val (_, bucketOriginId) = bucket.safeNames
+  protected val _distributionsFor: Memoizer2[Bucket, S3, List[DistributionSummary]] =
+    Memoizer { (bucket, s3) =>
+      val (_, bucketOriginId) = RichBucket(bucket)(s3).safeNames
       val distributionSummaries: List[DistributionSummary] = distributions.filter { distribution =>
         val origins: Seq[Origin] = distribution.getOrigins.getItems.asScala
-        origins.filter(_.getId == bucketOriginId).nonEmpty
+        origins.exists(_.getId == bucketOriginId)
       }
       distributionSummaries
     }
 
-  /** @return List of bucket names that have CloudFront distributions for this AWS account */
-  // id.getDomainName value: s"$lcBucketName.s3.amazonaws.com"
-  def bucketNamesWithDistributions: List[String] = for {
-    distribution <- distributions
-    item         <- distribution.getOrigins.getItems.asScala // value: s"S3-$lcBucketName"
-  } yield item.getId.substring(3)
+  def distributionsFor(bucket: Bucket)(implicit s3: S3): List[DistributionSummary] =
+    _distributionsFor.apply(bucket, s3)
 
-  def bucketsWithDistributions(implicit s3: S3): List[Bucket] =
-    for {
-      bucketName <- bucketNamesWithDistributions
-      bucket     <- s3.findByName(bucketName).toList
-  } yield bucket
+  def clearCaches(): Unit = {
+    _bucketNamesWithDistributions.clear()
+    _bucketsWithDistributions.clear()
+    _distributions.clear()
+    _distributionsFor.clear()
+    cacheIsDirty.set(false)
+  }
 
-  /** Enable/disable all distributions for the given bucketName */
+  /** Enable/disable all distributions for the given bucketName
+    * @return list of UpdateDistributionResult for distributions that were enabled */
   def enableAllDistributions(bucket: Bucket, newStatus: Boolean=true)(implicit s3: S3): List[UpdateDistributionResult] = {
     val distributions: List[DistributionSummary] = distributionsFor(bucket)
-    distributions.map { implicit distributionSummary =>
+    distributions.flatMap { implicit distributionSummary =>
       val configResult: GetDistributionConfigResult = distributionSummary.configResult
-      configResult.getDistributionConfig.setEnabled(newStatus)
-      val distributionETag = configResult.getETag // is the in the proper sequence?
-      val updateRequest = new UpdateDistributionRequest(configResult.getDistributionConfig, distributionSummary.getId, distributionETag)
-      cfClient.updateDistribution(updateRequest)
+      if (!configResult.getDistributionConfig.getEnabled) {
+        configResult.getDistributionConfig.setEnabled(newStatus)
+        val distributionETag = configResult.getETag // is the in the proper sequence?
+        val updateRequest = new UpdateDistributionRequest(configResult.getDistributionConfig, distributionSummary.getId, distributionETag)
+        val result = cfClient.updateDistribution(updateRequest)
+        cacheIsDirty.set(true)
+        Some(result)
+      } else None
     }
   }
 
-  /** Enable/disable the most recently created distribution for the given bucketName */
+  /** Enable/disable the most recently created distribution for the given bucketName
+    * @return Some(UpdateDistributionResult) if distributions was enabled, else None */
   def enableLastDistribution(bucket: Bucket, newStatus: Boolean=true)(implicit s3: S3): Option[UpdateDistributionResult] = {
     val distributions: Seq[DistributionSummary] = distributionsFor(bucket)
-    distributions.lastOption.map { implicit distributionSummary =>
+    distributions.lastOption.flatMap { implicit distributionSummary =>
       val configResult: GetDistributionConfigResult = distributionSummary.configResult
-      configResult.getDistributionConfig.setEnabled(newStatus)
-      val distributionETag = configResult.getETag // is the in the proper sequence?
-      val updateRequest = new UpdateDistributionRequest(configResult.getDistributionConfig, distributionSummary.getId, distributionETag)
-      cfClient.updateDistribution(updateRequest)
+      if (!configResult.getDistributionConfig.getEnabled) {
+        configResult.getDistributionConfig.setEnabled(newStatus)
+        val distributionETag = configResult.getETag // is the in the proper sequence?
+        val updateRequest = new UpdateDistributionRequest(configResult.getDistributionConfig, distributionSummary.getId, distributionETag)
+        val result = cfClient.updateDistribution(updateRequest)
+        cacheIsDirty.set(true)
+        Some(result)
+      } else None
     }
   }
 
@@ -85,7 +122,8 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials) extends CFImplic
     * @param assetPath The path of the objects to invalidate, relative to the distribution and must begin with a slash (/).
     *                  If the path is a directory, all assets within in are invalidated
     * @return number of asset invalidations */
-  def invalidate(bucket: Bucket, assetPath: String)(implicit s3: S3): Int = invalidateMany(bucket, List(assetPath))
+  def invalidate(bucket: Bucket, assetPath: String)(implicit s3: S3): Int =
+    invalidateMany(bucket, List(assetPath))
 
   /** Invalidate asset in all bucket distributions where it is present.
     * @param assetPaths The path of the objects to invalidate, relative to the distribution and must begin with a slash (/).
@@ -102,7 +140,9 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials) extends CFImplic
       cfClient.createInvalidation(new CreateInvalidationRequest().withDistributionId(distributionSummary.getId).withInvalidationBatch(invalidationBatch))
       1
     }
-    counts.sum
+    val sum = counts.sum
+    if (sum>0) cacheIsDirty.set(true)
+    sum
   }
 
   /** Remove the most recently created distribution for the given bucketName.
@@ -110,7 +150,9 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials) extends CFImplic
   def removeDistribution(bucket: Bucket)(implicit s3: S3): Boolean =
     distributionsFor(bucket).lastOption.exists { implicit distSummary =>
       val distConfigResult = cfClient.getDistributionConfig(new GetDistributionConfigRequest().withId(distSummary.getId))
-      distSummary.originItems.map { removeOrigin(distSummary, distConfigResult, _) }.forall { _.isSuccess }
+      val result = distSummary.originItems.map { removeOrigin(distSummary, distConfigResult, _) }.forall { _.isSuccess }
+      if (result) cacheIsDirty.set(true)
+      result
     }
 
   def removeOrigin(distSummary: DistributionSummary, distConfigResult: GetDistributionConfigResult, origin: Origin): Try[Boolean] = {
@@ -143,6 +185,7 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials) extends CFImplic
     try {
       Logger.debug(s"Deleting distribution of $domainName with id ${distSummary.getId} and ETag $eTag.")
       distSummary.delete(eTag)
+      cacheIsDirty.set(true)
       Success(true)
     } catch {
       case nsde: NoSuchDistributionException =>
@@ -172,6 +215,7 @@ trait CFImplicits {
   object RichDistribution {
     var minimumCacheTime = 60 * 60 // one hour
 
+    /** Create a new distribution for the given S3 bucket */
     def apply(bucket: Bucket, priceClass: PriceClass=PriceClass.PriceClass_All, minimumCacheTime: Long=minimumCacheTime)
              (implicit awsCredentials: AWSCredentials, cfClient: AmazonCloudFrontClient, s3: S3): Distribution = {
       val (lcBucketName, bucketOriginId) = bucket.safeNames

@@ -20,7 +20,9 @@ class S3Test extends WordSpec with TestBase {
   val bucketName = s"www.test${new java.util.Date().getTime}.com"
   var bucket: Bucket = try {
       println(s"Creating bucket $bucketName")
-      s3.createBucket(bucketName)
+      val bucket = s3.createBucket(bucketName)
+      s3.clearCaches()
+      bucket
     } catch {
       case e: Exception =>
         val awsCredentials = implicitly[S3].awsCredentials
@@ -35,6 +37,9 @@ class S3Test extends WordSpec with TestBase {
   val publisher1UserId = "testPublisher1UserId"
   val instructor1UserId = "testInstructor1UserId"
   val instructor2UserId = "testInstructor2UserId"
+
+  implicit val maybeStaticAlias: Option[StaticCFAlias] = None
+  implicit val maybeStreamingAlias: Option[StreamingCFAlias] = Some(StreamingCFAlias("www.scalacourses.com"))
 
   private def saveToFile(file: java.io.File, string: String): Unit = {
     val printWriter = new java.io.PrintWriter(file)
@@ -57,6 +62,7 @@ class S3Test extends WordSpec with TestBase {
 
   override def afterAll(): Unit = {
     s3.deleteBucket(bucketName)
+    s3.clearCaches()
     if (file1.exists)
       file1.delete
     if (file2.exists)
@@ -147,6 +153,7 @@ class S3Test extends WordSpec with TestBase {
       assert(bucket.allObjectData("").size==2)
 
       bucket.deletePrefix("you/know/that")
+      s3.clearCaches()
       assert(bucket.listObjectsByPrefix("you").size == 1)
       assert(bucket.allObjectData("you/know").size==1)
       assert(bucket.allObjectData("").size==1)
@@ -155,22 +162,28 @@ class S3Test extends WordSpec with TestBase {
       assert(contents2=="deedle doodle")
 
       bucket.deleteObject("you/know/doodle.txt")
-      assert(bucket.allObjectData("").size==0)
+      s3.clearCaches()
+      assert(bucket.allObjectData("").isEmpty)
 
       assert(bucket.isWebsiteEnabled)
       bucket.disableWebsite()
+      s3.clearCaches()
       assert(!bucket.isWebsiteEnabled)
       bucket.enableWebsite("error.html")
+      s3.clearCaches()
       assert(bucket.isWebsiteEnabled)
 
       bucket.enableCors()
       bucket.uploadString("you/know/that/this/means/war.html", "blah blah")
       bucket.uploadString("you/know/doodle.txt", "deedle doodle")
+      s3.clearCaches()
       assert(bucket.allObjectData("").size==2)
 
       bucket.oneObjectData("you/know/doodle.txt").exists{ _.getKey == "you/know/doodle.txt" }
 
       assert(bucket.resourceUrl("you/know/doodle.txt") == s"https://$bucketName.s3.amazonaws.com/you/know/doodle.txt")
+      assert(bucket.staticResourceUrl("you/know/doodle.txt") == s"https://$bucketName.s3.amazonaws.com/you/know/doodle.txt")
+      assert(bucket.streamingResourceUrl("you/know/doodle.txt") == s"https://www.scalacourses.com/you/know/doodle.txt")
 
       assert(s3.setContentType("plain.txt").getContentType=="text/plain")
       assert(s3.setContentType("page.html").getContentType=="text/html")
@@ -190,7 +203,8 @@ class S3Test extends WordSpec with TestBase {
       assert(bucket.allObjectData(file2Name).size==1)
 
       bucket.empty()
-      assert(bucket.allObjectData("").size==0)
+      s3.clearCaches()
+      assert(bucket.allObjectData("").isEmpty)
 
       assert(s3.bucketNames contains bucket.getName)
     }
