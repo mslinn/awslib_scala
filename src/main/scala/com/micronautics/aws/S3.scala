@@ -397,11 +397,10 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
       } yield {
           val s3Url = s3Client.getResourceUrl(bucketName, key)
           maybeAlias.map { alias =>
-            val url = new URL(s3Url)
-            val protocol = url.getProtocol
-            val path     = Option(url.getPath).getOrElse("")
-            val query    = Option(url.getQuery).map( "?" + _ ).getOrElse("")
-            s"""$protocol://$alias$path$query"""
+            val url   = new URL(s3Url)
+            val path  = Option(url.getPath).getOrElse("")
+            val query = Option(url.getQuery).map( "?" + _ ).getOrElse("")
+            s"""$alias$path$query"""
           }.getOrElse(s3Url)
         }).getOrElse("")
     })
