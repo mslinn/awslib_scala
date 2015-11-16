@@ -460,16 +460,18 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
     bucket
   }
 
+  /** @param useHttps is only used if `maybeCnameAlias` is `None` */
   def signUrl(bucket: Bucket, url: URL, minutesValid: Int=60, useHttps: Boolean = false, maybeCnameAlias: Option[String] = None): URL =
     signUrlStr(bucket, relativize(url.getFile), minutesValid, useHttps, maybeCnameAlias)
 
+  /** @param useHttps is only used if `maybeCnameAlias` is `None` */
   def signUrlStr(bucket: Bucket, key: String, minutesValid: Int=0, useHttps: Boolean = false, maybeCnameAlias: Option[String] = None): URL = {
     val expiry = DateTime.now.plusMinutes(minutesValid)
     val generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket.getName, key).
       withMethod(HttpMethod.GET).withExpiration(expiry.toDate)
     val signedUrl: URL = s3Client.generatePresignedUrl(generatePresignedUrlRequest)
     maybeCnameAlias.map ( cname =>
-      new URL(if (useHttps) "https" else "http", cname, signedUrl.getFile)
+      new URL(s"$cname${signedUrl.getFile}")
     ).getOrElse(
       new URL(if (useHttps) "https" else "http", signedUrl.getHost, signedUrl.getPort, signedUrl.getFile)
     )
