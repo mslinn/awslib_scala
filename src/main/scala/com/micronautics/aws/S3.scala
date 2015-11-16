@@ -460,15 +460,15 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
     bucket
   }
 
-  def signUrl(bucket: Bucket, url: URL, minutesValid: Int=60): URL =
-    signUrlStr(bucket, relativize(url.getFile), minutesValid)
+  def signUrl(bucket: Bucket, url: URL, minutesValid: Int=60, useHttps: Boolean = false): URL =
+    signUrlStr(bucket, relativize(url.getFile), minutesValid, useHttps)
 
-  def signUrlStr(bucket: Bucket, key: String, minutesValid: Int=0): URL = {
+  def signUrlStr(bucket: Bucket, key: String, minutesValid: Int=0, useHttps: Boolean = false): URL = {
     val expiry = DateTime.now.plusMinutes(minutesValid)
     val generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucket.getName, key).
       withMethod(HttpMethod.GET).withExpiration(expiry.toDate)
     val signedUrl: URL = s3Client.generatePresignedUrl(generatePresignedUrlRequest)
-    new URL("http", signedUrl.getHost, signedUrl.getPort, signedUrl.getFile)
+    new URL(if (useHttps) "https" else "http", signedUrl.getHost, signedUrl.getPort, signedUrl.getFile)
   }
 
   /** Uploads a file to the specified bucket. The file's last-modified date is applied to the uploaded file.
