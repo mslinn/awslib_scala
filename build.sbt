@@ -1,6 +1,6 @@
 import sbt.Keys._
 
-version := "1.0.9"
+version := "1.0.10"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
@@ -59,7 +59,7 @@ libraryDependencies ++= Seq(
   "com.micronautics"       %% "scalacourses-utils"  % "0.2.11"  withSources(),
   "commons-io"             %  "commons-io"          % "2.4"     withSources(),
   "commons-lang"           %  "commons-lang"        % "2.6"     withSources(),
-  "org.slf4j"              %  "slf4j-api"           % "1.7.5"   withSources(),
+  //"org.slf4j"              %  "slf4j-api"           % "1.7.5"   withSources(),
   "ch.qos.logback"         %  "logback-classic"     % "1.1.2"   withSources(),
   //
   "junit"                  %  "junit"               % "4.12"  % "test",

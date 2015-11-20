@@ -43,24 +43,24 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
   implicit val iamClient: AmazonIdentityManagementClient = new AmazonIdentityManagementClient(awsCredentials)
 
   /** (Re)creates an AWS IAM user with the given `userId`. Only PrivilegedUsers can have an associated IAM user.
-    * Any pre-existing credentials are replaced.
-    * @param maybeCredentials might contain new AWS IAM credentials */
-  def createIAMUser(userName: String, maybeCredentials: Option[AWSCredentials]=None): Try[(IAMUser, AWSCredentials)] = {
+    * Any pre-existing credentials are replaced. */
+  def createIAMUser(userName: String): Try[(IAMUser, AWSCredentials)] = {
     try {
       val oldIamUser: IAMUser = iamClient.getUser(new GetUserRequest().withUserName(userName)).getUser
       try { oldIamUser.deleteAccessKeys() } catch { case ignored: Exception => Logger.info(ignored.getMessage) }
-      oldIamUser.createCredentials
-      val credentials: AWSCredentials = maybeCredentials.getOrElse(oldIamUser.createCredentials)
-      Success((oldIamUser, credentials))
+      oldIamUser.createAccessKeys.map { keys =>
+        (oldIamUser, keys)
+      }
     } catch {
-      case e: NoSuchEntityException => // this is normal, if the IAM user does not exist create it
+      case e: NoSuchEntityException => // this is normal, if the IAM user does not exist create one
         try {
           Logger.info(e.getMessage)
           val createUserRequest = new CreateUserRequest().withUserName(userName)
           val iamUserNew: IAMUser = iamClient.createUser(createUserRequest).getUser
-          val credentials = iamUserNew.createCredentials
-          Logger.debug(s"New AWS IAM user $userName has path ${iamUserNew.getPath} and credentials $credentials")
-          Success((iamUserNew, credentials))
+          iamUserNew.createAccessKeys.map { keys =>
+            Logger.debug(s"New AWS IAM user $userName has path ${iamUserNew.getPath} and keys $keys")
+            (iamUserNew, keys)
+          }
         } catch {
           case e: Exception =>
             Failure(ExceptTrace(s"${e.getMessage}\nAWS IAM user $userName did not previously exist"))
@@ -71,6 +71,7 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
     }
   }
 
+  /** @return Try[Boolean] indicating that no problems were encountered, or there were no keys to delete */
   def deleteAccessKeys(userName: String): Try[Boolean] = Try {
     val listAccessKeysRequest = new ListAccessKeysRequest().withUserName(userName)
     iamClient.listAccessKeys(listAccessKeysRequest).getAccessKeyMetadata.asScala.map { accessKey =>
@@ -80,6 +81,7 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
     }.forall(_==true)
   }
 
+  /** @return Try[Boolean] indicating that no problems were encountered, or the user had no groups to delete */
   def deleteGroups(userName: String): Try[Boolean] = Try {
     iamClient.listGroupsForUser(new ListGroupsForUserRequest(userName)).getGroups.asScala.map { group =>
       iamClient.removeUserFromGroup(new RemoveUserFromGroupRequest().withUserName(userName).withGroupName(group.getGroupName))
@@ -115,13 +117,16 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
 
 trait IAMImplicits {
   implicit class RichIAMUser(val iamUser: IAMUser)(implicit iam: IAM) {
-    def createCredentials: AWSCredentials = {
+    /** An IAM user can only have two sets of credentials. If a request is made create more, the returned Try will
+      * contain the com.amazonaws.services.identitymanagement.model.LimitExceededException.
+      * If this request succeeds, the new keys are associated with the IAMUser */
+    def createAccessKeys(): Try[AWSCredentials] = Try {
       import com.amazonaws.auth.BasicAWSCredentials
       import com.amazonaws.services.identitymanagement.model.CreateAccessKeyRequest
 
       val createAccessKeyRequest = new CreateAccessKeyRequest().withUserName(iamUser.getUserName)
-      val accessKeyResult = iam.iamClient.createAccessKey(createAccessKeyRequest)
-      new BasicAWSCredentials(accessKeyResult.getAccessKey.getAccessKeyId, accessKeyResult.getAccessKey.getSecretAccessKey)
+      val accessKey: AccessKey = iam.iamClient.createAccessKey(createAccessKeyRequest).getAccessKey
+      new BasicAWSCredentials(accessKey.getAccessKeyId, accessKey.getSecretAccessKey)
     }
 
     def deleteAccessKeys():  Try[Boolean] = iam.deleteAccessKeys(iamUser.getUserName)

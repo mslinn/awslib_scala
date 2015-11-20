@@ -13,7 +13,7 @@ package com.micronautics.aws
 
 import org.scalatest.WordSpec
 
-class IAMTest extends WordSpec with TestBase {
+class IAMTest extends WordSpec with TestBase with IAMImplicits {
   import com.amazonaws.services.identitymanagement.model.{User=>IAMUser}
   import com.amazonaws.services.s3.model.Bucket
   import scala.util.Success
@@ -28,14 +28,36 @@ class IAMTest extends WordSpec with TestBase {
         fail(s"Error creating bucket with accessKey=${awsCredentials.getAWSAccessKeyId} and secretKey=${awsCredentials.getAWSSecretKey}\n${e.getMessage}")
     }
 
-  val iamUser1Name = "iamUser1"
-  val Success((iamUser1, iamUser1Creds)) = iam.createIAMUser(iamUser1Name)
+  val iamUser1Name = "testIamUser1"
+  if (iam.findUser(iamUser1Name).isSuccess) // in case it is left over from a previous test
+     iam.deleteUser(iamUser1Name)
+  val Success((iamUser1, iamUser1Keys)) = iam.createIAMUser(iamUser1Name)
 
-  val iamUser2Name = "iamUser2"
-  val Success((iamUser2, iamUser2Creds)) = iam.createIAMUser(iamUser2Name)
+  val iamUser2Name = "testIamUser2"
+  if (iam.findUser(iamUser2Name).isSuccess) // in case it is left over from a previous test
+    iam.deleteUser(iamUser2Name)
+  val Success((iamUser2, _)) = iam.createIAMUser(iamUser2Name) // keys are thrown away in tests so don't get confused with these
 
+  override def afterAll(): Unit = {
+    if (iam.findUser(iamUser1Name).isSuccess)
+      iamUser1.deleteUser()
+    if (iam.findUser(iamUser2Name).isSuccess)
+        iam.deleteUser(iamUser2Name)
+    super.afterAll()
+  }
 
   "IAMUsers" must {
+    "handle stuff" in {
+      iamUser1.createAccessKeys() // IAMUsers can have 2 sets of keys
+      assert(iamUser1.createAccessKeys().isFailure) // 3rd set of keys should go boom
+
+      iamUser2.deleteAccessKeys()
+      assert(iamUser2.createAccessKeys().isSuccess)
+
+      iamUser2.deleteUser()
+      assert(iamUser2.createAccessKeys().isFailure)
+    }
+
     "be manipulable" ignore {
       import com.amazonaws.auth.policy.Statement
 
