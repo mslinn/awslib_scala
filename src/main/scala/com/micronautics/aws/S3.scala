@@ -665,11 +665,15 @@ trait S3Implicits {
                             contentLength: Long,
                             acl: AclEnum=privateAcl,
                             awsSecretKey: String=s3.awsCredentials.getAWSSecretKey,
-                            expiryDuration: Duration=Duration.standardHours(1)): SignedAndEncoded =
-      new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials).signAndEncodePolicy(key, contentLength, acl)
+                            expiryDuration: Duration=Duration.standardHours(1)): UploadPostV2#SignAndEncodePolicy = {
+      val post = new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials)
+      post.SignAndEncodePolicy(key, contentLength, acl)
+    }
 
-    def signPolicy(policyText: String, contentLength: Long, awsSecretKey: String, expiryDuration: Duration=Duration.standardHours(1)): String =
-      new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials).signPolicy(policyText, contentLength)
+    def signPolicy(policyText: String, contentLength: Long, awsSecretKey: String, expiryDuration: Duration=Duration.standardHours(1)): String = {
+      val uploadPostV2 = new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials)
+      uploadPostV2.signPolicy(policyText, contentLength)
+    }
 
     def signUrl(url: URL, minutesValid: Int=60): URL = s3.signUrl(bucket, url, minutesValid)
 

@@ -11,26 +11,10 @@
 
 package com.micronautics.aws
 
-import java.nio.charset.Charset
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.model.Bucket
-import org.apache.http.client.methods.{CloseableHttpResponse, HttpPost}
-import org.apache.http.entity.ContentType
-import org.apache.http.entity.mime.{MultipartEntityBuilder, HttpMultipartMode}
-import org.apache.http.entity.mime.content.FileBody
-import org.apache.http.impl.client.HttpClientBuilder
-import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, DateTimeZone, Duration}
 import scala.util.{Success, Failure, Try}
-import sun.misc.BASE64Encoder
-
-protected[aws] case class SignedAndEncoded(
-  encodedPolicy: String,
-  signedPolicy: String,
-  contentType: String
-)
 
 /** The implicit `AmazonIdentityManagementClient` instance determines the AIM user based on the AWS access key ID in the
   * implicit `AWSCredentials` instance in scope. */
@@ -52,7 +36,7 @@ object UploadPostV2 extends S3Implicits {
     val awsUpload = new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials)
     val contentLength = file.length
     val fileName = file.getName
-    val sae: SignedAndEncoded = awsUpload.signAndEncodePolicy(fileName, contentLength, acl)
+    val sae = awsUpload.SignAndEncodePolicy(fileName, contentLength, acl)
     val params = Map[String, String](
       "key"            -> aKey,
       "AWSAccessKeyId" -> s3.awsCredentials.getAWSAccessKeyId,
@@ -68,6 +52,13 @@ object UploadPostV2 extends S3Implicits {
     * [v2](http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingHTTPPOST.html), not
     * [v4](http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-authentication-HTTPPOST.html) */
   protected[aws] def uploadPost(file: File, uploadUrl: URL, params: Map[String, String]): Try[Boolean] = {
+    import org.apache.http.entity.ContentType
+    import org.apache.http.entity.mime.{MultipartEntityBuilder, HttpMultipartMode}
+    import org.apache.http.entity.mime.content.FileBody
+    import org.apache.http.impl.client.HttpClientBuilder
+    import org.apache.http.client.methods.{CloseableHttpResponse, HttpPost}
+    import java.nio.charset.Charset
+
     Logger.info(s"uploadUrl=${uploadUrl.toString}")
     val httpPost = new HttpPost(uploadUrl.toString)
     val httpClient = HttpClientBuilder.create.build
@@ -104,16 +95,18 @@ object UploadPostV2 extends S3Implicits {
 /** Heavy computation for preparing upload, mostly having to do with security.
   * The AIM user on whose behalf the upload is performed is determined from the AWS access key ID in the implicit `AWSCredentials` instance.
   * @param expiryDuration specifies the maximum `Duration` the upload has to complete before AWS terminates it with an error */
-protected[aws] class UploadPostV2(val bucket: Bucket, val expiryDuration: Duration=Duration.standardHours(1))
+class UploadPostV2(bucket: Bucket, expiryDuration: Duration=Duration.standardHours(1))
                   (implicit awsCredentials: AWSCredentials) {
   import com.micronautics.aws.AclEnum._
+  import sun.misc.BASE64Encoder
 
   /** @param key has path, without leading slash, including filetype */
-  def policyText(key: String, contentLength: Long, acl: AclEnum=privateAcl): String = {
+  def policyText(key: String, contentLength: Long, acl: AclEnum = privateAcl): String = {
+    import org.joda.time.format.ISODateTimeFormat
     val expiryDT = new DateTime(DateTimeZone.UTC).plus(expiryDuration)
     val expiryFormatted = ISODateTimeFormat.dateHourMinuteSecond().print(expiryDT)
     val lastSlash = key.lastIndexOf("/")
-    val keyPrefix = if (lastSlash<0) "" else key.substring(0, lastSlash)
+    val keyPrefix = if (lastSlash < 0) "" else key.substring(0, lastSlash)
     val policy = s"""{
                     |  "expiration": "${expiryFormatted}Z",
                     |  "conditions": [
@@ -134,6 +127,9 @@ protected[aws] class UploadPostV2(val bucket: Bucket, val expiryDuration: Durati
 
   /** @param policyText must be encoded with UTF-8 */
   def signPolicy(policyText: String, contentLength: Long): String = {
+    import javax.crypto.Mac
+    import javax.crypto.spec.SecretKeySpec
+
     assert(awsCredentials.getAWSSecretKey.nonEmpty)
     val hmac = Mac.getInstance("HmacSHA1")
     hmac.init(new SecretKeySpec(awsCredentials.getAWSSecretKey.getBytes("UTF-8"), "HmacSHA1"))
@@ -147,13 +143,13 @@ protected[aws] class UploadPostV2(val bucket: Bucket, val expiryDuration: Durati
   /** @param key has path, without leading slash, including filetype
     * @param acl must either be "public" or "public-read"
     * @return tuple containing encoded policy and signed policy for given key and contentLength */
-  def signAndEncodePolicy(key: String, contentLength: Long, acl: AclEnum = privateAcl): SignedAndEncoded = {
+  case class SignAndEncodePolicy(key: String, contentLength: Long, acl: AclEnum = AclEnum.privateAcl) {
     assert(!key.startsWith("/"))
-    assert(acl==publicAcl || acl==privateAcl)
+    assert(acl == AclEnum.publicAcl || acl == AclEnum.privateAcl)
     Logger.debug(s"Signing '$key' with awsSecretKey='${awsCredentials.getAWSSecretKey}' and acl='$acl'")
     val policy = policyText(key, contentLength, acl)
     val encodedPolicy = policyEncoder(policy, contentLength)
     val signedPolicy = signPolicy(policy, contentLength)
-    SignedAndEncoded(encodedPolicy=encodedPolicy, signedPolicy=signedPolicy, contentType=guessContentType(key))
+    val contentType = guessContentType(key)
   }
 }

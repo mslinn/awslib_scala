@@ -48,10 +48,10 @@ class UploadTest extends WordSpec with TestBase with IAMImplicits with S3Implici
       Logger.info(s"Creating bucket $bucketName")
       BucketPolicy.createBucket(bucketName)
 
-      Logger.info("Uploading asset")
+      Logger.info("Uploading private asset")
       UploadPostV2(file, bucket, aKey, privateAcl)
 
-      Logger.info("Uploading homework")
+      Logger.info("Uploading public asset")
       UploadPostV2(file, bucket, aKey, publicAcl)
 
       val actual: Array[Byte] = download(bucket, aKey)
