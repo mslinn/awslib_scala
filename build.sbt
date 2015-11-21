@@ -4,7 +4,7 @@ version := "1.1.0"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-scalaVersion := "2.11.7"
+scalaVersion := "2.10.6"
 crossScalaVersions := Seq("2.10.6", "2.11.7")
 
 scalacOptions ++= Seq("-deprecation", "-encoding", "UTF-8", "-feature", "-target:jvm-1.7", "-unchecked",
@@ -24,9 +24,28 @@ resolvers ++= Seq(
   "micronautics/scala on bintray" at "http://dl.bintray.com/micronautics/scala"
 )
 
+libraryDependencies ++= {
+  val httpV = "4.4.1"
+  Seq(
+    "org.apache.httpcomponents" %  "httpclient"         % httpV    withSources() force(),
+    "org.apache.httpcomponents" %  "httpcore"           % httpV    withSources() force(),
+    "org.apache.httpcomponents" %  "httpmime"           % httpV    withSources() force(),
+    "org.codehaus.jackson"      %  "jackson-mapper-asl" % "1.9.13",
+    "com.amazonaws"             %  "aws-java-sdk-osgi"  % "1.10.35" withSources(),
+    "com.micronautics"          %% "scalacourses-utils" % "0.2.11"  withSources(),
+    "commons-io"                %  "commons-io"         % "2.4"     withSources(),
+    "commons-lang"              %  "commons-lang"       % "2.6"     withSources(),
+    "ch.qos.logback"            %  "logback-classic"    % "1.1.2"   withSources(),
+    //
+    "junit"                     %  "junit"              % "4.12"  % "test",
+    "org.scalatest"             %% "scalatest"          % "2.2.5" % "test" withSources(),
+    "org.scalautils"            %% "scalautils"         % "2.1.7" % "test" withSources()
+  )
+}
+
 libraryDependencies <++= scalaVersion {
-  case sv if sv.startsWith("2.11") => // Builds with Scala 2.11.x, Play 2.4.2
-    val playV = "2.4.2"
+  case sv if sv.startsWith("2.11") => // Builds with Scala 2.11.x, Play 2.4.3
+    val playV = "2.4.3"
     Seq(
       "com.typesafe.play"      %% "play-json"      % playV   withSources(),
       "com.github.nscala-time" %% "nscala-time"    % "2.4.0" withSources(),
@@ -52,22 +71,6 @@ libraryDependencies <++= scalaVersion {
       "org.scalatestplus"      %% "play"                % "1.4.0-M4" % "test" withSources()
     )
 }
-
-libraryDependencies ++= Seq(
-  "org.apache.httpcomponents" % "httpclient"        % "4.4.1" force() withSources(),
-  "org.apache.httpcomponents" % "httpcore"          % "4.4.1" force() withSources(),
-  "org.codehaus.jackson"   %  "jackson-mapper-asl"  % "1.9.13",
-  "com.amazonaws"          %  "aws-java-sdk-osgi"   % "1.10.35" withSources(),
-  "com.micronautics"       %% "scalacourses-utils"  % "0.2.11"  withSources(),
-  "commons-io"             %  "commons-io"          % "2.4"     withSources(),
-  "commons-lang"           %  "commons-lang"        % "2.6"     withSources(),
-  //"org.slf4j"              %  "slf4j-api"           % "1.7.5"   withSources(),
-  "ch.qos.logback"         %  "logback-classic"     % "1.1.2"   withSources(),
-  //
-  "junit"                  %  "junit"               % "4.12"  % "test",
-  "org.scalatest"          %% "scalatest"           % "2.2.5" % "test" withSources(),
-  "org.scalautils"         %% "scalautils"          % "2.1.7" % "test" withSources()
-)
 
 updateOptions := updateOptions.value.withCachedResolution(cachedResoluton = true)
 logBuffered in Test := false

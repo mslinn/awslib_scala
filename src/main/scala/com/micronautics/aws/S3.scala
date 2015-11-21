@@ -477,7 +477,8 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
     )
   }
 
-  /** Uploads a file to the specified bucket. The file's last-modified date is applied to the uploaded file.
+  /** Uploads a file to the specified bucket using the REST interface that backs the Java facade.
+    * The file's last-modified date is applied to the uploaded file.
     * AWS does not respect the last-modified metadata, and Java on Windows does not handle last-modified properly either.
     * If the key has leading slashes, they are removed for consistency.
     *
@@ -643,10 +644,10 @@ trait S3Implicits {
     def policyAsJson: String = policy.getPolicyText
 
     def policyEncoder(policyText: String, contentLength: Long, expiryDuration: Duration=Duration.standardHours(1)): String =
-      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyEncoder(policyText, contentLength)
+      new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials).policyEncoder(policyText, contentLength)
 
     def createPolicyText(key: String, contentLength: Long, acl: AclEnum=privateAcl, expiryDuration: Duration=Duration.standardHours(1)): String =
-      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).policyText(key, contentLength, acl)
+      new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials).policyText(key, contentLength, acl)
 
     def oneObjectData(prefix: String): Option[S3ObjectSummary] = s3.oneObjectData(bucket.getName, prefix)
 
@@ -664,10 +665,10 @@ trait S3Implicits {
                             acl: AclEnum=privateAcl,
                             awsSecretKey: String=s3.awsCredentials.getAWSSecretKey,
                             expiryDuration: Duration=Duration.standardHours(1)): SignedAndEncoded =
-      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).signAndEncodePolicy(key, contentLength, acl, awsSecretKey)
+      new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials).signAndEncodePolicy(key, contentLength, acl, awsSecretKey)
 
     def signPolicy(policyText: String, contentLength: Long, awsSecretKey: String, expiryDuration: Duration=Duration.standardHours(1)): String =
-      new AWSUpload(bucket, expiryDuration)(s3.awsCredentials).signPolicy(policyText, contentLength, awsSecretKey)
+      new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials).signPolicy(policyText, contentLength, awsSecretKey)
 
     def signUrl(url: URL, minutesValid: Int=60): URL = s3.signUrl(bucket, url, minutesValid)
 
