@@ -14,10 +14,10 @@ package com.micronautics.aws
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.policy.Statement
 import com.amazonaws.services.s3.model.Bucket
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, DateTimeZone, Duration}
-import org.slf4j.LoggerFactory
 import sun.misc.BASE64Encoder
 
 case class SignedAndEncoded(
@@ -41,7 +41,7 @@ class AWSUpload(val bucket: Bucket, val expiryDuration: Duration=Duration.standa
                     |  "conditions": [
                     |    {"bucket": "${bucket.getName}"},
                     |    ["starts-with", "$$key", "$keyPrefix"],
-                    |    {"acl": "$acl"},
+                    |    {"acl": "${acl.display}"},
                     |    ["starts-with", "$$Content-Type", ""],
                     |  ]
                     |}""".stripMargin
@@ -79,5 +79,21 @@ class AWSUpload(val bucket: Bucket, val expiryDuration: Duration=Duration.standa
     val encodedPolicy = policyEncoder(policy, contentLength)
     val signedPolicy = signPolicy(policy, contentLength, awsSecretKey)
     SignedAndEncoded(encodedPolicy=encodedPolicy, signedPolicy=signedPolicy, contentType=guessContentType(key))
+  }
+}
+
+object AWSUpload extends S3Implicits {
+  /** This method is idempotent
+    * Side effect: sets policy for AWS S3 upload bucket */
+  def setBucketPolicy(bucket: Bucket, statements: List[Statement])(implicit s3: S3): Bucket = {
+    try {
+      bucket.policy = statements
+      Logger.debug(s"${bucket.getName} bucket policy=${bucket.policy}")
+    } catch {
+      case ignored: Exception =>
+        Logger.debug(s"setBucketPolicy: ${ignored.toString}")
+    }
+    bucket.enableCors()
+    bucket
   }
 }

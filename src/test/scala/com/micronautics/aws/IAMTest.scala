@@ -11,22 +11,13 @@
 
 package com.micronautics.aws
 
+import com.amazonaws.services.s3.model.Bucket
 import org.scalatest.WordSpec
 
 class IAMTest extends WordSpec with TestBase with IAMImplicits {
   import com.amazonaws.services.identitymanagement.model.{User=>IAMUser}
-  import com.amazonaws.services.s3.model.Bucket
+  import IAMTest._
   import scala.util.Success
-
-  val bucketName = s"www.test${new java.util.Date().getTime}.com"
-  var bucket: Bucket = try {
-      println(s"Creating bucket $bucketName")
-      implicitly[S3].createBucket(bucketName)
-    } catch {
-      case e: Exception =>
-        val awsCredentials = implicitly[S3].awsCredentials
-        fail(s"Error creating bucket with accessKey=${awsCredentials.getAWSAccessKeyId} and secretKey=${awsCredentials.getAWSSecretKey}\n${e.getMessage}")
-    }
 
   val iamUser1Name = "testIamUser1"
   if (iam.findUser(iamUser1Name).isSuccess) // in case it is left over from a previous test
@@ -85,4 +76,17 @@ class IAMTest extends WordSpec with TestBase with IAMImplicits {
       ()
     }
   }
+}
+
+object IAMTest {
+  val bucketName = s"www.test${new java.util.Date().getTime}.com"
+
+  def bucket(implicit s3: S3): Bucket = try {
+      println(s"Creating bucket $bucketName")
+      s3.createBucket(bucketName)
+    } catch {
+      case e: Exception =>
+        val awsCredentials = implicitly[S3].awsCredentials
+        throw new Error(s"Error creating bucket with accessKey=${awsCredentials.getAWSAccessKeyId} and secretKey=${awsCredentials.getAWSSecretKey}\n${e.getMessage}")
+    }
 }

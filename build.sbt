@@ -1,6 +1,6 @@
 import sbt.Keys._
 
-version := "1.0.10"
+version := "1.1.0"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
@@ -54,8 +54,10 @@ libraryDependencies <++= scalaVersion {
 }
 
 libraryDependencies ++= Seq(
+  "org.apache.httpcomponents" % "httpclient"        % "4.4.1" force() withSources(),
+  "org.apache.httpcomponents" % "httpcore"          % "4.4.1" force() withSources(),
   "org.codehaus.jackson"   %  "jackson-mapper-asl"  % "1.9.13",
-  "com.amazonaws"          %  "aws-java-sdk-osgi"   % "1.10.31" withSources(),
+  "com.amazonaws"          %  "aws-java-sdk-osgi"   % "1.10.35" withSources(),
   "com.micronautics"       %% "scalacourses-utils"  % "0.2.11"  withSources(),
   "commons-io"             %  "commons-io"          % "2.4"     withSources(),
   "commons-lang"           %  "commons-lang"        % "2.6"     withSources(),

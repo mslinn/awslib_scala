@@ -48,7 +48,7 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
     try {
       val oldIamUser: IAMUser = iamClient.getUser(new GetUserRequest().withUserName(userName)).getUser
       try { oldIamUser.deleteAccessKeys() } catch { case ignored: Exception => Logger.info(ignored.getMessage) }
-      oldIamUser.createAccessKeys.map { keys =>
+      oldIamUser.createAccessKeys().map { keys =>
         (oldIamUser, keys)
       }
     } catch {
@@ -57,7 +57,7 @@ class IAM()(implicit val awsCredentials: AWSCredentials) {
           Logger.info(e.getMessage)
           val createUserRequest = new CreateUserRequest().withUserName(userName)
           val iamUserNew: IAMUser = iamClient.createUser(createUserRequest).getUser
-          iamUserNew.createAccessKeys.map { keys =>
+          iamUserNew.createAccessKeys().map { keys =>
             Logger.debug(s"New AWS IAM user $userName has path ${iamUserNew.getPath} and keys $keys")
             (iamUserNew, keys)
           }
