@@ -653,8 +653,9 @@ trait S3Implicits {
 
     def removeDistribution()(implicit cf: CloudFront): Boolean = cf.removeDistribution(bucket)
 
-    /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or a a CloudFront distribution alias is created
-      * (by assigning a CNAME) after this method is first called, or the bucket will never be found */
+    /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or a a CloudFront
+      * distribution alias is created (by assigning a CNAME) after this method is first called,
+      * or the bucket will never be found */
     def resourceUrl(key: String): String =
       s3.resourceUrl(bucket.getName, key)
 

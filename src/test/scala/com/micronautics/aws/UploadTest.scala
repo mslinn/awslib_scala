@@ -32,9 +32,9 @@ class UploadTest extends WordSpec with TestBase with IAMImplicits with S3Implici
   val aKey = s"uploadDirectory/$fileName"
   val file = new File(resourcesDir, fileName)
 
-  /** Download a file  */
+  /** Download a binary file specified by the given bucket and key */
   def download(bucket: Bucket, key: String): Array[Byte] = {
-    val url = bucket.resourceUrl(key).replace("https:", "http:") // step around SSL mismatch
+    val url = bucket.resourceUrl(key).replace("https:", "http:") // step around SSL certificate mismatch
     val stream = new URL(url).openStream
     try {
       org.apache.commons.io.IOUtils.toByteArray(stream)
@@ -43,18 +43,16 @@ class UploadTest extends WordSpec with TestBase with IAMImplicits with S3Implici
     }
   }
 
-  "uploadAsset" should {
-    "sign, encode and upload publicly readable file to AWS S3" in {
-      // Only lazy vals and defs are allowed in this block; no vals or any other code blocks, otherwise delayedInit() will
-      // get invoked twice and therefore around() will get invoked twice
+  "uploadAssets" should {
+    "sign, encode and upload files to AWS S3" in {
       Logger.info(s"Creating bucket $bucketName")
       BucketPolicy.createBucket(bucketName)
 
       Logger.info("Uploading asset")
-      val result1 = UploadPostV2(file, bucket, aKey, privateAcl)
+      UploadPostV2(file, bucket, aKey, privateAcl)
 
       Logger.info("Uploading homework")
-      val result2 = UploadPostV2(file, bucket, aKey, publicAcl)
+      UploadPostV2(file, bucket, aKey, publicAcl)
 
       val actual: Array[Byte] = download(bucket, aKey)
       val desired: Array[Byte] = FileUtils.readFileToByteArray(file)

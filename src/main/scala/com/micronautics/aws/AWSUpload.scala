@@ -26,13 +26,13 @@ import org.joda.time.{DateTime, DateTimeZone, Duration}
 import scala.util.{Success, Failure, Try}
 import sun.misc.BASE64Encoder
 
-case class SignedAndEncoded(
+protected[aws] case class SignedAndEncoded(
   encodedPolicy: String,
   signedPolicy: String,
   contentType: String
 )
 
-/** The implicit `AmazonIdentityManagementClient `instance determines the AIM user based on the AWS access key ID in the
+/** The implicit `AmazonIdentityManagementClient` instance determines the AIM user based on the AWS access key ID in the
   * implicit `AWSCredentials` instance in scope. */
 object UploadPostV2 extends S3Implicits {
   import java.net.URL
@@ -42,7 +42,7 @@ object UploadPostV2 extends S3Implicits {
 
   /** @param file File to upload
     * @param bucket Bucket to deliver the upload to; must have CORS set for POST and the bucket policy must grant the
-    *               user referenced in the implicit AmazonIdentityManagementClient instance the privilege to upload
+    *               user referenced in the implicit `AmazonIdentityManagementClient` instance the privilege to upload
     * @param acl Access Control List for the uploaded item
     * @param expiryDuration specifies the maximum `Duration` the upload has to complete before AWS terminates it with an error */
   def apply(file: File, bucket: Bucket, aKey: String, acl: AclEnum, expiryDuration: Duration=Duration.standardHours(1))
@@ -67,7 +67,7 @@ object UploadPostV2 extends S3Implicits {
   /** There are two versions of upload via POST to S3; this method uses
     * [v2](http://docs.aws.amazon.com/AmazonS3/latest/dev/UsingHTTPPOST.html), not
     * [v4](http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-authentication-HTTPPOST.html) */
-  def uploadPost(file: File, uploadUrl: URL, params: Map[String, String]): Try[Boolean] = {
+  protected[aws] def uploadPost(file: File, uploadUrl: URL, params: Map[String, String]): Try[Boolean] = {
     Logger.info(s"uploadUrl=${uploadUrl.toString}")
     val httpPost = new HttpPost(uploadUrl.toString)
     val httpClient = HttpClientBuilder.create.build
@@ -102,8 +102,9 @@ object UploadPostV2 extends S3Implicits {
 }
 
 /** Heavy computation for preparing upload, mostly having to do with security.
-  * @param expiryDuration times out policy in one hour by default */
-class UploadPostV2(val bucket: Bucket, val expiryDuration: Duration=Duration.standardHours(1))
+  * The AIM user on whose behalf the upload is performed is determined from the AWS access key ID in the implicit `AWSCredentials` instance.
+  * @param expiryDuration specifies the maximum `Duration` the upload has to complete before AWS terminates it with an error */
+protected[aws] class UploadPostV2(val bucket: Bucket, val expiryDuration: Duration=Duration.standardHours(1))
                   (implicit awsCredentials: AWSCredentials) {
   import com.micronautics.aws.AclEnum._
 

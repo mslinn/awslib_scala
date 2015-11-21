@@ -35,7 +35,7 @@ libraryDependencies ++= {
     "com.micronautics"          %% "scalacourses-utils" % "0.2.11"  withSources(),
     "commons-io"                %  "commons-io"         % "2.4"     withSources(),
     "commons-lang"              %  "commons-lang"       % "2.6"     withSources(),
-    "ch.qos.logback"            %  "logback-classic"    % "1.1.2"   withSources(),
+    "ch.qos.logback"            %  "logback-classic"    % "1.1.3"   withSources(),
     //
     "junit"                     %  "junit"              % "4.12"  % "test",
     "org.scalatest"             %% "scalatest"          % "2.2.5" % "test" withSources(),
