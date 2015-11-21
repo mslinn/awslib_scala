@@ -24,8 +24,10 @@
        # WARN	  YES	  YES	  YES	  YES	  NO	  NO
        # ERROR	  YES	  YES	  YES	  YES	  YES	  NO
        # See http://logback.qos.ch/manual/architecture.html -->
-  <logger name="service" level="INFO" />
-  <logger name="test" level="INFO" />
+  <logger name="service"      level="INFO" />
+  <logger name="test"         level="INFO" />
+  <logger name="UploadPostV2" level="INFO" />
+  <logger name="iamClient"    level="INFO" />
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />

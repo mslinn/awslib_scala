@@ -21,9 +21,7 @@ import org.scalatest._
 
 class UploadTest extends WordSpec with TestBase with IAMImplicits with S3Implicits {
   import java.net.URL
-
   import IAMTest._
-  import UploadPostV2._
 
   val Logger = org.slf4j.LoggerFactory.getLogger("UploadTest")
   implicit val iamClient = iam.iamClient
@@ -50,13 +48,13 @@ class UploadTest extends WordSpec with TestBase with IAMImplicits with S3Implici
       // Only lazy vals and defs are allowed in this block; no vals or any other code blocks, otherwise delayedInit() will
       // get invoked twice and therefore around() will get invoked twice
       Logger.info(s"Creating bucket $bucketName")
-      createBucket(bucketName)
+      BucketPolicy.createBucket(bucketName)
 
       Logger.info("Uploading asset")
-      val result1 = uploadPostV2(file, bucket, aKey, privateAcl)
+      val result1 = UploadPostV2(file, bucket, aKey, privateAcl)
 
       Logger.info("Uploading homework")
-      val result2 = uploadPostV2(file, bucket, aKey, publicAcl)
+      val result2 = UploadPostV2(file, bucket, aKey, publicAcl)
 
       val actual: Array[Byte] = download(bucket, aKey)
       val desired: Array[Byte] = FileUtils.readFileToByteArray(file)

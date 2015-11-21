@@ -15,20 +15,16 @@ import java.nio.charset.Charset
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.auth.policy.{Principal, Statement}
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient
 import com.amazonaws.services.s3.model.Bucket
 import org.apache.http.client.methods.{CloseableHttpResponse, HttpPost}
 import org.apache.http.entity.ContentType
-import org.apache.http.entity.mime.{HttpMultipartMode, MultipartEntityBuilder}
 import org.apache.http.entity.mime.{MultipartEntityBuilder, HttpMultipartMode}
 import org.apache.http.entity.mime.content.FileBody
 import org.apache.http.impl.client.HttpClientBuilder
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, DateTimeZone, Duration}
-import sun.misc.BASE64Encoder
-
 import scala.util.{Success, Failure, Try}
+import sun.misc.BASE64Encoder
 
 case class SignedAndEncoded(
   encodedPolicy: String,
@@ -36,18 +32,27 @@ case class SignedAndEncoded(
   contentType: String
 )
 
+/** The implicit `AmazonIdentityManagementClient `instance determines the AIM user based on the AWS access key ID in the
+  * implicit `AWSCredentials` instance in scope. */
 object UploadPostV2 extends S3Implicits {
   import java.net.URL
   import java.io.File
 
-  val Logger = org.slf4j.LoggerFactory.getLogger("UploadTest")
+  val Logger = org.slf4j.LoggerFactory.getLogger("UploadPostV2")
 
-  def uploadPostV2(file: File, bucket: Bucket, aKey: String, acl: AclEnum)(implicit s3: S3): Try[Boolean] = {
-    val uploadUrl = new URL(s"http://${bucket.getName}.s3.amazonaws.com") // key is NOT part of the url, also note the short URL (region is not included)
-    val awsUpload = new UploadPostV2(bucket)(s3.awsCredentials)
+  /** @param file File to upload
+    * @param bucket Bucket to deliver the upload to; must have CORS set for POST and the bucket policy must grant the
+    *               user referenced in the implicit AmazonIdentityManagementClient instance the privilege to upload
+    * @param acl Access Control List for the uploaded item
+    * @param expiryDuration specifies the maximum `Duration` the upload has to complete before AWS terminates it with an error */
+  def apply(file: File, bucket: Bucket, aKey: String, acl: AclEnum, expiryDuration: Duration=Duration.standardHours(1))
+           (implicit s3: S3): Try[Boolean] = {
+    // The key is not part of the upload URL; also note the short URL does not include the AWS region
+    val uploadUrl = new URL(s"http://${bucket.getName}.s3.amazonaws.com")
+    val awsUpload = new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials)
     val contentLength = file.length
     val fileName = file.getName
-    val sae: SignedAndEncoded = awsUpload.signAndEncodePolicy(fileName, contentLength, acl, s3.awsCredentials.getAWSSecretKey)
+    val sae: SignedAndEncoded = awsUpload.signAndEncodePolicy(fileName, contentLength, acl)
     val params = Map[String, String](
       "key"            -> aKey,
       "AWSAccessKeyId" -> s3.awsCredentials.getAWSAccessKeyId,
@@ -70,12 +75,12 @@ object UploadPostV2 extends S3Implicits {
       val builder = MultipartEntityBuilder.create
       builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
       params.foreach { case (key, value) =>
-        Logger.info(s"  Adding $key: $value")
+        Logger.info(s"Adding $key: $value")
         builder.addTextBody(key, value)
       }
       builder.setCharset(Charset.forName("UTF-8"))
 
-      Logger.info(s"  Adding file: ${file.getAbsolutePath}")
+      Logger.info(s"Adding file: ${file.getAbsolutePath}")
       val fileBody = new FileBody(file, ContentType.DEFAULT_BINARY)
       builder.addPart("file", fileBody)
       val entity = builder.build
@@ -84,8 +89,8 @@ object UploadPostV2 extends S3Implicits {
       val response: CloseableHttpResponse = httpClient.execute(httpPost)
       val statusCode = response.getStatusLine.getStatusCode
       if (statusCode>=300) {
-        Logger.error(s"  statusCode $statusCode}")
-        Failure(new Exception(s"  statusCode $statusCode}"))
+        Logger.error(s"statusCode $statusCode}")
+        Failure(new Exception(s"statusCode $statusCode}"))
       } else {
         Success(true)
       }
@@ -94,59 +99,12 @@ object UploadPostV2 extends S3Implicits {
         Failure(e)
     }
   }
-
-  /** This method is idempotent
-    * Side effect: sets policy for AWS S3 upload bucket */
-  def setBucketPolicy(bucket: Bucket, statements: List[Statement])(implicit s3: S3): Bucket = {
-    try {
-      bucket.policy = statements
-      Logger.debug(s"${bucket.getName} bucket policy=${bucket.policy}")
-    } catch {
-      case ignored: Exception =>
-        Logger.debug(s"setBucketPolicy: ${ignored.toString}")
-    }
-    bucket.enableCors()
-    bucket
-  }
-
-  /** Typical: arn:aws:iam::031372724784:root */
-  def arnOwner(implicit iamClient: AmazonIdentityManagementClient): Try[String] =
-    Try { iamClient.getUser.getUser.getArn }
-
-  /** Typical: principalOwner.getId = arn:aws:iam::031372724784:root */
-  def principalOwner(implicit iamClient: AmazonIdentityManagementClient): Try[Principal] =
-    arnOwner.map(arn => new Principal(arn))
-
-  def allowOwnerEverythingStatement(bucket: Bucket)(implicit iamClient: AmazonIdentityManagementClient): Statement = {
-    val principals: Seq[Principal] = principalOwner.toOption.toList
-    bucket.allowAllStatement(principals, "Allow root to do everything")
-  }
-
-  def createBucket(bucketName: String)(implicit s3: S3, iamClient: AmazonIdentityManagementClient): Bucket = {
-    try {
-      Logger.info(s"Setting up bucket $bucketName")
-      val bucket = s3.createBucket(bucketName)
-      bucket.enableWebsite()
-      bucket.enableCors()
-      val allowStatements = List(allowOwnerEverythingStatement(bucket))
-      setBucketPolicy(bucket, allowStatements)
-      bucket
-    } catch {
-      case e: Exception =>
-        Logger.info(s"setupBucket: ${e.toString}")
-        try {
-          //bucket.delete()
-        } catch {
-          case ignored: Exception =>
-            //Logger.debug(s"Ignoring: $ignored")
-        }
-        throw new Exception(s"Exception setting up $bucketName; $e")
-    }
-  }
 }
 
-/** @param expiryDuration times out policy in one hour by default */
-class UploadPostV2(val bucket: Bucket, val expiryDuration: Duration=Duration.standardHours(1))(implicit awsCredentials: AWSCredentials) {
+/** Heavy computation for preparing upload, mostly having to do with security.
+  * @param expiryDuration times out policy in one hour by default */
+class UploadPostV2(val bucket: Bucket, val expiryDuration: Duration=Duration.standardHours(1))
+                  (implicit awsCredentials: AWSCredentials) {
   import com.micronautics.aws.AclEnum._
 
   /** @param key has path, without leading slash, including filetype */
@@ -173,12 +131,11 @@ class UploadPostV2(val bucket: Bucket, val expiryDuration: Duration=Duration.sta
     encodedPolicy.replaceAll("\n|\r", "")
   }
 
-  /** @param policyText must be encoded with UTF-8
-    * @param awsSecretKey must be encoded with UTF-8 */
-  def signPolicy(policyText: String, contentLength: Long, awsSecretKey: String): String = {
-    assert(awsSecretKey.nonEmpty)
+  /** @param policyText must be encoded with UTF-8 */
+  def signPolicy(policyText: String, contentLength: Long): String = {
+    assert(awsCredentials.getAWSSecretKey.nonEmpty)
     val hmac = Mac.getInstance("HmacSHA1")
-    hmac.init(new SecretKeySpec(awsSecretKey.getBytes("UTF-8"), "HmacSHA1"))
+    hmac.init(new SecretKeySpec(awsCredentials.getAWSSecretKey.getBytes("UTF-8"), "HmacSHA1"))
     val encodedPolicy: String = policyEncoder(policyText, contentLength)
     val finalizedHmac = hmac.doFinal(encodedPolicy.getBytes("UTF-8"))
     val signature = new BASE64Encoder().encode(finalizedHmac)
@@ -189,14 +146,13 @@ class UploadPostV2(val bucket: Bucket, val expiryDuration: Duration=Duration.sta
   /** @param key has path, without leading slash, including filetype
     * @param acl must either be "public" or "public-read"
     * @return tuple containing encoded policy and signed policy for given key and contentLength */
-  def signAndEncodePolicy(key: String, contentLength: Long, acl: AclEnum = privateAcl,
-                          awsSecretKey: String = awsCredentials.getAWSSecretKey): SignedAndEncoded = {
+  def signAndEncodePolicy(key: String, contentLength: Long, acl: AclEnum = privateAcl): SignedAndEncoded = {
     assert(!key.startsWith("/"))
     assert(acl==publicAcl || acl==privateAcl)
-    Logger.debug(s"Signing '$key' with awsSecretKey='$awsSecretKey' and acl='$acl'")
+    Logger.debug(s"Signing '$key' with awsSecretKey='${awsCredentials.getAWSSecretKey}' and acl='$acl'")
     val policy = policyText(key, contentLength, acl)
     val encodedPolicy = policyEncoder(policy, contentLength)
-    val signedPolicy = signPolicy(policy, contentLength, awsSecretKey)
+    val signedPolicy = signPolicy(policy, contentLength)
     SignedAndEncoded(encodedPolicy=encodedPolicy, signedPolicy=signedPolicy, contentType=guessContentType(key))
   }
 }
