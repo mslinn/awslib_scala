@@ -22,13 +22,13 @@ import scala.util.Try
 object BucketPolicy {
   /** This method is idempotent
     * Side effect: sets policy for given AWS S3 upload bucket */
-  def setBucketPolicy(bucket: Bucket, statements: List[Statement])(implicit s3: S3): Bucket = {
+  def setPolicy(bucket: Bucket, statements: List[Statement])(implicit s3: S3): Bucket = {
     try {
       bucket.policy = statements
       Logger.debug(s"${bucket.getName} bucket policy=${bucket.policy}")
     } catch {
       case ignored: Exception =>
-        Logger.debug(s"setBucketPolicy: ${ignored.toString}")
+        Logger.debug(s"setPolicy: ${ignored.toString}")
     }
     bucket.enableCors()
     bucket
@@ -56,7 +56,7 @@ object BucketPolicy {
       bucket.enableWebsite()
       bucket.enableCors()
       val allowStatements = List(allowUserEverythingStatement(bucket))
-      setBucketPolicy(bucket, allowStatements)
+      setPolicy(bucket, allowStatements)
       bucket
     } catch {
       case e: Exception =>

@@ -454,7 +454,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
       s3Client.setBucketPolicy(bucket.getName, policyJson)
     } catch {
       case ignored: Exception =>
-        Logger.debug(s"setBucketPolicy: $ignored")
+        Logger.debug(s"setPolicy: $ignored")
     }
     cacheIsDirty.set(true)
     bucket
