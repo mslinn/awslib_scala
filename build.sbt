@@ -1,6 +1,6 @@
 import sbt.Keys._
 
-version := "1.1.1"
+version := "1.1.2"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))

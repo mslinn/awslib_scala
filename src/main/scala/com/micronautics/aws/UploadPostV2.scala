@@ -18,7 +18,7 @@ import scala.util.{Success, Failure, Try}
 
 /** The implicit `AmazonIdentityManagementClient` instance determines the AIM user based on the AWS access key ID in the
   * implicit `AWSCredentials` instance in scope. */
-object UploadPostV2 extends S3Implicits {
+object UploadPostV2 extends S3Implicits with CFImplicits {
   import java.net.URL
   import java.io.File
 
@@ -29,23 +29,32 @@ object UploadPostV2 extends S3Implicits {
     *               user referenced in the implicit `AmazonIdentityManagementClient` instance the privilege to upload
     * @param acl Access Control List for the uploaded item
     * @param expiryDuration specifies the maximum `Duration` the upload has to complete before AWS terminates it with an error */
-  def apply(file: File, bucket: Bucket, aKey: String, acl: AclEnum, expiryDuration: Duration=Duration.standardHours(1))
-           (implicit s3: S3): Try[Boolean] = {
+  def apply(file: File, bucket: Bucket, key: String, acl: AclEnum, expiryDuration: Duration=Duration.standardHours(1))
+           (implicit s3: S3, cf: CloudFront): Try[Boolean] = {
     // The key is not part of the upload URL; also note the short URL does not include the AWS region
     val uploadUrl = new URL(s"http://${bucket.getName}.s3.amazonaws.com")
-    val awsUpload = new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials)
+    val parameters = params(file, bucket, key, acl, expiryDuration, s3.awsCredentials)
+    uploadPost(file, uploadUrl, parameters).flatMap( _ =>
+      invalidateDistributions(bucket, key)
+    )
+  }
+
+  def invalidateDistributions(bucket: Bucket, key: String)(implicit s3: S3, cf: CloudFront): Try[Boolean] =
+    Try { RichBucket(bucket).invalidate(key)>0 }
+
+  protected[aws] def params(file: File, bucket: Bucket, key: String, acl: AclEnum, expiryDuration: Duration, awsCredentials: AWSCredentials): Map[String, String] = {
+    val awsUpload = new UploadPostV2(bucket, expiryDuration)(awsCredentials)
     val contentLength = file.length
     val fileName = file.getName
-    val sae = awsUpload.SignAndEncodePolicy(fileName, contentLength, acl)
-    val params = Map[String, String](
-      "key"            -> aKey,
-      "AWSAccessKeyId" -> s3.awsCredentials.getAWSAccessKeyId,
+    val saep = awsUpload.SignAndEncodePolicy(fileName, contentLength, acl)
+    Map[String, String](
+      "key"            -> key,
+      "AWSAccessKeyId" -> awsCredentials.getAWSAccessKeyId,
       "acl"            -> acl.display,
-      "policy"         -> sae.encodedPolicy,
-      "signature"      -> sae.signedPolicy,
-      "Content-Type"   -> sae.contentType
+      "policy"         -> saep.encodedPolicy,
+      "signature"      -> saep.signedPolicy,
+      "Content-Type"   -> saep.contentType
     )
-    uploadPost(file, uploadUrl, params)
   }
 
   /** There are two versions of upload via POST to S3; this method uses
