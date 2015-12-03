@@ -1,6 +1,6 @@
 import sbt.Keys._
 
-version := "1.1.3"
+version := "1.1.4"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
@@ -27,19 +27,26 @@ resolvers ++= Seq(
 libraryDependencies ++= {
   val httpV = "4.4.1"
   Seq(
-    "org.apache.httpcomponents" %  "httpclient"         % httpV    withSources() force(),
-    "org.apache.httpcomponents" %  "httpcore"           % httpV    withSources() force(),
-    "org.apache.httpcomponents" %  "httpmime"           % httpV    withSources() force(),
-    "org.codehaus.jackson"      %  "jackson-mapper-asl" % "1.9.13",
-    "com.amazonaws"             %  "aws-java-sdk-osgi"  % "1.10.35" withSources(),
-    "com.micronautics"          %% "scalacourses-utils" % "0.2.11"  withSources(),
-    "commons-io"                %  "commons-io"         % "2.4"     withSources(),
-    "commons-lang"              %  "commons-lang"       % "2.6"     withSources(),
-    "ch.qos.logback"            %  "logback-classic"    % "1.1.3"   withSources(),
+    "org.apache.httpcomponents"  %  "httpclient"          % httpV    withSources() force(),
+    "org.apache.httpcomponents"  %  "httpcore"            % httpV    withSources() force(),
+    "org.apache.httpcomponents"  %  "httpmime"            % httpV    withSources() force(),
+    "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13",
+    "org.joda"                   %  "joda-convert"        % "1.7"     withSources() force(),
+    "com.fasterxml.jackson.core" %  "jackson-annotations" % "2.5.4"   withSources() force(),
+    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.10.35" withSources(),
+    "com.micronautics"           %% "scalacourses-utils"  % "0.2.11"  withSources(),
+    "com.typesafe"               %  "config"              % "1.3.0"   withSources() force(),
+    "com.fasterxml.jackson.core" %  "jackson-core"        % "2.5.4"   withSources() force(),
+    "com.fasterxml.jackson.core" %  "jackson-databind"    % "2.5.4"   withSources() force(),
+    "commons-codec"              %  "commons-codec"       % "1.10"    withSources() force(),
+    "commons-io"                 %  "commons-io"          % "2.4"     withSources(),
+    "commons-lang"               %  "commons-lang"        % "2.6"     withSources(),
+    "ch.qos.logback"             %  "logback-classic"     % "1.1.3"   withSources(),
+    "org.slf4j"                  %  "slf4j-api"           % "1.7.12"  withSources() force(),
     //
-    "junit"                     %  "junit"              % "4.12"  % "test",
-    "org.scalatest"             %% "scalatest"          % "2.2.5" % "test" withSources(),
-    "org.scalautils"            %% "scalautils"         % "2.1.7" % "test" withSources()
+    "junit"                      %  "junit"               % "4.12"  % "test",
+    "org.scalatest"              %% "scalatest"           % "2.2.5" % "test" withSources(),
+    "org.scalautils"             %% "scalautils"          % "2.1.7" % "test" withSources()
   )
 }
 
@@ -47,25 +54,30 @@ libraryDependencies <++= scalaVersion {
   case sv if sv.startsWith("2.11") => // Builds with Scala 2.11.x, Play 2.4.3
     val playV = "2.4.3"
     Seq(
-      "com.typesafe.play"      %% "play-json"      % playV   withSources(),
-      "com.github.nscala-time" %% "nscala-time"    % "2.4.0" withSources(),
-      "org.clapper"            %% "grizzled-scala" % "1.3"   withSources(),
+      "com.typesafe.play"      %% "play-json"        % playV   withSources() force(),
+      "com.typesafe.play"      %% "play-iteratees"   % playV   withSources() force(),
+      "com.typesafe.play"      %% "play-datacommons" % playV   withSources() force(),
+      "com.github.nscala-time" %% "nscala-time"      % "2.4.0" withSources(),
+      "org.clapper"            %% "grizzled-scala"   % "1.3"   withSources(),
       //
-      "com.typesafe.play"      %% "play"           % playV      % "test" withSources(),
-      "com.typesafe.play"      %% "play-ws"        % playV      % "test" withSources(),
-      "org.scalatestplus"      %% "play"           % "1.4.0-M4" % "test" withSources()
+      "com.typesafe.play"      %% "play"             % playV      % "test" withSources(),
+      "com.typesafe.play"      %% "play-ws"          % playV      % "test" withSources(),
+      "org.scalatestplus"      %% "play"             % "1.4.0-M4" % "test" withSources()
     )
 
   case sv if sv.startsWith("2.10") => // Builds with Scala 2.10.x, Play 2.2.6
     val playV = "2.2.6"
     Seq(
-      "com.typesafe.play"      %% "play-json"           % playV   withSources(),
+      "com.typesafe.play"      %% "play-json"           % playV    withSources() force(),
+      "com.typesafe.play"      %% "play-iteratees"      % playV    withSources() force(),
+      "com.typesafe.play"      %% "play-datacommons"    % playV    withSources() force(),
       //"com.github.nscala-time" %  "nscala-time_2.10"    % "2.2.0" withSources(),
       // temporary for JDK 1.8u60 bug:
-      "com.github.nscala-time" %% "nscala-time"         % "2.4.0" exclude("joda-time", "joda-time"),
+      "com.github.nscala-time" %% "nscala-time"         % "2.4.0"  exclude("joda-time", "joda-time"),
       "joda-time"              % "joda-time"            % "2.8.2",
       //
-      "org.clapper"            %  "grizzled-scala_2.10" % "1.3"   withSources(),
+      "org.clapper"            %  "grizzled-scala_2.10" % "1.3"    withSources(),
+      "org.scala-lang"         %  "scala-reflect"       % "2.10.6" force(),
       //
       "com.typesafe.play"      %% "play"                % playV      % "test" withSources(),
       "org.scalatestplus"      %% "play"                % "1.4.0-M4" % "test" withSources()
