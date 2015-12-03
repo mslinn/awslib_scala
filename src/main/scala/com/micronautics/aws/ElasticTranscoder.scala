@@ -14,7 +14,7 @@ package com.micronautics.aws
 import collection.JavaConverters._
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.elastictranscoder.AmazonElasticTranscoderClient
-import com.amazonaws.services.elastictranscoder.model.{Pipeline, DeletePipelineRequest}
+import com.amazonaws.services.elastictranscoder.model._
 import scala.util.{Failure, Success, Try}
 
 object ElasticTranscoder {
@@ -141,6 +141,27 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
       }
     }
 
+  /** Create an Elastic Transcoder job using the given pipeline, input key, presets, output inKey prefix and output keys.
+    * @return Job created in Elastic Transcoder. */
+  def createJob(pipelineId: String, presets: List[Preset], inKey: String, outputKeyPrefix: String, outputKeys: List[String])
+               (implicit etClient: AmazonElasticTranscoderClient): Job = {
+    val input = new JobInput().withKey(inKey)
+    assert(presets.size==outputKeys.size)
+    val outputs = (presets zip outputKeys).map { case (aPreset, outputKey) =>
+      new CreateJobOutput()
+        .withKey(outputKey)
+        .withPresetId(aPreset.getId)
+    }
+    // Create a job on the specified pipeline and return the job ID.
+    val createJobRequest = new CreateJobRequest()
+      .withPipelineId(pipelineId)
+      .withOutputKeyPrefix(outputKeyPrefix)
+      .withInput(input)
+      .withOutputs(outputs.asJava)
+    Logger.info("Submitting Elastic Transcoder job")
+    etClient.createJob(createJobRequest).getJob
+  }
+
    // TODO write a setter
    def defaultPresets: List[Preset] = try {
     List(presetCache("1351620000001-100070")).flatten
@@ -183,6 +204,11 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
     findPipelineByName(pipelineName).flatMap { pipeline => // I hope jobs are returned with oldest first
       jobs(pipeline).find(_.getOutput.getKey == key)
     }
+
+  def findJobByPipelineIdAndId(pipelineId: String, jobId: String): Option[Job] = {
+    val request = new ListJobsByPipelineRequest().withPipelineId(pipelineId)
+    etClient.listJobsByPipeline(request).getJobs.asScala.find(_.getId == jobId)
+  }
 
   /** Find most recent job for specified key */
   // TODO Does not work because jobs are not returned in any chronological order
