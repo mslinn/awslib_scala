@@ -1,11 +1,11 @@
 import sbt.Keys._
 
-version := "1.1.4"
+version := "1.1.5"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 scalaVersion := "2.10.6"
-crossScalaVersions := Seq("2.10.6", "2.11.7")
+crossScalaVersions := Seq("2.10.6", "2.11.8")
 
 scalacOptions ++= Seq("-deprecation", "-encoding", "UTF-8", "-feature", "-target:jvm-1.7", "-unchecked",
     "-Ywarn-adapted-args", "-Ywarn-value-discard", "-Xlint")
@@ -33,7 +33,7 @@ libraryDependencies ++= {
     "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13",
     "org.joda"                   %  "joda-convert"        % "1.7"     withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-annotations" % "2.5.4"   withSources() force(),
-    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.10.35" withSources(),
+    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.10.68" withSources(),
     "com.micronautics"           %% "scalacourses-utils"  % "0.2.11"  withSources(),
     "com.typesafe"               %  "config"              % "1.3.0"   withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-core"        % "2.5.4"   withSources() force(),

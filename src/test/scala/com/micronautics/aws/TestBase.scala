@@ -11,12 +11,14 @@
 
 package com.micronautics.aws
 
-import com.amazonaws.auth.AWSCredentials
+import com.amazonaws.auth.{DefaultAWSCredentialsProviderChain, AWSCredentials}
 import org.scalatest.concurrent.AsyncAssertions
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, MustMatchers, Suite}
 import org.scalatestplus.play.{OneServerPerSuite, PlaySpec}
 
 trait TestBase extends MustMatchers with BeforeAndAfter with BeforeAndAfterAll with SNSImplicits { this: BeforeAndAfterAll with Suite =>
+  // TODO This seems better, try it next time:
+  //lazy implicit val awsCredentials: AWSCredentials = new DefaultAWSCredentialsProviderChain().getCredentials
 //  lazy implicit val awsCredentials: AWSCredentials = new BasicAWSCredentials("blahblah", "blahblah")
   lazy implicit val awsCredentials: AWSCredentials = maybeCredentialsFromEnv("TEST_").getOrElse(
                                                        maybeCredentialsFromFile.getOrElse(
