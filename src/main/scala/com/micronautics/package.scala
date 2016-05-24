@@ -25,10 +25,9 @@ package com.micronautics
 package object aws extends CFImplicits with ETImplicits with IAMImplicits with S3Implicits with SNSImplicits with SQSImplicits {
   import java.io.File
   import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials}
-  import com.amazonaws.util.json.JSONObject
+  import com.amazonaws.util.json.Jackson
   import com.typesafe.config.ConfigFactory
   import org.slf4j.LoggerFactory
-  import play.api.libs.json.Json
   import scala.collection.JavaConverters._
   import scala.language.implicitConversions
 
@@ -143,7 +142,7 @@ package object aws extends CFImplicits with ETImplicits with IAMImplicits with S
   }
 
   /** Helpful for debugging AWS requests and responses */
-  def jsonPrettyPrint(awsObject: Object) = Json.prettyPrint(Json.parse(new JSONObject(awsObject).toString))
+  def jsonPrettyPrint(awsObject: Object) = Jackson.toJsonPrettyString(awsObject)
 
   /** UUID / GUID generator */
   def uuid = java.util.UUID.randomUUID.toString

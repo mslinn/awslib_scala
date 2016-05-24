@@ -164,35 +164,35 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials) extends CFImplic
     val eTag = if (distConfigResult.getDistributionConfig.getEnabled) {
       Logger.debug(s"Disabling distribution of $domainName with id $$distributionId and ETag $distributionETag")
       config.setEnabled(false)
-      Logger.debug(s"Distribution config after disabling=${jsonPrettyPrint(config)}")
+      Logger.debug(s"Distribution config after disabling=${ jsonPrettyPrint(config) }")
       val updateRequest = new UpdateDistributionRequest(config, distSummary.getId, distributionETag)
       val updateResult: UpdateDistributionResult = cfClient.updateDistribution(updateRequest)
       val updateETag = updateResult.getETag
-      Logger.debug(s"Update result ETag = $updateETag; enabled=${distSummary.enabled}; status=${distSummary.status}")
+      Logger.debug(s"Update result ETag = $updateETag; enabled=${ distSummary.enabled }; status=${ distSummary.status }")
       var i = 1
       while (distSummary.status == "InProgress") {
         Thread.sleep(oneMinute) // TODO don't tie up a thread like this
-        Logger.debug(s"  $i: Distribution enabled=${distSummary.enabled}; status=InProgress")
+        Logger.debug(s"  $i: Distribution enabled=${ distSummary.enabled }; status=InProgress")
         i = i + 1
       }
       updateETag
     } else {
-      Logger.debug(s"Distribution of $domainName with id ${distSummary.getId} and ETag $distributionETag was already disabled.")
+      Logger.debug(s"Distribution of $domainName with id ${ distSummary.getId } and ETag $distributionETag was already disabled.")
       distributionETag
     }
     // fails with: Distribution of scalacoursesdemo.s3.amazonaws.com with id E1ALVO6LY3X3XE and ETag E21ZQTZDDOETEA:
     // The distribution you are trying to delete has not been disabled.
     try {
-      Logger.debug(s"Deleting distribution of $domainName with id ${distSummary.getId} and ETag $eTag.")
+      Logger.debug(s"Deleting distribution of $domainName with id ${ distSummary.getId } and ETag $eTag.")
       distSummary.delete(eTag)
       cacheIsDirty.set(true)
       Success(true)
     } catch {
       case nsde: NoSuchDistributionException =>
-        Failure(nsde.prefixMsg(s"Distribution of $domainName with id ${distSummary.getId} and ETag $distributionETag does not exist"))
+        Failure(nsde.prefixMsg(s"Distribution of $domainName with id ${ distSummary.getId } and ETag $distributionETag does not exist"))
 
       case e: Exception =>
-        Failure(e.prefixMsg(s"Distribution of $domainName with id ${distSummary.getId} and ETag $distributionETag: ${e.getMessage}"))
+        Failure(e.prefixMsg(s"Distribution of $domainName with id ${ distSummary.getId } and ETag $distributionETag: ${e.getMessage}"))
     }
   }
 
@@ -205,7 +205,7 @@ class CloudFront()(implicit val awsCredentials: AWSCredentials) extends CFImplic
       Failure(nsde.prefixMsg(s"Distribution with id $id does not exist"))
 
     case e: Exception =>
-      Failure(e.prefixMsg(s"Distribution of with id $id: ${e.getMessage}"))
+      Failure(e.prefixMsg(s"Distribution of with id $id: ${ e.getMessage }"))
   }
 }
 
@@ -262,7 +262,7 @@ trait CFImplicits {
         result.getDistribution
       } catch {
         case nsoe: NoSuchOriginException =>
-          throw new Exception(s"Origin with domain name '${origin.getDomainName}' and id '${origin.getId}' does not exist", nsoe)
+          throw new Exception(s"Origin with domain name '${ origin.getDomainName }' and id '${ origin.getId }' does not exist", nsoe)
       }
     }
   }
@@ -283,8 +283,9 @@ trait CFImplicits {
     def delete(eTag: String): Unit = {
       Logger.debug(s"Deleting distribution with id ${distributionSummary.getId}")
       val deleteDistributionRequest = new DeleteDistributionRequest().withId(distributionSummary.getId).withIfMatch(eTag)
-      Logger.debug(s"deleteDistributionRequest=${jsonPrettyPrint(deleteDistributionRequest)}")
+      Logger.debug(s"deleteDistributionRequest=${ jsonPrettyPrint(deleteDistributionRequest) }")
       cfClient.deleteDistribution(deleteDistributionRequest)
+      ()
     }
 
     def eTag: String = configResult.getETag
@@ -295,7 +296,7 @@ trait CFImplicits {
       cf.removeOrigin(distributionSummary, distConfigResult, origin)
 
     def status: String = {
-      Logger.debug(s"Getting status from distributionSummary with id ${distributionSummary.getId}")
+      Logger.debug(s"Getting status from distributionSummary with id ${ distributionSummary.getId }")
       distributionSummary.getStatus
     }
   }

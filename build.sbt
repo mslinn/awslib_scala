@@ -1,6 +1,6 @@
 import sbt.Keys._
 
-version := "1.1.5"
+version := "1.1.6"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
@@ -33,8 +33,8 @@ libraryDependencies ++= {
     "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13",
     "org.joda"                   %  "joda-convert"        % "1.7"     withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-annotations" % "2.5.4"   withSources() force(),
-    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.10.68" withSources(),
-    "com.micronautics"           %% "scalacourses-utils"  % "0.2.11"  withSources(),
+    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.3" withSources(),
+    "com.micronautics"           %% "scalacourses-utils"  % "0.2.17"  withSources(),
     "com.typesafe"               %  "config"              % "1.3.0"   withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-core"        % "2.5.4"   withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-databind"    % "2.5.4"   withSources() force(),
