@@ -4,13 +4,31 @@ version := "1.1.6"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-scalaVersion := "2.10.6"
+scalaVersion := "2.11.8"
 crossScalaVersions := Seq("2.10.6", "2.11.8")
 
-scalacOptions ++= Seq("-deprecation", "-encoding", "UTF-8", "-feature", "-target:jvm-1.7", "-unchecked",
-    "-Ywarn-adapted-args", "-Ywarn-value-discard", "-Xlint")
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-encoding", "UTF-8",
+  "-feature",
+  "-target:jvm-1.8",
+  "-unchecked",
+  "-Ywarn-adapted-args",
+  "-Ywarn-dead-code",
+  "-Ywarn-numeric-widen",
+  "-Ywarn-unused",
+  "-Ywarn-value-discard",
+  "-Xfuture",
+  "-Xlint"
+)
 
-javacOptions ++= Seq("-Xlint:deprecation", "-Xlint:unchecked", "-source", "1.8", "-target", "1.8", "-g:vars")
+javacOptions ++= Seq(
+  "-Xlint:deprecation",
+  "-Xlint:unchecked",
+  "-source", "1.8",
+  "-target", "1.8",
+  "-g:vars"
+)
 
 scalacOptions in (Compile, doc) <++= baseDirectory.map {
   (bd: File) => Seq[String](
@@ -84,7 +102,7 @@ libraryDependencies <++= scalaVersion {
     )
 }
 
-updateOptions := updateOptions.value.withCachedResolution(cachedResoluton = true)
+//updateOptions := updateOptions.value.withCachedResolution(cachedResoluton = true)
 logBuffered in Test := false
 Keys.fork in Test := false
 parallelExecution in Test := false
