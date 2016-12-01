@@ -1,25 +1,31 @@
 import sbt.Keys._
 
-version := "1.1.6"
+version := "1.1.7"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 scalaVersion := "2.11.8"
-crossScalaVersions := Seq("2.10.6", "2.11.8")
+crossScalaVersions := Seq("2.10.6", "2.11.8"/*, "2.12.0"*/)
 
-scalacOptions ++= Seq(
-  "-deprecation",
-  "-encoding", "UTF-8",
-  "-feature",
-  "-target:jvm-1.8",
-  "-unchecked",
-  "-Ywarn-adapted-args",
-  "-Ywarn-dead-code",
-  "-Ywarn-numeric-widen",
-  "-Ywarn-unused",
-  "-Ywarn-value-discard",
-  "-Xfuture",
-  "-Xlint"
+scalacOptions ++= (
+  scalaVersion {
+    case sv if sv.startsWith("2.10") => Nil
+    case _ => List(
+      "-target:jvm-1.8",
+      "-Ywarn-unused"
+    )
+  }.value ++ Seq(
+    "-deprecation",
+    "-encoding", "UTF-8",
+    "-feature",
+    "-unchecked",
+    "-Ywarn-adapted-args",
+    "-Ywarn-dead-code",
+    "-Ywarn-numeric-widen",
+    "-Ywarn-value-discard",
+    "-Xfuture",
+    "-Xlint"
+  )
 )
 
 javacOptions ++= Seq(
@@ -51,7 +57,7 @@ libraryDependencies ++= {
     "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13",
     "org.joda"                   %  "joda-convert"        % "1.7"     withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-annotations" % "2.5.4"   withSources() force(),
-    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.3" withSources(),
+    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.62" withSources(),
     "com.micronautics"           %% "scalacourses-utils"  % "0.2.17"  withSources(),
     "com.typesafe"               %  "config"              % "1.3.0"   withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-core"        % "2.5.4"   withSources() force(),

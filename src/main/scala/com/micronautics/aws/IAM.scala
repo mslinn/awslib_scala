@@ -1,4 +1,4 @@
-/* Copyright 2012-2015 Micronautics Research Corporation.
+/* Copyright 2012-2016 Micronautics Research Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -39,7 +39,7 @@ object IAM {
 }
 
 class IAM()(implicit val awsCredentials: AWSCredentials) {
-  implicit val iam = this
+  implicit val iam: IAM = this
   implicit val iamClient: AmazonIdentityManagementClient = new AmazonIdentityManagementClient(awsCredentials)
 
   /** (Re)creates an AWS IAM user with the given `userId`. Only PrivilegedUsers can have an associated IAM user.

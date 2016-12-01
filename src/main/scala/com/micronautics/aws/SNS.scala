@@ -1,4 +1,4 @@
-/* Copyright 2012-2015 Micronautics Research Corporation.
+/* Copyright 2012-2016 Micronautics Research Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -22,7 +22,7 @@ object SNS {
 }
 
 class SNS()(implicit val awsCredentials: AWSCredentials) {
-  implicit val sns = this
+  implicit val sns: SNS = this
   implicit val snsClient: AmazonSNSClient = new AmazonSNSClient(awsCredentials)
 
   /** @return Option[String] containing SubscriptionId */

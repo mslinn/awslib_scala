@@ -192,7 +192,7 @@ class S3Test extends WordSpec with TestBase {
       bucket.move("you/know/doodle.txt", "autre/location/blah.txt")
       val contents3 = bucket.downloadAsString("autre/location/blah.txt")
       assert(contents3 == "deedle doodle")
-      val thrown = intercept[Exception] {
+      intercept[Exception] {
         bucket.downloadAsString("you/know/doodle.txt")
       }
 

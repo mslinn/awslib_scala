@@ -35,11 +35,11 @@ import scala.language.postfixOps
 trait CloudFrontAlias
 
 case class StaticCFAlias(cname: String) extends CloudFrontAlias  {
-  override val toString = cname
+  override val toString: String = cname
 }
 
 case class StreamingCFAlias(cname: String) extends CloudFrontAlias {
-  override val toString = cname
+  override val toString: String = cname
 }
 
 /** This package is optimized for buckets that are read-mostly.
@@ -105,7 +105,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
 
   val cacheIsDirty = new AtomicBoolean(false)
 
-  implicit val s3 = this
+  implicit val s3: S3 = this
   implicit val s3Client: AmazonS3Client = {
     val s3Client = new AmazonS3Client(awsCredentials)
     Logger.debug(s"s3Client created with awsCredentials= $awsCredentials")
@@ -541,7 +541,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
     val metadata: ObjectMetadata = new ObjectMetadata
     metadata.setLastModified(new Date)
     metadata.setContentEncoding("utf-8")
-    metadata.setContentLength(contents.length)
+    metadata.setContentLength(contents.length.toLong)
     setContentType(key, metadata)
     try {
       val inputStream: InputStream = new StringInputStream(contents)
@@ -560,7 +560,7 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
     * @see <a href="http://docs.amazonwebservices.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/s3/model/ObjectMetadata.html">ObjectMetadata</a> */
   def uploadStream(bucketName: String, key: String, stream: InputStream, length: Int): Unit = {
     val metadata: ObjectMetadata = new ObjectMetadata
-    metadata.setContentLength(length)
+    metadata.setContentLength(length.toLong)
     metadata.setContentEncoding("utf-8")
     setContentType(key, metadata)
     s3Client.putObject(new PutObjectRequest (bucketName, sanitizedPrefix(key), stream, metadata))

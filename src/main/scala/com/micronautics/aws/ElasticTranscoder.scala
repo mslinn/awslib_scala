@@ -1,4 +1,4 @@
-/* Copyright 2012-2015 Micronautics Research Corporation.
+/* Copyright 2012-2016 Micronautics Research Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -15,13 +15,13 @@ import collection.JavaConverters._
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.elastictranscoder.AmazonElasticTranscoderClient
 import com.amazonaws.services.elastictranscoder.model._
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 object ElasticTranscoder {
   import com.amazonaws.auth.AWSCredentials
 
   val defaultIamRole = "arn:aws:iam::031372724784:role/Elastic_Transcoder_Default_Role"
-  val defaultIamRoleDetails =
+  val defaultIamRoleDetails: String =
     """{
       | "Version":"2008-10-17",
       | "Statement":[
@@ -55,7 +55,7 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
   import util.Try
 
   implicit val etClient: AmazonElasticTranscoderClient = new AmazonElasticTranscoderClient(awsCredentials)
-  implicit val et = this
+  implicit val et: ElasticTranscoder = this
 
   def allPresets: List[Preset] =
     try {
@@ -92,14 +92,14 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
     * the job completes. If the job fails, there is no output file.
     * TODO listen for job completion and if the output file existed previously, invalidate the output file so CloudFront can distribute the new version. */
   def createJob(bucket: Bucket, pipelineId: String, inputKey: String, outputKey: String, presetId: String)(implicit s3: S3): Try[Job] = {
-    if (s3.listObjectsByPrefix(bucket.getName, inputKey, showSize=false).size==0) {
+    if (s3.listObjectsByPrefix(bucket.getName, inputKey).isEmpty) {
       Failure(ExceptTrace(s"Error: $inputKey does not exist in bucket ${bucket.getName}. Transcoding not attempted"))
     } else if (findJobByOutputKeyName(outputKey, pipelineId).isDefined) {
       Failure(ExceptTrace(s"Error: Job is still running with same output key ($outputKey)"))
     } else {
       try {
         import com.amazonaws.services.elastictranscoder.model.{CreateJobRequest, CreateJobOutput, JobInput}
-        val files = s3.listObjectsByPrefix(bucket.getName, outputKey, showSize=false).toSeq
+        val files = s3.listObjectsByPrefix(bucket.getName, outputKey)
         files.foreach { file =>
           Logger.debug(s"Deleting ${bucket.getName}, $file")
           s3.deleteObject(bucket.getName, file)
@@ -177,7 +177,7 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
 
   /** Deletes all pipelines associated with this AWS account. Errors are ignored.
     * When performing multiple deletions, a 300ms pause is inserted between requests. This is a synchronous call */
-  def deletePipelines() = {
+  def deletePipelines(): Unit = {
     val pipelines: List[Pipeline] = etClient.listPipelines.getPipelines.asScala.toList
     pipelines.foreach { pipeline =>
       try {
@@ -189,7 +189,7 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
     }
   }
 
-  def dumpPipelines() = {
+  def dumpPipelines(): Unit = {
     val pipelines = etClient.listPipelines.getPipelines.asScala
     Logger.debug(s"${pipelines.size} pipelines: ")
     pipelines.foreach { pipeline =>
@@ -277,16 +277,16 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
     etClient.listPipelines.getPipelines.asScala.exists(_.getName==pipelineName)
 
   def presetsToHtml: Seq[String] = allPresets.map { preset =>
-      s"""<div style="margin-bottom: 8pt"><b>Id:</b> ${preset.getId}<br/>
-         |  <b>Name:</b> ${preset.getName}<br/>
-         |  <b>Description:</b> ${preset.getDescription}<br/>
-         |  <b>Container:</b> ${preset.getContainer}<br/>
-         |  <b>Audio:</b> ${preset.getAudio}<br/>
-         |  <b>Video:</b> ${preset.getVideo}<br/>
-         |  <b>Thumbnails:</b> ${preset.getThumbnails}
+      s"""<div style="margin-bottom: 8pt"><b>Id:</b> ${ preset.getId }<br/>
+         |  <b>Name:</b> ${ preset.getName }<br/>
+         |  <b>Description:</b> ${ preset.getDescription }<br/>
+         |  <b>Container:</b> ${ preset.getContainer }<br/>
+         |  <b>Audio:</b> ${ preset.getAudio }<br/>
+         |  <b>Video:</b> ${ preset.getVideo }<br/>
+         |  <b>Thumbnails:</b> ${ preset.getThumbnails }
          |</div>
          |""".stripMargin
-    }.toSeq
+    }
 
   /** @return list of job output keys */
   // todo listen to job notifications, and add metadata that sets the last-modified-date to the date of the original file
@@ -296,10 +296,10 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
       pipeline    <- findPipelineById(pipelineId)
       inputBucket <- s3.findByName(pipeline.getInputBucket)
     } yield {
-      if (s3.listObjectsByPrefix(pipeline.getInputBucket, inputKey, showSize=false).isEmpty) {
-        Failure(ExceptTrace(s"Error: $inputKey does not exist in bucket ${pipeline.getInputBucket}. Transcoding not attempted"))
+      if (s3.listObjectsByPrefix(pipeline.getInputBucket, inputKey).isEmpty) {
+        Failure(ExceptTrace(s"Error: $inputKey does not exist in bucket ${ pipeline.getInputBucket }. Transcoding not attempted"))
       } else {
-        val objs = s3.listObjectsByPrefix(pipeline.getInputBucket, outputKey, showSize=false)
+        val objs = s3.listObjectsByPrefix(pipeline.getInputBucket, outputKey)
         objs foreach { outputKey =>
           Logger.debug(s"Deleting $outputKey from ${pipeline.getInputBucket}")
           s3.deleteObject(pipeline.getInputBucket, outputKey)
@@ -315,8 +315,8 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
   def transcoderStatus(videoName: String, pipelineName: String): String = {
     val result = for {
       job <- findJobByOutputKeyName(videoName, pipelineName)
-    } yield s"Video transcoder status: ${job.getOutput.getStatus} ${job.getOutput.getStatusDetail}"
-    result.headOption.getOrElse("")
+    } yield s"Video transcoder status: ${job.getOutput.getStatus} ${ job.getOutput.getStatusDetail }"
+    result.getOrElse("")
   }
 }
 

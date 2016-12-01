@@ -213,7 +213,7 @@ trait CFImplicits {
   import com.amazonaws.services.s3.model.Bucket
 
   object RichDistribution {
-    var minimumCacheTime = 60 * 60 // one hour
+    var minimumCacheTime: Long = 60 * 60 // one hour
 
     /** Create a new distribution for the given S3 bucket */
     def apply(bucket: Bucket, priceClass: PriceClass=PriceClass.PriceClass_All, minimumCacheTime: Long=minimumCacheTime)

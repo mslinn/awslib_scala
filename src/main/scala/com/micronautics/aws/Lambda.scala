@@ -16,7 +16,7 @@ object Lambda {
 }
 
 class Lambda()(implicit val awsCredentials: AWSCredentials) {
-  implicit val lambda = this
+  implicit val lambda: Lambda = this
   implicit val lambdaClient: AWSLambdaClient = new AWSLambdaClient(awsCredentials)
 }
 

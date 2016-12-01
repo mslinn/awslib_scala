@@ -1,4 +1,4 @@
-/* Copyright 2012-2015 Micronautics Research Corporation.
+/* Copyright 2012-2016 Micronautics Research Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -13,17 +13,16 @@ package com.micronautics.aws
 
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.sqs.AmazonSQSAsyncClient
-import scala.collection.JavaConverters._
 
 object SQS {
   def apply(implicit awsCredentials: AWSCredentials): SQS = new SQS()(awsCredentials)
 }
 
 class SQS()(implicit val awsCredentials: AWSCredentials) {
-  implicit val sqs = this
+  implicit val sqs: SQS = this
   implicit val sqsClient: AmazonSQSAsyncClient = new AmazonSQSAsyncClient(awsCredentials)
 
 }
 
-trait  SQSImplicits {
+trait SQSImplicits {
 }
