@@ -22,6 +22,17 @@ class Polly()(implicit val awsCredentials: AWSCredentials) {
   implicit val polly: Polly = this
   implicit val pollyClient: AmazonPollyAsyncClient = new AmazonPollyAsyncClient(awsCredentials)
 
+  /** Obtain MP3 stream from AWS Polly that voices the message */
+  def speechStream(message: String): java.io.InputStream = {
+    import com.amazonaws.services.polly.model._
+
+    val request = new SynthesizeSpeechRequest
+    request.setVoiceId(VoiceId.Joanna)
+    request.setOutputFormat(OutputFormat.Mp3)
+    request.setText(message)
+    val synthesizeSpeechResult: SynthesizeSpeechResult = pollyClient.synthesizeSpeech(request)
+    synthesizeSpeechResult.getAudioStream
+  }
 }
 
 trait PollyImplicits {
