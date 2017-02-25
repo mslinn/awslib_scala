@@ -51,7 +51,7 @@ class Route53()(implicit val awsCredentials: AWSCredentials) {
   }
 
   /** @return true if the alias was found and deleted */
-  def deleteCnameAlias(alias: String, evaluateTargetHealth: Boolean = false): Boolean = {
+  def deleteCnameAlias(alias: String): Boolean = {
     val dot = alias.indexOf(".")
     assert(dot>0)
     val dnsName = alias.substring(0, dot)

@@ -1,6 +1,6 @@
 import sbt.Keys._
 
-version := "1.1.8"
+version := "1.1.11"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
@@ -135,3 +135,4 @@ logLevel in test := Level.Info // Level.INFO is needed to see detailed output wh
 
 bintrayOrganization := Some("micronautics")
 bintrayRepository := "scala"
+bintrayVcsUrl := Some("git@github.com:mslinn/awslib_scala.git")
