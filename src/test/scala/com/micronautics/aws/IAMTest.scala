@@ -79,7 +79,7 @@ class IAMTest extends WordSpec with TestBase with IAMImplicits {
 }
 
 object IAMTest {
-  val bucketName = s"www.test${new java.util.Date().getTime}.com"
+  val bucketName = s"www.test${ new java.util.Date().getTime }.com"
 
   def bucket(implicit s3: S3): Bucket = try {
       println(s"Creating bucket $bucketName")
@@ -87,6 +87,6 @@ object IAMTest {
     } catch {
       case e: Exception =>
         val awsCredentials = implicitly[S3].awsCredentials
-        throw new Error(s"Error creating bucket with accessKey=${awsCredentials.getAWSAccessKeyId} and secretKey=${awsCredentials.getAWSSecretKey}\n${e.getMessage}")
+        throw new Error(s"Error creating bucket with accessKey=${ awsCredentials.getAWSAccessKeyId } and secretKey=${ awsCredentials.getAWSSecretKey }\n${ e.getMessage }")
     }
 }

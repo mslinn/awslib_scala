@@ -17,16 +17,22 @@ class R53Test extends WordSpec with TestBase {
   "CNAME Aliases" must {
     "work" in {
       val aliasName = "test123"
+      try { // delete if it already exists from the last time
+        r53.deleteCnameAlias(s"$aliasName.scalacourses.com")
+      } catch {
+        case _: Error =>
+      }
       r53.createCnameAlias("scalacourses.com", aliasName, "www.scalacourses.com")
 
       r53.clearCaches()
       val rSets = r53.recordSets("scalacourses.com")
-      val exists = rSets.exists { rSet => rSet.getName.startsWith(aliasName) }
+      val exists = rSets.exists { _.getName.startsWith(aliasName) }
       assert(exists, s"CNAME alias $aliasName exists")
 
-      r53.clearCaches()
       r53.deleteCnameAlias(s"$aliasName.scalacourses.com")
-      val exists2 = rSets.exists { rSet => rSet.getName.startsWith(aliasName) }
+      r53.clearCaches()
+      val rSets2 = r53.recordSets("scalacourses.com")
+      val exists2 = rSets2.exists { _.getName.startsWith(aliasName) }
       assert(!exists2, s"CNAME alias $aliasName does not exist")
 
       r53.clearCaches()

@@ -1,9 +1,10 @@
 package com.micronautics.aws
 
+import java.util
 import java.util.concurrent.atomic.AtomicBoolean
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.route53.model._
-import com.micronautics.cache.{Memoizer0, Memoizer}
+import com.micronautics.cache.{Memoizer, Memoizer0}
 import collection.JavaConverters._
 import com.amazonaws.services.route53.AmazonRoute53Client
 
@@ -20,7 +21,7 @@ class Route53()(implicit val awsCredentials: AWSCredentials) {
   }
 
   def aliasExists(dnsNameStart: String)(implicit rSets: List[ResourceRecordSet]): Boolean =
-    rSets.exists(rSet => Option(rSet.getAliasTarget).exists(_.getDNSName.startsWith(dnsNameStart)))
+    rSets.exists(rSet => rSet.getType=="CNAME" && rSet.getName.startsWith(dnsNameStart))
 
   /** @param hostedZoneName such as "scalacourses.com" (a trailing period will be appended as required)
     * @param dnsName goes in the Name field, and is concatenated with hostedZoneName (so "test" is interpreted to mean "test.scalacourses.com")
@@ -49,29 +50,26 @@ class Route53()(implicit val awsCredentials: AWSCredentials) {
     }
   }
 
-  /** Fails with com.amazonaws.services.route53.model.InvalidInputException: Invalid request (Service: AmazonRoute53; Status Code: 400; Error Code: InvalidInput */
-  def deleteCnameAlias(alias: String): Boolean = {
+  /** @return true if the alias was found and deleted */
+  def deleteCnameAlias(alias: String, evaluateTargetHealth: Boolean = false): Boolean = {
     val dot = alias.indexOf(".")
     assert(dot>0)
     val dnsName = alias.substring(0, dot)
     val hostedZoneName = alias.substring(dot+1)
     maybeHostedZone(hostedZoneName).exists { hostedZone =>
-      implicit val rSets: List[ResourceRecordSet] = recordSets(hostedZone + ".")
+      implicit val resourceRecordSets: List[ResourceRecordSet] = recordSets(hostedZone)
       val dnsNameStart = dnsName + "."
-      val aRecord: Boolean = rSets.exists(_.getName.startsWith(dnsNameStart))
-      if (aRecord || aliasExists(dnsNameStart))
-        false // Record already exists with the given dnsName, return failure
-      else {
-        val resourceRecords = List(new ResourceRecord().withValue(alias)).asJava
-        val newResourceRecordSet: ResourceRecordSet = new ResourceRecordSet()
-          .withName(s"$dnsName.$hostedZoneName")
-          .withType(RRType.CNAME)
-          .withResourceRecords(resourceRecords)
-        val changeBatch = new ChangeBatch(List(new Change(ChangeAction.DELETE, newResourceRecordSet)).asJava)
-        r53Client.changeResourceRecordSets(new ChangeResourceRecordSetsRequest(hostedZone.getId, changeBatch))
-        cacheIsDirty.set(true)
-        true
+      val gotSome = for {
+        resourceRecordSet <- resourceRecordSets
+        if resourceRecordSet.getName.startsWith(dnsNameStart)
+        if aliasExists(dnsNameStart)
+      } yield {
+        val changeBatch = new ChangeBatch(List(new Change(ChangeAction.DELETE, resourceRecordSet)).asJava)
+        val changeResourceRecordSetsRequest = new ChangeResourceRecordSetsRequest(hostedZone.getId, changeBatch)
+        r53Client.changeResourceRecordSets(changeResourceRecordSetsRequest)
       }
+      cacheIsDirty.set(gotSome.nonEmpty)
+      gotSome.nonEmpty
     }
   }
 

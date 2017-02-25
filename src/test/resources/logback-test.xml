@@ -1,6 +1,4 @@
 <configuration debug="false">
-  <conversionRule conversionWord="coloredLevel" converterClass="play.api.Logger$ColoredLevel" />
-
   <appender name="FILE" class="ch.qos.logback.core.FileAppender">
       <!-- Added ":-." to avoid "application.home_IS_UNDEFINED" directory creation -->
       <file>${application.home:-.}/logs/application.log</file>
@@ -11,7 +9,7 @@
 
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%coloredLevel %logger{15} - %message%n%xException{5}</pattern>
+      <pattern>%logger{15} - %message%n%xException{5}</pattern>
     </encoder>
   </appender>
 
@@ -20,8 +18,8 @@
        #         TRACE	DEBUG	INFO	WARN	ERROR	OFF
        # TRACE	  YES	  NO	  NO	  NO  	  NO	  NO
        # DEBUG	  YES	  YES	  NO	  NO	  NO	  NO
-       # INFO	  YES	  YES	  YES	  NO	  NO	  NO
-       # WARN	  YES	  YES	  YES	  YES	  NO	  NO
+       # INFO	    YES	  YES	  YES	  NO	  NO	  NO
+       # WARN	    YES	  YES	  YES	  YES	  NO	  NO
        # ERROR	  YES	  YES	  YES	  YES	  YES	  NO
        # See http://logback.qos.ch/manual/architecture.html -->
   <logger name="service"      level="INFO" />
