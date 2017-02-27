@@ -1,7 +1,6 @@
 # Idiomatic Scala AWS Library #
 
 [![Build Status](https://travis-ci.org/mslinn/awslib_scala.svg?branch=master)](https://travis-ci.org/mslinn/awslib_scala)
-[![GitHub version](https://badge.fury.io/gh/mslinn%2Fawslib_scala.svg)](https://badge.fury.io/gh/mslinn%2Fawslib_scala)
 [ ![Download](https://api.bintray.com/packages/micronautics/scala/awslib_scala/images/download.svg) ](https://bintray.com/micronautics/scala/awslib_scala/_latestVersion)
  
 ![awslib_scala Logo](https://raw.githubusercontent.com/mslinn/awslib_scala/master/images/awsLib_76x78.png)
