@@ -15,14 +15,14 @@ import com.amazonaws.auth.policy.Statement.Effect
 import com.amazonaws.auth.policy.actions.S3Actions
 import com.amazonaws.auth.policy.{Principal, Resource, Statement}
 import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient
+import com.amazonaws.services.identitymanagement.{AmazonIdentityManagement, AmazonIdentityManagementClientBuilder}
 import com.amazonaws.services.identitymanagement.model.{User => IAMUser, _}
 import com.amazonaws.services.s3.model._
 import scala.collection.JavaConverters._
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
 object IAM {
-  def apply(implicit awsCredentials: AWSCredentials): IAM = new IAM()(awsCredentials)
+  def apply: IAM = new IAM
 
   def allowAllStatement(bucket: Bucket, principals: Seq[Principal], idString: String): Statement =
     allowSomeStatement(bucket, principals, List(S3Actions.AllS3Actions), idString)
@@ -38,9 +38,9 @@ object IAM {
       .withResources(resources: _*)
 }
 
-class IAM()(implicit val awsCredentials: AWSCredentials) {
+class IAM {
   implicit val iam: IAM = this
-  implicit val iamClient: AmazonIdentityManagementClient = new AmazonIdentityManagementClient(awsCredentials)
+  implicit val iamClient: AmazonIdentityManagement = AmazonIdentityManagementClientBuilder.standard.build
 
   /** (Re)creates an AWS IAM user with the given `userId`. Only PrivilegedUsers can have an associated IAM user.
     * Any pre-existing credentials are replaced. */

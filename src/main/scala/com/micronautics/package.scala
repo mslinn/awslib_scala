@@ -11,42 +11,40 @@
 
 package com.micronautics
 
+import com.amazonaws.auth.{AWSCredentials, DefaultAWSCredentialsProviderChain}
+
 /** When web site access is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
- and the keyed data.
- The keys must therefore consist of relative paths (relative directory name followed by a file name), and must not start with a leading slash.
- This program stores each file name (referred to by AWS as a key) without a leading slash.
- For example, assuming that the default file name is `index.html`, `http://domain.com` and `http://domain.com/` are translated to `http://domain.com/index.html`.
-
- As another example, the key for a file in a directory called `{WEBROOT}/blah/ick/yuck.html` is defined as `blah/ick/yuck.html`.
-
- For each directory, AWS creates a file of the same name, with the suffix `_$folder$`.
- If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
- These hidden files are ignored by this program; users never see them because they are for AWS S3 internal use only. */
+  * and the keyed data.
+  * The keys must therefore consist of relative paths (relative directory name followed by a file name), and must not start with a leading slash.
+  * This program stores each file name (referred to by AWS as a key) without a leading slash.
+  * For example, assuming that the default file name is `index.html`, `http://domain.com` and `http://domain.com/` are translated to `http://domain.com/index.html`.
+  **
+  *As another example, the key for a file in a directory called `{WEBROOT}/blah/ick/yuck.html` is defined as `blah/ick/yuck.html`.
+  **
+  *For each directory, AWS creates a file of the same name, with the suffix `_$folder$`.
+  *If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
+  *These hidden files are ignored by this program; users never see them because they are for AWS S3 internal use only. */
 package object aws extends CFImplicits with ETImplicits with IAMImplicits with S3Implicits with SNSImplicits with SQSImplicits {
-  import java.io.File
-  import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials}
   import com.amazonaws.util.json.Jackson
-  import com.typesafe.config.ConfigFactory
   import org.slf4j.LoggerFactory
-  import scala.collection.JavaConverters._
   import scala.language.implicitConversions
 
   private lazy val contentTypeMap = Map(
-    "css" -> "text/css",
-    "doc" -> "application/vnd.ms-word",
-    "dot" -> "application/vnd.ms-word",
-    "docx" -> "application/vnd.ms-word",
-    "dtd" -> "application/xml-dtd",
-    "flv" -> "video/x-flv",
-    "gif" -> "image/gif",
-    "gzip" -> "application/gzip",
-    "gz" -> "application/gzip",
-    "html" -> "text/html",
-    "htm" -> "text/html",
+    "css"   -> "text/css",
+    "doc"   -> "application/vnd.ms-word",
+    "dot"   -> "application/vnd.ms-word",
+    "docx"  -> "application/vnd.ms-word",
+    "dtd"   -> "application/xml-dtd",
+    "flv"   -> "video/x-flv",
+    "gif"   -> "image/gif",
+    "gzip"  -> "application/gzip",
+    "gz"    -> "application/gzip",
+    "html"  -> "text/html",
+    "htm"   -> "text/html",
     "shtml" -> "text/html",
-    "jsp" -> "text/html",
-    "php" -> "text/html",
-    "ico" -> "image/vnd.microsoft.icon",
+    "jsp"   -> "text/html",
+    "php"   -> "text/html",
+    "ico"   -> "image/vnd.microsoft.icon",
     "jpg" -> "image/jpeg",
     "js" -> "application/javascript",
     "json" -> "application/json",
@@ -78,63 +76,9 @@ package object aws extends CFImplicits with ETImplicits with IAMImplicits with S
     "zip" -> "application/zip"
   ).withDefaultValue("application/octet-stream")
 
+  lazy val awsCredentials: AWSCredentials = DefaultAWSCredentialsProviderChain.getInstance.getCredentials
+
   private[aws] lazy val Logger = LoggerFactory.getLogger("AWS")
-
-  lazy val awsConfMap: Map[String, String] = {
-    val dotAws = System.getProperty("user.home") + "/.aws/config"
-    val awsConf = io.Source.fromFile(dotAws).getLines
-      .map(_.replace("\n", ""))
-      .map(_.replace(" ", ""))
-      .map(removeOuterParens)
-      .filter(x => !x.startsWith("[") && !x.endsWith("]") && x.length > 0)
-      .mkString("  ", "\"\n  ", "\"\n")
-      .replace("=", "=\"")
-    val confStr = s"""aws = {\n$awsConf\n}"""
-    assert(new File(dotAws).exists)
-
-    val config = ConfigFactory.parseString(confStr)
-    if (Logger.isDebugEnabled)
-      config.entrySet.asScala.map(_.getKey) foreach {
-        Logger.debug
-      }
-
-    val accessKey = config.getString("aws.aws_access_key_id")
-    assert(accessKey.nonEmpty)
-    Logger.debug(s"accessKey=$accessKey")
-
-    val secretKey = config.getString("aws.aws_secret_access_key")
-    assert(secretKey.nonEmpty)
-    Logger.debug(s"Fixtures - secretKey=$secretKey")
-
-    val testConf = ConfigFactory.parseResources("test.conf")
-    val testMap: Map[String, String] = testConf.resolve.entrySet.asScala.map { x =>
-      (x.getKey, removeOuterParens(x.getValue.render).toString)
-    }.toList.toMap
-
-    testMap + ("aws.aws_access_key_id" -> accessKey) + ("aws.aws_secret_key_id" -> secretKey)
-  }
-
-  /** @param prefix might be "TEST_" so unit tests could use a dedicated AWS account with
-    *               credentials specified by environment variables `TEST_AWS_ACCESS_KEY` and `TEST_AWS_SECRET_KEY`;
-    *               similarly, the quality control prefix might be "QC_" in order to use a dedicated AWS account with
-    *               credentials specified by environment variables `QC_AWS_ACCESS_KEY` and `QC_AWS_SECRET_KEY` */
-  def maybeCredentialsFromEnv(prefix: String=""): Option[AWSCredentials] =
-    for {
-      accessKey <- Option(System.getenv(s"${prefix}AWS_ACCESS_KEY")) if accessKey.nonEmpty
-      secretKey <- Option(System.getenv(s"${prefix}AWS_SECRET_KEY")) if secretKey.nonEmpty
-    } yield {
-      Logger.debug(s"maybeCredentialsFromEnv: accessKey=$accessKey; secretKey=$secretKey")
-      new BasicAWSCredentials(accessKey, secretKey)
-    }
-
-  lazy val maybeCredentialsFromFile: Option[AWSCredentials] =
-    for {
-      accessKey <- awsConfMap.get("aws.aws_access_key_id").map(_.toString)
-      secretKey <- awsConfMap.get("aws.aws_secret_key_id").map(_.toString)
-    } yield {
-      Logger.debug(s"maybeCredentialsFromFile: accessKey=$accessKey; secretKey=$secretKey")
-      new BasicAWSCredentials(accessKey, secretKey)
-    }
 
   def guessContentType(key: String): String = {
     val keyLC: String = key.substring(math.max(0, key.lastIndexOf('.') + 1)).trim.toLowerCase
@@ -142,10 +86,10 @@ package object aws extends CFImplicits with ETImplicits with IAMImplicits with S
   }
 
   /** Helpful for debugging AWS requests and responses */
-  def jsonPrettyPrint(awsObject: Object) = Jackson.toJsonPrettyString(awsObject)
+  def jsonPrettyPrint(awsObject: Object): String = Jackson.toJsonPrettyString(awsObject)
 
   /** UUID / GUID generator */
-  def uuid = java.util.UUID.randomUUID.toString
+  def uuid: String = java.util.UUID.randomUUID.toString
 
   def removeOuterParens(string: String): String =
     if (string.startsWith("\"") && string.endsWith("\"")) string.substring(1, string.length - 1) else string

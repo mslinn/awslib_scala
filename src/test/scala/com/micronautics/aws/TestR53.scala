@@ -13,7 +13,7 @@ package com.micronautics.aws
 
 import org.scalatest.WordSpec
 
-class R53Test extends WordSpec with TestBase {
+class TestR53 extends WordSpec with TestBase {
   "CNAME Aliases" must {
     "work" in {
       val aliasName = "test123"

@@ -11,16 +11,15 @@
 
 package com.micronautics.aws
 
-import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.services.polly.AmazonPollyAsyncClient
+import com.amazonaws.services.polly.{AmazonPollyAsync, AmazonPollyAsyncClientBuilder}
 
 object Polly {
-  def apply(implicit awsCredentials: AWSCredentials): Polly = new Polly()(awsCredentials)
+  def apply: Polly = new Polly
 }
 
-class Polly()(implicit val awsCredentials: AWSCredentials) {
+class Polly {
   implicit val polly: Polly = this
-  implicit val pollyClient: AmazonPollyAsyncClient = new AmazonPollyAsyncClient(awsCredentials)
+  implicit val pollyClient: AmazonPollyAsync = AmazonPollyAsyncClientBuilder.standard.build
 
   /** Obtain MP3 stream from AWS Polly that voices the message */
   def speechStream(message: String): java.io.InputStream = {

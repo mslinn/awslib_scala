@@ -12,18 +12,18 @@
 package com.micronautics.aws
 
 import java.io.File
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient
+import com.amazonaws.services.identitymanagement.{AmazonIdentityManagement, AmazonIdentityManagementClient}
 import com.amazonaws.services.s3.model.Bucket
 import com.micronautics.aws.AclEnum._
 import org.apache.commons.io.FileUtils
 import org.scalatest._
 
-class UploadTest extends WordSpec with TestBase with IAMImplicits with S3Implicits {
+class TestUpload extends WordSpec with TestBase with IAMImplicits with S3Implicits {
   import java.net.URL
-  import IAMTest._
+  import TestIAM._
 
   val Logger: org.slf4j.Logger = org.slf4j.LoggerFactory.getLogger("UploadTest")
-  implicit val iamClient: AmazonIdentityManagementClient = iam.iamClient
+  implicit val iamClient: AmazonIdentityManagement = iam.iamClient
 
   val fileName = "uploadMe.png"
   val resourcesDir = "src/test/resources"

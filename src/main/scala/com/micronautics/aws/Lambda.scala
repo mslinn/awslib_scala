@@ -8,20 +8,19 @@
 
 package com.micronautics.aws
 
-import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.services.lambda.{AWSLambda, AWSLambdaClient}
+import com.amazonaws.services.lambda.{AWSLambda, AWSLambdaClientBuilder}
 
 object Lambda {
-  def apply(implicit awsCredentials: AWSCredentials): Lambda = new Lambda()(awsCredentials)
+  def apply: Lambda = new Lambda()
 }
 
-class Lambda()(implicit val awsCredentials: AWSCredentials) {
+class Lambda {
   implicit val lambda: Lambda = this
-  implicit val lambdaClient: AWSLambdaClient = new AWSLambdaClient(awsCredentials)
+  implicit val lambdaClient: AWSLambda = AWSLambdaClientBuilder.standard.build
 }
 
 trait LambdaImplicits {
-  implicit class RichLambda(val lambdaClient: AWSLambdaClient)(implicit lambda: AWSLambda) {
+  implicit class RichLambda(val lambdaClient: AWSLambda) {
     // nothing yet
   }
 }

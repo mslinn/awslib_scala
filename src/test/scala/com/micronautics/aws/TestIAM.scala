@@ -14,9 +14,8 @@ package com.micronautics.aws
 import com.amazonaws.services.s3.model.Bucket
 import org.scalatest.WordSpec
 
-class IAMTest extends WordSpec with TestBase with IAMImplicits {
-  import com.amazonaws.services.identitymanagement.model.{User=>IAMUser}
-  import IAMTest._
+class TestIAM extends WordSpec with TestBase with IAMImplicits {
+  import TestIAM._
   import scala.util.Success
 
   val iamUser1Name = "testIamUser1"
@@ -78,7 +77,7 @@ class IAMTest extends WordSpec with TestBase with IAMImplicits {
   }
 }
 
-object IAMTest {
+object TestIAM {
   val bucketName = s"www.test${ new java.util.Date().getTime }.com"
 
   def bucket(implicit s3: S3): Bucket = try {
@@ -86,7 +85,6 @@ object IAMTest {
       s3.createBucket(bucketName)
     } catch {
       case e: Exception =>
-        val awsCredentials = implicitly[S3].awsCredentials
         throw new Error(s"Error creating bucket with accessKey=${ awsCredentials.getAWSAccessKeyId } and secretKey=${ awsCredentials.getAWSSecretKey }\n${ e.getMessage }")
     }
 }

@@ -16,7 +16,7 @@ import com.amazonaws.services.s3.model.Bucket
 import com.micronautics.aws.S3._
 import org.scalatest.WordSpec
 
-class S3Test extends WordSpec with TestBase {
+class TestS3 extends WordSpec with TestBase {
   val bucketName = s"www.test${new java.util.Date().getTime}.com"
   var bucket: Bucket = try {
       println(s"Creating bucket $bucketName")
@@ -25,7 +25,6 @@ class S3Test extends WordSpec with TestBase {
       bucket
     } catch {
       case e: Exception =>
-        val awsCredentials = implicitly[S3].awsCredentials
         fail(s"Error creating bucket with accessKey=${ awsCredentials.getAWSAccessKeyId } and secretKey=${ awsCredentials.getAWSSecretKey }\n${ e.getMessage }")
     }
 

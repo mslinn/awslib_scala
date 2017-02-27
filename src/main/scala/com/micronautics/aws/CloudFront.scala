@@ -12,25 +12,25 @@
 package com.micronautics.aws
 
 import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.services.cloudfront.AmazonCloudFrontClient
+import com.amazonaws.services.cloudfront.{AmazonCloudFront, AmazonCloudFrontClientBuilder}
 import com.amazonaws.services.cloudfront.model._
-import com.micronautics.cache.{Memoizer2, Memoizer0, Memoizer}
+import com.micronautics.cache.{Memoizer, Memoizer0, Memoizer2}
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 object CloudFront {
-  val oneMinute = 1L * 60L * 1000L
+  val oneMinute: Long = 1L * 60L * 1000L
 
-  def apply(implicit awsCredentials: AWSCredentials): CloudFront = new CloudFront()(awsCredentials)
+  def apply: CloudFront = new CloudFront
 }
 
-class CloudFront()(implicit val awsCredentials: AWSCredentials) extends CFImplicits with S3Implicits {
+class CloudFront extends CFImplicits with S3Implicits {
   import CloudFront._
   import com.amazonaws.services.s3.model.Bucket
 
-  implicit val cf = this
-  implicit val cfClient: AmazonCloudFrontClient = new AmazonCloudFrontClient(awsCredentials)
+  implicit val cf: CloudFront = this
+  implicit val cfClient: AmazonCloudFront = AmazonCloudFrontClientBuilder.standard.build
 
   val cacheIsDirty = new AtomicBoolean(false)
 
@@ -216,8 +216,15 @@ trait CFImplicits {
     var minimumCacheTime: Long = 60 * 60 // one hour
 
     /** Create a new distribution for the given S3 bucket */
-    def apply(bucket: Bucket, priceClass: PriceClass=PriceClass.PriceClass_All, minimumCacheTime: Long=minimumCacheTime)
-             (implicit awsCredentials: AWSCredentials, cfClient: AmazonCloudFrontClient, s3: S3): Distribution = {
+    def apply(
+       bucket: Bucket,
+       priceClass: PriceClass=PriceClass.PriceClass_All,
+       minimumCacheTime: Long=minimumCacheTime
+     )(implicit
+       awsCredentials: AWSCredentials,
+       cfClient: AmazonCloudFront,
+       s3: S3
+    ): Distribution = {
       val (lcBucketName, bucketOriginId) = bucket.safeNames
       val aliases = new Aliases().withQuantity(0)
       val allowedMethods = new AllowedMethods().withItems(Method.GET, Method.HEAD).withQuantity(2)
@@ -267,7 +274,7 @@ trait CFImplicits {
     }
   }
 
-  implicit class RichDistributionSummary(distributionSummary: DistributionSummary)(implicit cfClient: AmazonCloudFrontClient) {
+  implicit class RichDistributionSummary(distributionSummary: DistributionSummary)(implicit cfClient: AmazonCloudFront) {
     def config: DistributionConfig = configResult.getDistributionConfig
 
     def configResult: GetDistributionConfigResult = {

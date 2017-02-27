@@ -13,7 +13,7 @@ package com.micronautics.aws
 
 import org.scalatest.WordSpec
 
-class ETTest extends WordSpec with TestBase {
+class TestCF extends WordSpec with TestBase {
   "Blah" must {
     "blah" in {
     }

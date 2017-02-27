@@ -11,19 +11,18 @@
 
 package com.micronautics.aws
 
-import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.services.sns.AmazonSNSClient
+import com.amazonaws.services.sns.{AmazonSNS, AmazonSNSClient, AmazonSNSClientBuilder}
 import com.amazonaws.services.sns.model._
 import java.net.URL
 import scala.collection.JavaConverters._
 
 object SNS {
-  def apply(implicit awsCredentials: AWSCredentials): SNS = new SNS()(awsCredentials)
+  def apply: SNS = new SNS
 }
 
-class SNS()(implicit val awsCredentials: AWSCredentials) {
+class SNS {
   implicit val sns: SNS = this
-  implicit val snsClient: AmazonSNSClient = new AmazonSNSClient(awsCredentials)
+  implicit val snsClient: AmazonSNS = AmazonSNSClientBuilder.standard.build
 
   /** @return Option[String] containing SubscriptionId */
   def confirmSubscription(token: String, arn: String): Option[String] = {
@@ -82,7 +81,7 @@ trait  SNSImplicits {
   implicit class RichTopic(topic: Topic) {
     def arn: Arn = topic.getTopicArn.asArn
 
-    def delete()(implicit snsClient: AmazonSNSClient): Unit =
+    def delete()(implicit snsClient: AmazonSNS): Unit =
       try {
        snsClient.deleteTopic(topic.getTopicArn)
        Logger.debug(s"SNS topic ${topic.getTopicArn} was deleted")
@@ -94,7 +93,7 @@ trait  SNSImplicits {
     def name: String = topic.arn.name
 
     /** @return published message id */
-    def publish(message: String)(implicit snsClient: AmazonSNSClient): Arn = {
+    def publish(message: String)(implicit snsClient: AmazonSNS): Arn = {
       val arn = snsClient.publish(new PublishRequest().withTopicArn(topic.getTopicArn).withMessage(message)).getMessageId.asArn
       Logger.debug(s"Published SNS message $message")
       arn
@@ -102,7 +101,7 @@ trait  SNSImplicits {
 
     /** @param url will receive HTTP POST of ConfirmSubscription action
       * @return ARN of subscription */
-    def subscribe(url: URL)(implicit snsClient: AmazonSNSClient): Unit = {
+    def subscribe(url: URL)(implicit snsClient: AmazonSNS): Unit = {
       snsClient.subscribe(new SubscribeRequest(topic.getTopicArn, url.getProtocol, url.toString))
       Logger.debug(s"Subscribed to SNS endpoint $url")
     }

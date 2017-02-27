@@ -7,9 +7,12 @@ licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 scalaVersion := "2.12.1"
 crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1")
 
-scalacOptions ++= (
+scalacOptions ++=
   scalaVersion {
-    case sv if sv.startsWith("2.10") => Nil
+    case sv if sv.startsWith("2.10") => List(
+      "-target:jvm-1.7"
+    )
+
     case _ => List(
       "-target:jvm-1.8",
       "-Ywarn-unused"
@@ -26,15 +29,23 @@ scalacOptions ++= (
     "-Xfuture",
     "-Xlint"
   )
-)
 
-javacOptions ++= Seq(
-  "-Xlint:deprecation",
-  "-Xlint:unchecked",
-  "-source", "1.8",
-  "-target", "1.8",
-  "-g:vars"
-)
+javacOptions ++=
+  scalaVersion {
+    case sv if sv.startsWith("2.10") => List(
+      "-source", "1.7",
+      "-target", "1.7"
+    )
+
+    case _ => List(
+      "-source", "1.8",
+      "-target", "1.8"
+    )
+  }.value ++ Seq(
+    "-Xlint:deprecation",
+    "-Xlint:unchecked",
+    "-g:vars"
+  )
 
 scalacOptions in (Compile, doc) ++= baseDirectory.map {
   (bd: File) => Seq[String](
@@ -58,6 +69,7 @@ libraryDependencies ++= {
     "org.joda"                   %  "joda-convert"        % "1.7"     withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-annotations" % "2.5.4"   withSources() force(),
     "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.96" withSources(),
+    "com.google.code.findbugs"   %  "jsr305"              % "3.0.1"   withSources() force(),
     "com.micronautics"           %% "scalacourses-utils"  % "0.2.20"  withSources(),
     "com.typesafe"               %  "config"              % "1.3.0"   withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-core"        % "2.5.4"   withSources() force(),
@@ -79,7 +91,6 @@ libraryDependencies ++= scalaVersion {
     Seq(
       "com.typesafe.play"        %% "play-json"        % playV   withSources() force(),
       "org.clapper"              %% "grizzled-scala"   % "4.2.0" withSources(),
-      "com.google.code.findbugs" %  "jsr305"           % "3.0.1" withSources() force(),
       //
       "com.typesafe.play"        %% "play"             % playV      % "test" withSources(),
       "com.typesafe.play"        %% "play-ws"          % playV      % "test" withSources(),
@@ -94,7 +105,6 @@ libraryDependencies ++= scalaVersion {
       "com.typesafe.play"        %% "play-datacommons" % playV    withSources() force(),
       "com.github.nscala-time"   %% "nscala-time"      % "2.16.0" withSources(),
       "org.clapper"              %% "grizzled-scala"   % "4.2.0"  withSources(),
-      "com.google.code.findbugs" %  "jsr305"           % "3.0.1"  withSources() force(),
       //
       "com.typesafe.play"      %% "play"               % playV    % "test" withSources(),
       "com.typesafe.play"      %% "play-ws"            % playV    % "test" withSources(),
@@ -108,7 +118,6 @@ libraryDependencies ++= scalaVersion {
       "com.typesafe.play"        %% "play-iteratees"      % playV    withSources() force(),
       "com.typesafe.play"        %% "play-datacommons"    % playV    withSources() force(),
       "com.github.nscala-time"   %% "nscala-time"         % "2.4.0"  exclude("joda-time", "joda-time"),
-      "com.google.code.findbugs" %  "jsr305"              % "3.0.1"  withSources() force(),
       "joda-time"                %  "joda-time"           % "2.8.2",
       "org.clapper"              %  "grizzled-scala_2.10" % "1.3"    withSources(),
       "org.scala-lang"           %  "scala-reflect"       % "2.10.6" force(),

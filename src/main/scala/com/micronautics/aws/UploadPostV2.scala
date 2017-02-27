@@ -33,7 +33,7 @@ object UploadPostV2 extends S3Implicits with CFImplicits {
            (implicit s3: S3, cf: CloudFront): Try[Boolean] = {
     // The key is not part of the upload URL; also note the short URL does not include the AWS region
     val uploadUrl = new URL(s"http://${bucket.getName}.s3.amazonaws.com")
-    val parameters = params(file, bucket, key, acl, expiryDuration, s3.awsCredentials)
+    val parameters = params(file, bucket, key, acl, expiryDuration, awsCredentials)
     uploadPost(file, uploadUrl, parameters).flatMap( _ =>
       invalidateDistributions(bucket, key)
     )

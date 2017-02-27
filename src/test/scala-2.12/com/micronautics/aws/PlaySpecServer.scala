@@ -11,9 +11,15 @@
 
 package com.micronautics.aws
 
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, MustMatchers, Suite}
+import org.scalatest.concurrent.Waiters
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import org.scalatestplus.play.PlaySpec
 
-trait TestBase extends MustMatchers with BeforeAndAfter with BeforeAndAfterAll with SNSImplicits { this: BeforeAndAfterAll with Suite =>
+abstract class PlaySpecServer extends PlaySpec
+                              with GuiceOneServerPerSuite
+                              with Waiters
+                              with play.api.mvc.Results
+                              with SNSImplicits {
   lazy implicit val s3: S3 = new S3()
   lazy implicit val cf: CloudFront = new CloudFront()
   lazy implicit val et: ElasticTranscoder = new ElasticTranscoder()

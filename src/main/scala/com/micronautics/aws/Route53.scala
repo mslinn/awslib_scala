@@ -1,16 +1,14 @@
 package com.micronautics.aws
 
-import java.util
 import java.util.concurrent.atomic.AtomicBoolean
-import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.route53.model._
+import com.amazonaws.services.route53.{AmazonRoute53, AmazonRoute53ClientBuilder}
 import com.micronautics.cache.{Memoizer, Memoizer0}
-import collection.JavaConverters._
-import com.amazonaws.services.route53.AmazonRoute53Client
+import scala.collection.JavaConverters._
 
-class Route53()(implicit val awsCredentials: AWSCredentials) {
-  implicit val r53 = this
-  implicit val r53Client = new AmazonRoute53Client(awsCredentials)
+class Route53 {
+  implicit val r53: Route53 = this
+  implicit val r53Client: AmazonRoute53 = AmazonRoute53ClientBuilder.standard.build
 
   val cacheIsDirty = new AtomicBoolean(false)
 

@@ -11,16 +11,15 @@
 
 package com.micronautics.aws
 
-import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.services.sqs.AmazonSQSAsyncClient
+import com.amazonaws.services.sqs.{AmazonSQSAsync, AmazonSQSAsyncClientBuilder}
 
 object SQS {
-  def apply(implicit awsCredentials: AWSCredentials): SQS = new SQS()(awsCredentials)
+  def apply: SQS = new SQS
 }
 
-class SQS()(implicit val awsCredentials: AWSCredentials) {
+class SQS {
   implicit val sqs: SQS = this
-  implicit val sqsClient: AmazonSQSAsyncClient = new AmazonSQSAsyncClient(awsCredentials)
+  implicit val sqsClient: AmazonSQSAsync = AmazonSQSAsyncClientBuilder.standard.build
 
 }
 

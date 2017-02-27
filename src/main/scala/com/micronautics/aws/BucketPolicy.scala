@@ -12,7 +12,7 @@
 package com.micronautics.aws
 
 import com.amazonaws.auth.policy.{Principal, Statement}
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient
+import com.amazonaws.services.identitymanagement.AmazonIdentityManagement
 import com.amazonaws.services.s3.model.Bucket
 import scala.util.Try
 
@@ -37,19 +37,19 @@ object BucketPolicy {
   /** The implicit `AmazonIdentityManagementClient `instance determines the AIM user based on the AWS access key ID in the
     * implicit `AWSCredentials` instance in scope.
     * @return typical value: Success("arn:aws:iam::031372724784:root") */
-  def arnUser(implicit iamClient: AmazonIdentityManagementClient): Try[String] =
+  def arnUser(implicit iamClient: AmazonIdentityManagement): Try[String] =
     Try { iamClient.getUser.getUser.getArn }
 
   /** @return Try[Principal] for `arnUser`. typical principalUser.getId value: arn:aws:iam::031372724784:root */
-  def principalUser(implicit iamClient: AmazonIdentityManagementClient): Try[Principal] =
+  def principalUser(implicit iamClient: AmazonIdentityManagement): Try[Principal] =
     arnUser.map(arn => new Principal(arn))
 
-  def allowUserEverythingStatement(bucket: Bucket)(implicit iamClient: AmazonIdentityManagementClient): Statement = {
+  def allowUserEverythingStatement(bucket: Bucket)(implicit iamClient: AmazonIdentityManagement): Statement = {
     val principals: Seq[Principal] = principalUser.toOption.toList
     bucket.allowAllStatement(principals, "Allow user to do everything")
   }
 
-  def createBucket(bucketName: String)(implicit s3: S3, iamClient: AmazonIdentityManagementClient): Bucket = {
+  def createBucket(bucketName: String)(implicit s3: S3, iamClient: AmazonIdentityManagement): Bucket = {
     try {
       Logger.info(s"Setting up bucket $bucketName")
       val bucket = s3.createBucket(bucketName)

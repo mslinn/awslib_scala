@@ -12,14 +12,11 @@
 package com.micronautics.aws
 
 import collection.JavaConverters._
-import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.services.elastictranscoder.AmazonElasticTranscoderClient
+import com.amazonaws.services.elastictranscoder.{AmazonElasticTranscoder, AmazonElasticTranscoderClientBuilder}
 import com.amazonaws.services.elastictranscoder.model._
 import scala.util.{Failure, Success}
 
 object ElasticTranscoder {
-  import com.amazonaws.auth.AWSCredentials
-
   val defaultIamRole = "arn:aws:iam::031372724784:role/Elastic_Transcoder_Default_Role"
   val defaultIamRoleDetails: String =
     """{
@@ -45,16 +42,16 @@ object ElasticTranscoder {
       |  ]
       |}""".stripMargin
 
-  def apply(implicit awsCredentials: AWSCredentials): ElasticTranscoder = new ElasticTranscoder()(awsCredentials)
+  def apply: ElasticTranscoder = new ElasticTranscoder
 }
 
-class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
+class ElasticTranscoder {
   import ElasticTranscoder._
   import com.amazonaws.services.elastictranscoder.model.{JobOutput, ListJobsByStatusRequest, Job, Preset}
   import com.amazonaws.services.s3.model.Bucket
   import util.Try
 
-  implicit val etClient: AmazonElasticTranscoderClient = new AmazonElasticTranscoderClient(awsCredentials)
+  implicit val etClient: AmazonElasticTranscoder = AmazonElasticTranscoderClientBuilder.standard.build
   implicit val et: ElasticTranscoder = this
 
   def allPresets: List[Preset] =
@@ -144,7 +141,7 @@ class ElasticTranscoder()(implicit val awsCredentials: AWSCredentials) {
   /** Create an Elastic Transcoder job using the given pipeline, input key, presets, output inKey prefix and output keys.
     * @return Job created in Elastic Transcoder. */
   def createJob(pipelineId: String, presets: List[Preset], inKey: String, outputKeyPrefix: String, outputKeys: List[String])
-               (implicit etClient: AmazonElasticTranscoderClient): Job = {
+               (implicit etClient: AmazonElasticTranscoder): Job = {
     val input = new JobInput().withKey(inKey)
     assert(presets.size==outputKeys.size)
     val outputs = (presets zip outputKeys).map { case (aPreset, outputKey) =>

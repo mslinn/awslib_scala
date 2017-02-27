@@ -12,21 +12,18 @@
 package com.micronautics.aws
 
 import java.util.concurrent.atomic.AtomicBoolean
-
 import AclEnum._
 import java.io.{File, InputStream}
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
 import java.util.Date
-
-import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.auth.policy.{Policy, Statement}
 import com.amazonaws.event.ProgressEventType
-import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3Client, AmazonS3ClientBuilder}
 import com.amazonaws.services.s3.model._
 import com.amazonaws.{AmazonClientException, HttpMethod, event}
-import com.micronautics.cache.{Memoizer0, Memoizer}
+import com.micronautics.cache.{Memoizer, Memoizer0}
 import org.joda.time.{DateTime, Duration}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
@@ -58,7 +55,7 @@ case class StreamingCFAlias(cname: String) extends CloudFrontAlias {
   *
   * Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only). */
 object S3 {
-  def apply(implicit awsCredentials: AWSCredentials): S3 = new S3()(awsCredentials)
+  def apply: S3 = new S3
 
   protected def bucketPolicy(bucketName: String): String = s"""{
     |\t"Version": "2008-10-17",
@@ -100,17 +97,13 @@ object S3 {
   def sanitizePrefix(key: String): String = key.substring(key.indexWhere(_ != '/')).replace("//", "/")
 }
 
-class S3()(implicit val awsCredentials: AWSCredentials) {
+class S3 {
   import com.micronautics.aws.S3._
 
   val cacheIsDirty = new AtomicBoolean(false)
 
   implicit val s3: S3 = this
-  implicit val s3Client: AmazonS3Client = {
-    val s3Client = new AmazonS3Client(awsCredentials)
-    Logger.debug(s"s3Client created with awsCredentials= $awsCredentials")
-    s3Client
-  }
+  implicit val s3Client: AmazonS3Client = new AmazonS3Client(awsCredentials)
 
   protected val _allObjectData: Memoizer[(String, String), List[S3ObjectSummary]] =
     Memoizer( args => {
@@ -395,14 +388,14 @@ class S3()(implicit val awsCredentials: AWSCredentials) {
       (for {
         bucket <- findByName(bucketName)
       } yield {
-          val s3Url = s3Client.getResourceUrl(bucketName, key)
-          maybeAlias.map { alias =>
-            val url   = new URL(s3Url)
-            val path  = Option(url.getPath).getOrElse("")
-            val query = Option(url.getQuery).map( "?" + _ ).getOrElse("")
-            s"""$alias$path$query"""
-          }.getOrElse(s3Url)
-        }).getOrElse("")
+        val s3Url = s3Client.getResourceUrl(bucketName, key)
+        maybeAlias.map { alias =>
+          val url   = new URL(s3Url)
+          val path  = Option(url.getPath).getOrElse("")
+          val query = Option(url.getQuery).map( "?" + _ ).getOrElse("")
+          s"""$alias$path$query"""
+        }.getOrElse(s3Url)
+      }).getOrElse("")
     })
 
   /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or the referenced
@@ -635,19 +628,19 @@ trait S3Implicits {
 
     def name: String = bucket.getName
 
-    def policy_=(policyJson: String) = s3.setBucketPolicy(bucket, policyJson)
+    def policy_=(policyJson: String): Bucket = s3.setBucketPolicy(bucket, policyJson)
 
-    def policy_=(statements: List[Statement]) = s3.setBucketPolicy(bucket, statements)
+    def policy_=(statements: List[Statement]): Bucket = s3.setBucketPolicy(bucket, statements)
 
     def policy: BucketPolicy = s3.s3Client.getBucketPolicy(bucket.getName)
 
     def policyAsJson: String = policy.getPolicyText
 
     def policyEncoder(policyText: String, contentLength: Long, expiryDuration: Duration=Duration.standardHours(1)): String =
-      new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials).policyEncoder(policyText, contentLength)
+      new UploadPostV2(bucket, expiryDuration)(awsCredentials).policyEncoder(policyText, contentLength)
 
     def createPolicyText(key: String, contentLength: Long, acl: AclEnum=privateAcl, expiryDuration: Duration=Duration.standardHours(1)): String =
-      new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials).policyText(key, contentLength, acl)
+      new UploadPostV2(bucket, expiryDuration)(awsCredentials).policyText(key, contentLength, acl)
 
     def oneObjectData(prefix: String): Option[S3ObjectSummary] = s3.oneObjectData(bucket.getName, prefix)
 
@@ -664,14 +657,14 @@ trait S3Implicits {
     def signAndEncodePolicy(key: String,
                             contentLength: Long,
                             acl: AclEnum=privateAcl,
-                            awsSecretKey: String=s3.awsCredentials.getAWSSecretKey,
+                            awsSecretKey: String=awsCredentials.getAWSSecretKey,
                             expiryDuration: Duration=Duration.standardHours(1)): UploadPostV2#SignAndEncodePolicy = {
-      val post = new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials)
+      val post = new UploadPostV2(bucket, expiryDuration)(awsCredentials)
       post.SignAndEncodePolicy(key, contentLength, acl)
     }
 
     def signPolicy(policyText: String, contentLength: Long, awsSecretKey: String, expiryDuration: Duration=Duration.standardHours(1)): String = {
-      val uploadPostV2 = new UploadPostV2(bucket, expiryDuration)(s3.awsCredentials)
+      val uploadPostV2 = new UploadPostV2(bucket, expiryDuration)(awsCredentials)
       uploadPostV2.signPolicy(policyText, contentLength)
     }
 

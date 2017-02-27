@@ -11,16 +11,15 @@
 
 package com.micronautics.aws
 
-import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.services.rekognition.AmazonRekognitionAsyncClient
+import com.amazonaws.services.rekognition.{AmazonRekognitionAsync, AmazonRekognitionAsyncClientBuilder}
 
 object Rekognition {
-  def apply(implicit awsCredentials: AWSCredentials): Rekognition = new Rekognition()(awsCredentials)
+  def apply: Rekognition = new Rekognition
 }
 
-class Rekognition()(implicit val awsCredentials: AWSCredentials) {
+class Rekognition {
   implicit val rekog: Rekognition = this
-  implicit val rekogClient: AmazonRekognitionAsyncClient = new AmazonRekognitionAsyncClient(awsCredentials)
+  implicit val rekogClient: AmazonRekognitionAsync = AmazonRekognitionAsyncClientBuilder.standard.build
 
 }
 
