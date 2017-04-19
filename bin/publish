@@ -7,3 +7,4 @@ if [ "$1" != NOTEST ]; then
   fi
 fi
 clearSbtCacheItem && s3publish com/micronautics/awslib_scala_2.10 && commit
+sbt doc ghpagesPushSite
