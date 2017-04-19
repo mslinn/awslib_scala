@@ -142,6 +142,17 @@ initialCommands := """
 //logLevel in compile := Level.Warn
 logLevel in test := Level.Info // Level.INFO is needed to see detailed output when running tests
 
+// bintray settings
 bintrayOrganization := Some("micronautics")
 bintrayRepository := "scala"
 bintrayVcsUrl := Some("git@github.com:mslinn/awslib_scala.git")
+
+// sbt-site settings
+enablePlugins(SiteScaladocPlugin)
+siteSourceDirectory := target.value / "api"
+publishSite
+
+// sbt-ghpages settings
+enablePlugins(GhpagesPlugin)
+git.remoteRepo := "git@github.com:mslinn/awslib_scala.git"
+//ghpagesNoJekyll := true

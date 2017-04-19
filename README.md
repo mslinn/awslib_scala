@@ -1,4 +1,4 @@
-# Idiomatic Scala AWS Library #
+# Idiomatic Scala AWS Library
 
 [![Build Status](https://travis-ci.org/mslinn/awslib_scala.svg?branch=master)](https://travis-ci.org/mslinn/awslib_scala)
 [ ![Download](https://api.bintray.com/packages/micronautics/scala/awslib_scala/images/download.svg) ](https://bintray.com/micronautics/scala/awslib_scala/_latestVersion)
@@ -8,7 +8,7 @@ This project is sponsored by [Micronautics Research Corporation](http://www.micr
 the company behind [Cadenza](http://www.micronauticsresearch.com/products/cadenza/index.html) and 
 [ScalaCourses.com](http://www.scalacourses.com).
 
-## Idomatic Scala ##
+## Idiomatic Scala
 This library provides a functional interface to the [AWS Java library](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html).
 The exposed API is much simpler to use than Amazon's Java API, 
 however you can mix calls to this library with calls to the underlying AWS Java library.
@@ -23,7 +23,7 @@ Enhanced AWS classes include CloudFront's `DistributionSummary`, S3's `Bucket` a
 Most methods employ typed parameters so accidental mixing up of arguments cannot happen.
 Programmers using this library are encouraged to use named parameters for the few remaining untyped parameters.
 
-## Building and Running ##
+## Building and Running
 
  1. Java 8 is required.
  2. You need an AWS account.
@@ -39,12 +39,15 @@ cd awslib_scala
 sbt test
 ````
 
-## Installation ##
+## Installation
 Add this to your project's `build.sbt`:
 
     resolvers += "micronautics/scala on bintray" at "http://dl.bintray.com/micronautics/scala"
 
     libraryDependencies += "com.micronautics" %% "awslib_scala" % "1.1.8" withSources()
 
-## Sample Code ##
+## Sample Code
 See the unit tests for examples of how to use this library.
+
+## Scaladoc
+[Here](http://blog.mslinn.com/awslib_scala/latest/api/com/micronautics/aws/index.html)
