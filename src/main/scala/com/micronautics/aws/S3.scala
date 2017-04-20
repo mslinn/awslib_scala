@@ -39,21 +39,6 @@ case class StreamingCFAlias(cname: String) extends CloudFrontAlias {
   override val toString: String = cname
 }
 
-/** This package is optimized for buckets that are read-mostly.
-  * Either the app must be restarted or the cache must be cleared (by calling the `clearCaches` method) if a bucket or
-  * an object in a bucket is created or modified after a method is called, otherwise the old data will always be returned by that method.
-  * Methods that are cached are denoted by **cached**.
-  *
-  * When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.
-  *
-  * Keys of assets that were uploaded by other clients might start with leading slashes, or a dit; those assets can
-  * not be fetched by web browsers.
-  *
-  * AWS does not respect the last-modified metadata provided when uploading; it uses the upload timestamp instead.
-  * After uploading, the last-modified timestamp of the uploaded file is read and applied to the local copy of the file
-  * so the timestamps match.
-  *
-  * Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only). */
 object S3 {
   def apply: S3 = new S3
 
@@ -82,7 +67,7 @@ object S3 {
     }
   )
 
-  /** **cached**
+  /** '''cached'''
     * @return creation time or last modified time, whichever is more recent */
   def latestFileTime(file: File): Long = _latestFileTime(file)
 
@@ -97,6 +82,33 @@ object S3 {
   def sanitizePrefix(key: String): String = key.substring(key.indexWhere(_ != '/')).replace("//", "/")
 }
 
+/** Optimized for read-mostly AWS S3 buckets; uses caching to speed access.
+  * To clear the caches after a invoking method that caches its response, either the app must be restarted or the `clearCaches` method must be called.
+  * Methods that are cached are denoted by '''cached'''.
+  *
+  * When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.
+  *
+  * Keys of assets that were uploaded by other clients might start with leading slashes, or a dash; those assets can
+  * not be fetched by web browsers.
+  *
+  * When web site access to an S3 bucket is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
+  * and the keyed data.
+  * The keys must therefore consist of relative paths (relative directory name followed by a file name), and must not start with a leading slash.
+  * `awslib_scala` stores each file name (referred to by AWS as a key) without a leading slash.
+  * For example, assuming that the default file name is `index.html`, then `http://domain.com` and `http://domain.com/`
+  * are translated to `http://domain.com/index.html`.
+  *
+  * As another example, the key for a file in a directory called `<WEBROOT>/blah/ick/yuck.html` is defined as `blah/ick/yuck.html`.
+  *
+  * AWS does not respect the `last-modified` metadata provided when uploading; it uses the upload timestamp instead.
+  * After uploading, the `last-modified` timestamp of the uploaded file is read and applied to the local copy of the file
+  * so the timestamps match.
+  *
+  * Java on Windows does not handle `last-modified` properly, so the creation date is set to the `last-modified` date for files (Windows only).
+  *
+  * For each directory, AWS creates a file of the same name, with the suffix `_$folder$`.
+  * If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
+  * These hidden files are ignored by `awslib_scala`; users never see them because they are for AWS S3 internal use only. */
 class S3 {
   import com.micronautics.aws.S3._
 
@@ -128,7 +140,7 @@ class S3 {
       again(objectListing, List.empty[S3ObjectSummary])
     })
 
-  /** **cached**
+  /** '''cached'''
     * @param prefix Any leading slashes are removed if a prefix is specified
     * @return collection of S3ObjectSummary; keys are relativized if prefix is adjusted */
   def allObjectData(bucketName: String, prefix: String): List[S3ObjectSummary] =
@@ -144,18 +156,18 @@ class S3 {
     s3Client.getBucketLocation(bucketName)
   )
 
-  /** **cached** */
+  /** '''cached''' */
   def bucketLocation(bucketName: String): String = _bucketLocation(bucketName)
 
   protected val _bucketNames: Memoizer0[List[String]] =
     Memoizer(s3Client.listBuckets.asScala.map(_.getName).toList)
 
-  /** **cached** List the buckets in the account. */
+  /** '''cached''' List the buckets in the account. */
   def bucketNames: List[String] = _bucketNames.apply
 
   protected def _bucketNamesWithDistributions(cf: CloudFront): List[String] = cf.bucketNamesWithDistributions
 
-  /** **cached** Either the memo cache must be cleared, or the app must be restarted if a bucket or distribution is created after this method is called,
+  /** '''cached''' Either the memo cache must be cleared, or the app must be restarted if a bucket or distribution is created after this method is called,
     * or the bucket or distribution will never be found */
   def bucketNamesWithDistributions(implicit cf: CloudFront): Memoizer[CloudFront, List[String]] =
     Memoizer(_bucketNamesWithDistributions)
@@ -202,7 +214,7 @@ class S3 {
     bucket
   }
 
-  /** Delete a bucket - The bucket will automatically be emptied if necessary so it can be deleted. */
+  /** Delete a bucket &ndash; the bucket will automatically be emptied if necessary so it can be deleted. */
   @throws(classOf[AmazonClientException])
   def deleteBucket(bucketName: String): Unit = {
     emptyBucket(bucketName)
@@ -218,7 +230,7 @@ class S3 {
     cacheIsDirty.set(true)
   }
 
-  /** Delete an object - if they key has any leading slashes, they are removed.
+  /** Delete an object &ndash; if they key has any leading slashes, they are removed.
     * Unless versioning has been turned on for the bucket, there is no way to undelete an object. */
   def deleteObject(bucketName: String, key: String): Unit = {
     s3Client.deleteObject(bucketName, sanitizedPrefix(key))
@@ -231,14 +243,14 @@ class S3 {
     ()
   }
 
-  /** Download an object - if the key has any leading slashes, they are removed.
+  /** Download an object &ndash; if the key has any leading slashes, they are removed.
     * When you download an object, you get all of the object's metadata and a
-    * stream from which to read the contents. It's important to read the contents of the stream as quickly as
-    * possible since the data is streamed directly from Amazon S3 and your network connection will remain open
-    * until you read all the data or close the input stream.
+    * stream from which to read the contents. It is important to read the contents of the stream as quickly as
+    * possible since the data is streamed directly from Amazon S3 and the network connection will remain open
+    * until all the data is read or the input stream is closed.
     *
-    * GetObjectRequest also supports several other options, including conditional downloading of objects
-    * based on modification times, ETags, and selectively downloading a range of an object. */
+    * `GetObjectRequest` also supports several other options, including conditional downloading of objects
+    * based on modification times, ETags, and selectively downloading a range of an object; none of these are used. */
   def downloadFile(bucketName: String, key: String): InputStream = {
     val sanitizedKey = sanitizedPrefix(key).replace ("//", "/")
     val s3Object: S3Object = s3Client.getObject (new GetObjectRequest (bucketName, sanitizedKey) )
@@ -252,8 +264,9 @@ class S3 {
     cacheIsDirty.set(true)
   }
 
-  /**
-  <?xml version="1.0" encoding="UTF-8"?>
+  /** Cross-Origin Resource Sharing
+    * @see https://en.wikipedia.org/wiki/Cross-origin_resource_sharing
+  {{{<?xml version="1.0" encoding="UTF-8"?>
   <CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
       <CORSRule>
           <AllowedOrigin>*</AllowedOrigin>
@@ -264,7 +277,7 @@ class S3 {
           <AllowedMethod>DELETE</AllowedMethod>
           <AllowedHeader>*</AllowedHeader>
       </CORSRule>
-  </CORSConfiguration> */
+  </CORSConfiguration>}}} */
   def enableCors(bucket: Bucket): Unit =
     try {
       val rule1 = new CORSRule()
@@ -306,7 +319,7 @@ class S3 {
     }
   )
 
-  /** **cached** */
+  /** '''cached''' */
   def findByName(bucketName: String): Option[Bucket] = _findByName(bucketName)
 
   /** Requires property com.amazonaws.sdk.disableCertChecking to have a value (any value will do) */
@@ -318,7 +331,7 @@ class S3 {
     }
   )
 
-  /** **cached** */
+  /** '''cached''' */
   def isWebsiteEnabled(bucketName: String): Boolean = _isWebsiteEnabled.apply(bucketName)
 
   val _listObjectsByPrefix: Memoizer[(String, String, String, Boolean), List[String]] =
@@ -347,12 +360,12 @@ class S3 {
   def listObjectsByPrefix(bucketName: String, prefix: String, suffix: String="", showSize: Boolean=false): List[String] =
     _listObjectsByPrefix.apply((bucketName, prefix, suffix, showSize))
 
-  /** Move oldKey in bucket with bucketName to newKey.
+  /** Move `oldKey` in bucket with `bucketName` to `newKey`.
     * Object metadata is preserved. */
   def move(bucketName: String, oldKey: String, newKey: String): Unit =
     move(bucketName, oldKey, bucketName, newKey)
 
-  /** Move oldKey in bucket with bucketName to newBucket / newKey.
+  /** Move `oldKey` in bucket with `bucketName` to `newBucket` / `newKey`.
     * Object metadata is preserved. */
   def move(oldBucketName: String, oldKey: String, newBucketName: String, newKey: String): Unit = {
     val copyRequest: CopyObjectRequest = new CopyObjectRequest(oldBucketName, oldKey, newBucketName, newKey)
@@ -376,7 +389,7 @@ class S3 {
     }
   )
 
-  /** **cached**
+  /** '''cached'''
     * @param prefix Any leading slashes are removed if a prefix is specified
     * @return Option[ObjectSummary] with leading "./", prepended if necessary */
   def oneObjectData(bucketName: String, prefix: String): Option[S3ObjectSummary] =
@@ -398,19 +411,19 @@ class S3 {
       }).getOrElse("")
     })
 
-  /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or the referenced
+  /** '''cached''' The cache must be cleared or the app must be restarted if a bucket is created or the referenced
     * CloudFront distribution alias is created (by assigning a CNAME) after this method is first called,
     * or the distribution with the desired cname will never be found */
   def staticResourceUrl(bucketName: String, key: String)(implicit maybeAlias: Option[StaticCFAlias]): String =
     _resourceUrl.apply((bucketName, key, maybeAlias))
 
-  /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or the referenced
+  /** '''cached''' The cache must be cleared or the app must be restarted if a bucket is created or the referenced
     * CloudFront distribution alias is created (by assigning a CNAME) after this method is first called,
     * or the distribution with the desired cname will never be found */
   def streamingResourceUrl(bucketName: String, key: String)(implicit maybeAlias: Option[StreamingCFAlias]): String =
     _resourceUrl.apply((bucketName, key, maybeAlias))
 
-  /** **cached** The cache must be cleared or the app must be restarted if a bucket is created after this method is
+  /** '''cached''' The cache must be cleared or the app must be restarted if a bucket is created after this method is
     * first called, or the bucket will never be found */
   @deprecated("Use staticResourceUrl or streamingResourceUrl instead", "1.0.4") def resourceUrl(bucketName: String, key: String): String =
     _resourceUrl.apply((bucketName, key, None))
@@ -646,7 +659,7 @@ trait S3Implicits {
 
     def removeDistribution()(implicit cf: CloudFront): Boolean = cf.removeDistribution(bucket)
 
-    /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or a a CloudFront
+    /** '''cached''' The cache must be cleared or the app must be restarted if a bucket is created or a a CloudFront
       * distribution alias is created (by assigning a CNAME) after this method is first called,
       * or the bucket will never be found */
     def resourceUrl(key: String): String =
@@ -672,12 +685,12 @@ trait S3Implicits {
 
     def signUrlStr(key: String, minutesValid: Int=0): URL = s3.signUrlStr(bucket, key, minutesValid)
 
-    /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or a a CloudFront
+    /** '''cached''' The cache must be cleared or the app must be restarted if a bucket is created or a a CloudFront
       * distribution alias is created (by assigning a CNAME) after this method is first called, or the bucket will never be found */
     def staticResourceUrl(key: String)(implicit maybeAlias: Option[StaticCFAlias]): String =
       s3.staticResourceUrl(bucket.getName, key)(maybeAlias)
 
-    /** **cached** The cache must be cleared or the app must be restarted if a bucket is created or a a CloudFront
+    /** '''cached''' The cache must be cleared or the app must be restarted if a bucket is created or a a CloudFront
       * distribution alias is created (by assigning a CNAME) after this method is first called, or the bucket will never be found */
     def streamingResourceUrl(key: String)(implicit maybeAlias: Option[StreamingCFAlias]): String =
       s3.streamingResourceUrl(bucket.getName, key)(maybeAlias)

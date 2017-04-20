@@ -13,17 +13,8 @@ package com.micronautics
 
 import com.amazonaws.auth.{AWSCredentials, DefaultAWSCredentialsProviderChain}
 
-/** When web site access is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
-  * and the keyed data.
-  * The keys must therefore consist of relative paths (relative directory name followed by a file name), and must not start with a leading slash.
-  * This program stores each file name (referred to by AWS as a key) without a leading slash.
-  * For example, assuming that the default file name is `index.html`, `http://domain.com` and `http://domain.com/` are translated to `http://domain.com/index.html`.
-  **
-  *As another example, the key for a file in a directory called `{WEBROOT}/blah/ick/yuck.html` is defined as `blah/ick/yuck.html`.
-  **
-  *For each directory, AWS creates a file of the same name, with the suffix `_$folder$`.
-  *If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
-  *These hidden files are ignored by this program; users never see them because they are for AWS S3 internal use only. */
+/** The `aws` package contains idiomatic Scala facades for CloudFront, ElasticTranscoder, IAM, Lambda, Polly,
+  * Rekognizer, Route53, SNS and SQS. */
 package object aws extends CFImplicits with ETImplicits with IAMImplicits with S3Implicits with SNSImplicits with SQSImplicits {
   import com.amazonaws.util.json.Jackson
   import org.slf4j.LoggerFactory

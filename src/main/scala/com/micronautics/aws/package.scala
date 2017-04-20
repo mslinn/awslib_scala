@@ -14,7 +14,7 @@ package com.micronautics.aws
 import com.amazonaws.auth.BasicAWSCredentials
 import scala.util.control.NoStackTrace
 
-/** @param arnString Typical value: arn:aws:sns:us-east-1:031372724784:transcoderComplete */
+/** @param arnString Typical value: `arn:aws:sns:us-east-1:031372724784:transcoderComplete` */
 case class Arn(arnString: String) {
   import com.amazonaws.services.sns.model.Topic
 
