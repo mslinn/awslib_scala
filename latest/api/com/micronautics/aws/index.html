@@ -297,8 +297,8 @@ policy so the owner can upload.">
                         </a>
                       </li><li class="current-entities indented3">
                         <a class="object" href="S3$.html" title=""></a>
-                        <a class="class" href="S3.html" title="Optimized for read-mostly AWS S3 buckets."></a>
-                        <a href="S3.html" title="Optimized for read-mostly AWS S3 buckets.">
+                        <a class="class" href="S3.html" title="Optimized for read-mostly AWS S3 buckets; uses caching to speed access."></a>
+                        <a href="S3.html" title="Optimized for read-mostly AWS S3 buckets; uses caching to speed access.">
                           S3
                         </a>
                       </li><li class="current-entities indented3">
@@ -845,23 +845,22 @@ Rekognizer, Route53, SNS and SQS.</p></div><dl class="attributes block"> <dt>Sou
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="Optimized for read-mostly AWS S3 buckets." href="S3.html">
+        <a title="Optimized for read-mostly AWS S3 buckets; uses caching to speed access." href="S3.html">
               <span class="name">S3</span>
             </a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       
-      <p class="shortcomment cmt">Optimized for read-mostly AWS S3 buckets.</p><div class="fullcomment"><div class="comment cmt"><p>Optimized for read-mostly AWS S3 buckets.
-Either the app must be restarted or the cache must be cleared (by calling the <code>clearCaches</code> method) if a bucket or
-an object in a bucket is created or modified after a method is called, otherwise the old data will always be returned by that method.
-Methods that are cached are denoted by <b>cached</b>.</p><p>When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.</p><p>Keys of assets that were uploaded by other clients might start with leading slashes, or a dit; those assets can
-not be fetched by web browsers.</p><p>AWS does not respect the <code>last-modified</code> metadata provided when uploading; it uses the upload timestamp instead.
-After uploading, the <code>last-modified</code> timestamp of the uploaded file is read and applied to the local copy of the file
-so the timestamps match.</p><p>Java on Windows does not handle <code>last-modified</code> properly, so the creation date is set to the <code>last-modified</code> date for files (Windows only).</p><p>When web site access to an S3 bucket is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
+      <p class="shortcomment cmt">Optimized for read-mostly AWS S3 buckets; uses caching to speed access.</p><div class="fullcomment"><div class="comment cmt"><p>Optimized for read-mostly AWS S3 buckets; uses caching to speed access.
+To clear the caches after a invoking method that caches its response, either the app must be restarted or the <code>clearCaches</code> method must be called.
+Methods that are cached are denoted by <b>cached</b>.</p><p>When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.</p><p>Keys of assets that were uploaded by other clients might start with leading slashes, or a dash; those assets can
+not be fetched by web browsers.</p><p>When web site access to an S3 bucket is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
 and the keyed data.
 The keys must therefore consist of relative paths (relative directory name followed by a file name), and must not start with a leading slash.
 <code>awslib_scala</code> stores each file name (referred to by AWS as a key) without a leading slash.
 For example, assuming that the default file name is <code>index.html</code>, then <code>http://domain.com</code> and <code>http://domain.com/</code>
-are translated to <code>http://domain.com/index.html</code>.</p><p>As another example, the key for a file in a directory called <code>&lt;WEBROOT&gt;/blah/ick/yuck.html</code> is defined as <code>blah/ick/yuck.html</code>.</p><p>For each directory, AWS creates a file of the same name, with the suffix <code>_$folder$</code>.
+are translated to <code>http://domain.com/index.html</code>.</p><p>As another example, the key for a file in a directory called <code>&lt;WEBROOT&gt;/blah/ick/yuck.html</code> is defined as <code>blah/ick/yuck.html</code>.</p><p>AWS does not respect the <code>last-modified</code> metadata provided when uploading; it uses the upload timestamp instead.
+After uploading, the <code>last-modified</code> timestamp of the uploaded file is read and applied to the local copy of the file
+so the timestamps match.</p><p>Java on Windows does not handle <code>last-modified</code> properly, so the creation date is set to the <code>last-modified</code> date for files (Windows only).</p><p>For each directory, AWS creates a file of the same name, with the suffix <code>_$folder$</code>.
 If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
 These hidden files are ignored by <code>awslib_scala</code>; users never see them because they are for AWS S3 internal use only.</p></div></div>
     </li><li name="com.micronautics.aws.S3Implicits" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">

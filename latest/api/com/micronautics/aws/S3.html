@@ -300,8 +300,8 @@ policy so the owner can upload.">
                         </a>
                       </li><li class="current-entities indented3">
                         <a class="object" href="S3$.html" title=""></a>
-                        <a class="class" href="" title="Optimized for read-mostly AWS S3 buckets."></a>
-                        <a href="" title="Optimized for read-mostly AWS S3 buckets.">
+                        <a class="class" href="" title="Optimized for read-mostly AWS S3 buckets; uses caching to speed access."></a>
+                        <a href="" title="Optimized for read-mostly AWS S3 buckets; uses caching to speed access.">
                           S3
                         </a>
                       </li><li class="current-entities indented3">
@@ -389,18 +389,17 @@ implicit AWSCredentials instance in scope."></a>
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Optimized for read-mostly AWS S3 buckets.
-Either the app must be restarted or the cache must be cleared (by calling the <code>clearCaches</code> method) if a bucket or
-an object in a bucket is created or modified after a method is called, otherwise the old data will always be returned by that method.
-Methods that are cached are denoted by <b>cached</b>.</p><p>When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.</p><p>Keys of assets that were uploaded by other clients might start with leading slashes, or a dit; those assets can
-not be fetched by web browsers.</p><p>AWS does not respect the <code>last-modified</code> metadata provided when uploading; it uses the upload timestamp instead.
-After uploading, the <code>last-modified</code> timestamp of the uploaded file is read and applied to the local copy of the file
-so the timestamps match.</p><p>Java on Windows does not handle <code>last-modified</code> properly, so the creation date is set to the <code>last-modified</code> date for files (Windows only).</p><p>When web site access to an S3 bucket is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Optimized for read-mostly AWS S3 buckets; uses caching to speed access.
+To clear the caches after a invoking method that caches its response, either the app must be restarted or the <code>clearCaches</code> method must be called.
+Methods that are cached are denoted by <b>cached</b>.</p><p>When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.</p><p>Keys of assets that were uploaded by other clients might start with leading slashes, or a dash; those assets can
+not be fetched by web browsers.</p><p>When web site access to an S3 bucket is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
 and the keyed data.
 The keys must therefore consist of relative paths (relative directory name followed by a file name), and must not start with a leading slash.
 <code>awslib_scala</code> stores each file name (referred to by AWS as a key) without a leading slash.
 For example, assuming that the default file name is <code>index.html</code>, then <code>http://domain.com</code> and <code>http://domain.com/</code>
-are translated to <code>http://domain.com/index.html</code>.</p><p>As another example, the key for a file in a directory called <code>&lt;WEBROOT&gt;/blah/ick/yuck.html</code> is defined as <code>blah/ick/yuck.html</code>.</p><p>For each directory, AWS creates a file of the same name, with the suffix <code>_$folder$</code>.
+are translated to <code>http://domain.com/index.html</code>.</p><p>As another example, the key for a file in a directory called <code>&lt;WEBROOT&gt;/blah/ick/yuck.html</code> is defined as <code>blah/ick/yuck.html</code>.</p><p>AWS does not respect the <code>last-modified</code> metadata provided when uploading; it uses the upload timestamp instead.
+After uploading, the <code>last-modified</code> timestamp of the uploaded file is read and applied to the local copy of the file
+so the timestamps match.</p><p>Java on Windows does not handle <code>last-modified</code> properly, so the creation date is set to the <code>last-modified</code> date for files (Windows only).</p><p>For each directory, AWS creates a file of the same name, with the suffix <code>_$folder$</code>.
 If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
 These hidden files are ignored by <code>awslib_scala</code>; users never see them because they are for AWS S3 internal use only.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/mslinn/awslib_scala/tree/master/src/main/scala/com/micronautics/aws/S3.scala" target="_blank">S3.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
@@ -905,7 +904,7 @@ You can optionally specify a location for your bucket if you want to keep your d
         <span class="name">deleteBucket</span><span class="params">(<span name="bucketName">bucketName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       
-      <p class="shortcomment cmt">Delete a bucket - The bucket will automatically be emptied if necessary so it can be deleted.</p><div class="fullcomment"><div class="comment cmt"><p>Delete a bucket - The bucket will automatically be emptied if necessary so it can be deleted.</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
+      <p class="shortcomment cmt">Delete a bucket &ndash; the bucket will automatically be emptied if necessary so it can be deleted.</p><div class="fullcomment"><div class="comment cmt"><p>Delete a bucket &ndash; the bucket will automatically be emptied if necessary so it can be deleted.</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="symbol">classOf[AmazonClientException]</span>
@@ -927,7 +926,7 @@ You can optionally specify a location for your bucket if you want to keep your d
         <span class="name">deleteObject</span><span class="params">(<span name="bucketName">bucketName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       
-      <p class="shortcomment cmt">Delete an object - if they key has any leading slashes, they are removed.</p><div class="fullcomment"><div class="comment cmt"><p>Delete an object - if they key has any leading slashes, they are removed.
+      <p class="shortcomment cmt">Delete an object &ndash; if they key has any leading slashes, they are removed.</p><div class="fullcomment"><div class="comment cmt"><p>Delete an object &ndash; if they key has any leading slashes, they are removed.
 Unless versioning has been turned on for the bucket, there is no way to undelete an object.</p></div></div>
     </li><li name="com.micronautics.aws.S3#deletePrefix" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="deletePrefix(bucketName:String,prefix:String):Unit"></a><a id="deletePrefix(String,String):Unit"></a>
@@ -976,12 +975,12 @@ Unless versioning has been turned on for the bucket, there is no way to undelete
         <span class="name">downloadFile</span><span class="params">(<span name="bucketName">bucketName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="java.io.InputStream">InputStream</span></span>
       </span>
       
-      <p class="shortcomment cmt">Download an object - if the key has any leading slashes, they are removed.</p><div class="fullcomment"><div class="comment cmt"><p>Download an object - if the key has any leading slashes, they are removed.
+      <p class="shortcomment cmt">Download an object &ndash; if the key has any leading slashes, they are removed.</p><div class="fullcomment"><div class="comment cmt"><p>Download an object &ndash; if the key has any leading slashes, they are removed.
 When you download an object, you get all of the object's metadata and a
-stream from which to read the contents. It's important to read the contents of the stream as quickly as
-possible since the data is streamed directly from Amazon S3 and your network connection will remain open
-until you read all the data or close the input stream.</p><p>GetObjectRequest also supports several other options, including conditional downloading of objects
-based on modification times, ETags, and selectively downloading a range of an object.</p></div></div>
+stream from which to read the contents. It is important to read the contents of the stream as quickly as
+possible since the data is streamed directly from Amazon S3 and the network connection will remain open
+until all the data is read or the input stream is closed.</p><p><code>GetObjectRequest</code> also supports several other options, including conditional downloading of objects
+based on modification times, ETags, and selectively downloading a range of an object; none of these are used.</p></div></div>
     </li><li name="com.micronautics.aws.S3#emptyBucket" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="emptyBucket(bucketName:String):Unit"></a><a id="emptyBucket(String):Unit"></a>
       <span class="permalink">
@@ -1004,7 +1003,7 @@ based on modification times, ETags, and selectively downloading a range of an ob
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="com.micronautics.aws.S3#enableCors" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.micronautics.aws.S3#enableCors" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="enableCors(bucket:com.amazonaws.services.s3.model.Bucket):Unit"></a><a id="enableCors(Bucket):Unit"></a>
       <span class="permalink">
       <a href="../../../com/micronautics/aws/S3.html#enableCors(bucket:com.amazonaws.services.s3.model.Bucket):Unit" title="Permalink">
@@ -1019,8 +1018,8 @@ based on modification times, ETags, and selectively downloading a range of an ob
         <span class="name">enableCors</span><span class="params">(<span name="bucket">bucket: <span class="extype" name="com.amazonaws.services.s3.model.Bucket">Bucket</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       
-      <p class="shortcomment cmt">  &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-  &lt;CORSConfiguration xmlns=&quot;http://s3.amazonaws.com/doc/2006-03-01/&quot;&gt;
+      <p class="shortcomment cmt">Cross-Origin Resource Sharing</p><div class="fullcomment"><div class="comment cmt"><p>Cross-Origin Resource Sharing</p></div><dl class="attributes block"> <dt>See also</dt><dd><span class="cmt"><p>https://en.wikipedia.org/wiki/Cross-origin_resource_sharing</p><pre>&lt;?xml version=<span class="lit">"1.0"</span> encoding=<span class="lit">"UTF-8"</span>?&gt;
+  &lt;CORSConfiguration xmlns=<span class="lit">"http://s3.amazonaws.com/doc/2006-03-01/"</span>&gt;
       &lt;CORSRule&gt;
           &lt;AllowedOrigin&gt;*&lt;/AllowedOrigin&gt;
           &lt;AllowedMethod&gt;GET&lt;/AllowedMethod&gt;
@@ -1030,7 +1029,7 @@ based on modification times, ETags, and selectively downloading a range of an ob
           &lt;AllowedMethod&gt;DELETE&lt;/AllowedMethod&gt;
           &lt;AllowedHeader&gt;*&lt;/AllowedHeader&gt;
       &lt;/CORSRule&gt;
-  &lt;/CORSConfiguration&gt;</p>
+  &lt;/CORSConfiguration&gt;</pre></span></dd></dl></div>
     </li><li name="com.micronautics.aws.S3#enableWebsite" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="enableWebsite(bucketName:String,errorPage:String):Unit"></a><a id="enableWebsite(String,String):Unit"></a>
       <span class="permalink">
@@ -1228,7 +1227,7 @@ based on modification times, ETags, and selectively downloading a range of an ob
         <span class="name">move</span><span class="params">(<span name="oldBucketName">oldBucketName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="oldKey">oldKey: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="newBucketName">newBucketName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="newKey">newKey: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       
-      <p class="shortcomment cmt">Move oldKey in bucket with bucketName to newBucket / newKey.</p><div class="fullcomment"><div class="comment cmt"><p>Move oldKey in bucket with bucketName to newBucket / newKey.
+      <p class="shortcomment cmt">Move <code>oldKey</code> in bucket with <code>bucketName</code> to <code>newBucket</code> / <code>newKey</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Move <code>oldKey</code> in bucket with <code>bucketName</code> to <code>newBucket</code> / <code>newKey</code>.
 Object metadata is preserved.</p></div></div>
     </li><li name="com.micronautics.aws.S3#move" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="move(bucketName:String,oldKey:String,newKey:String):Unit"></a><a id="move(String,String,String):Unit"></a>
@@ -1245,7 +1244,7 @@ Object metadata is preserved.</p></div></div>
         <span class="name">move</span><span class="params">(<span name="bucketName">bucketName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="oldKey">oldKey: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="newKey">newKey: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       
-      <p class="shortcomment cmt">Move oldKey in bucket with bucketName to newKey.</p><div class="fullcomment"><div class="comment cmt"><p>Move oldKey in bucket with bucketName to newKey.
+      <p class="shortcomment cmt">Move <code>oldKey</code> in bucket with <code>bucketName</code> to <code>newKey</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Move <code>oldKey</code> in bucket with <code>bucketName</code> to <code>newKey</code>.
 Object metadata is preserved.</p></div></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
