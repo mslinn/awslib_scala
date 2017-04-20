@@ -122,18 +122,9 @@
         <span class="name">aws</span>
       </span>
       
-      <p class="shortcomment cmt">When web site access is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
-and the keyed data.</p><div class="fullcomment"><div class="comment cmt"><p>When web site access is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
-and the keyed data.
-The keys must therefore consist of relative paths (relative directory name followed by a file name), and must not start with a leading slash.
-This program stores each file name (referred to by AWS as a key) without a leading slash.
-For example, assuming that the default file name is <code>index.html</code>, <code>http://domain.com</code> and <code>http://domain.com/</code> are translated to <code>http://domain.com/index.html</code>.
-*
-As another example, the key for a file in a directory called <code>{WEBROOT}/blah/ick/yuck.html</code> is defined as <code>blah/ick/yuck.html</code>.
-*
-For each directory, AWS creates a file of the same name, with the suffix <code>_$folder$</code>.
-If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
-These hidden files are ignored by this program; users never see them because they are for AWS S3 internal use only.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="com.micronautics">micronautics</a></dd></dl></div>
+      <p class="shortcomment cmt">The {{aws}} package contains idiomatic Scala facades for CloudFront, ElasticTranscoder, IAM, Lambda, Polly,
+Rekognizer, Route53, SNS and SQS.</p><div class="fullcomment"><div class="comment cmt"><p>The {{aws}} package contains idiomatic Scala facades for CloudFront, ElasticTranscoder, IAM, Lambda, Polly,
+Rekognizer, Route53, SNS and SQS.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="com.micronautics">micronautics</a></dd></dl></div>
     </li><li class="current-entities indented3">
                         <span class="separator"></span>
                         <a class="class" href="AclEnum.html" title=""></a>
@@ -305,9 +296,9 @@ policy so the owner can upload.">
                           Route53
                         </a>
                       </li><li class="current-entities indented3">
-                        <a class="object" href="S3$.html" title="This package is optimized for buckets that are read-mostly."></a>
-                        <a class="class" href="S3.html" title=""></a>
-                        <a href="S3.html" title="">
+                        <a class="object" href="S3$.html" title=""></a>
+                        <a class="class" href="S3.html" title="Optimized for read-mostly AWS S3 buckets."></a>
+                        <a href="S3.html" title="Optimized for read-mostly AWS S3 buckets.">
                           S3
                         </a>
                       </li><li class="current-entities indented3">
@@ -393,17 +384,8 @@ implicit AWSCredentials instance in scope."></a>
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>When web site access is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
-and the keyed data.
-The keys must therefore consist of relative paths (relative directory name followed by a file name), and must not start with a leading slash.
-This program stores each file name (referred to by AWS as a key) without a leading slash.
-For example, assuming that the default file name is <code>index.html</code>, <code>http://domain.com</code> and <code>http://domain.com/</code> are translated to <code>http://domain.com/index.html</code>.
-*
-As another example, the key for a file in a directory called <code>{WEBROOT}/blah/ick/yuck.html</code> is defined as <code>blah/ick/yuck.html</code>.
-*
-For each directory, AWS creates a file of the same name, with the suffix <code>_$folder$</code>.
-If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
-These hidden files are ignored by this program; users never see them because they are for AWS S3 internal use only.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/mslinn/awslib_scala/tree/master/src/main/scala/com/micronautics/package.scala" target="_blank">package.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>The {{aws}} package contains idiomatic Scala facades for CloudFront, ElasticTranscoder, IAM, Lambda, Polly,
+Rekognizer, Route53, SNS and SQS.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/mslinn/awslib_scala/tree/master/src/main/scala/com/micronautics/package.scala" target="_blank">package.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -851,7 +833,7 @@ These hidden files are ignored by this program; users never see them because the
       </span>
       
       
-    </li><li name="com.micronautics.aws.S3" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="com.micronautics.aws.S3" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="S3extendsAnyRef"></a><a id="S3:S3"></a>
       <span class="permalink">
       <a href="../../../com/micronautics/aws/index.html#S3extendsAnyRef" title="Permalink">
@@ -863,12 +845,25 @@ These hidden files are ignored by this program; users never see them because the
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="" href="S3.html">
+        <a title="Optimized for read-mostly AWS S3 buckets." href="S3.html">
               <span class="name">S3</span>
             </a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       
-      
+      <p class="shortcomment cmt">Optimized for read-mostly AWS S3 buckets.</p><div class="fullcomment"><div class="comment cmt"><p>Optimized for read-mostly AWS S3 buckets.
+Either the app must be restarted or the cache must be cleared (by calling the <code>clearCaches</code> method) if a bucket or
+an object in a bucket is created or modified after a method is called, otherwise the old data will always be returned by that method.
+Methods that are cached are denoted by <b>cached</b>.</p><p>When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.</p><p>Keys of assets that were uploaded by other clients might start with leading slashes, or a dit; those assets can
+not be fetched by web browsers.</p><p>AWS does not respect the <code>last-modified</code> metadata provided when uploading; it uses the upload timestamp instead.
+After uploading, the <code>last-modified</code> timestamp of the uploaded file is read and applied to the local copy of the file
+so the timestamps match.</p><p>Java on Windows does not handle <code>last-modified</code> properly, so the creation date is set to the <code>last-modified</code> date for files (Windows only).</p><p>When web site access to an S3 bucket is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
+and the keyed data.
+The keys must therefore consist of relative paths (relative directory name followed by a file name), and must not start with a leading slash.
+<code>awslib_scala</code> stores each file name (referred to by AWS as a key) without a leading slash.
+For example, assuming that the default file name is <code>index.html</code>, then <code>http://domain.com</code> and <code>http://domain.com/</code>
+are translated to <code>http://domain.com/index.html</code>.</p><p>As another example, the key for a file in a directory called <code>&lt;WEBROOT&gt;/blah/ick/yuck.html</code> is defined as <code>blah/ick/yuck.html</code>.</p><p>For each directory, AWS creates a file of the same name, with the suffix <code>_$folder$</code>.
+If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
+These hidden files are ignored by <code>awslib_scala</code>; users never see them because they are for AWS S3 internal use only.</p></div></div>
     </li><li name="com.micronautics.aws.S3Implicits" visbl="pub" class="indented0 " data-isabs="true" fullComment="no" group="Ungrouped">
       <a id="S3ImplicitsextendsAnyRef"></a><a id="S3Implicits:S3Implicits"></a>
       <span class="permalink">
@@ -1358,7 +1353,7 @@ practices instead.</p></div></div>
       </span>
       
       
-    </li><li name="com.micronautics.aws.S3" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="com.micronautics.aws.S3" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="S3"></a><a id="S3:S3"></a>
       <span class="permalink">
       <a href="../../../com/micronautics/aws/index.html#S3" title="Permalink">
@@ -1370,18 +1365,12 @@ practices instead.</p></div></div>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="This package is optimized for buckets that are read-mostly." href="S3$.html">
+        <a title="" href="S3$.html">
               <span class="name">S3</span>
             </a>
       </span>
       
-      <p class="shortcomment cmt">This package is optimized for buckets that are read-mostly.</p><div class="fullcomment"><div class="comment cmt"><p>This package is optimized for buckets that are read-mostly.
-Either the app must be restarted or the cache must be cleared (by calling the <code>clearCaches</code> method) if a bucket or
-an object in a bucket is created or modified after a method is called, otherwise the old data will always be returned by that method.
-Methods that are cached are denoted by **cached**.</p><p>When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.</p><p>Keys of assets that were uploaded by other clients might start with leading slashes, or a dit; those assets can
-not be fetched by web browsers.</p><p>AWS does not respect the last-modified metadata provided when uploading; it uses the upload timestamp instead.
-After uploading, the last-modified timestamp of the uploaded file is read and applied to the local copy of the file
-so the timestamps match.</p><p>Java on Windows does not handle last-modified properly, so the creation date is set to the last-modified date for files (Windows only).</p></div></div>
+      
     </li><li name="com.micronautics.aws.SNS" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="SNS"></a><a id="SNS:SNS"></a>
       <span class="permalink">

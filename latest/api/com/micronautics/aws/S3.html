@@ -119,24 +119,15 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="When web site access is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
-and the keyed data." href="index.html">
+        <a title="The {{aws}} package contains idiomatic Scala facades for CloudFront, ElasticTranscoder, IAM, Lambda, Polly,
+Rekognizer, Route53, SNS and SQS." href="index.html">
               <span class="name">aws</span>
             </a>
       </span>
       
-      <p class="shortcomment cmt">When web site access is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
-and the keyed data.</p><div class="fullcomment"><div class="comment cmt"><p>When web site access is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
-and the keyed data.
-The keys must therefore consist of relative paths (relative directory name followed by a file name), and must not start with a leading slash.
-This program stores each file name (referred to by AWS as a key) without a leading slash.
-For example, assuming that the default file name is <code>index.html</code>, <code>http://domain.com</code> and <code>http://domain.com/</code> are translated to <code>http://domain.com/index.html</code>.
-*
-As another example, the key for a file in a directory called <code>{WEBROOT}/blah/ick/yuck.html</code> is defined as <code>blah/ick/yuck.html</code>.
-*
-For each directory, AWS creates a file of the same name, with the suffix <code>_$folder$</code>.
-If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
-These hidden files are ignored by this program; users never see them because they are for AWS S3 internal use only.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="com.micronautics">micronautics</a></dd></dl></div>
+      <p class="shortcomment cmt">The {{aws}} package contains idiomatic Scala facades for CloudFront, ElasticTranscoder, IAM, Lambda, Polly,
+Rekognizer, Route53, SNS and SQS.</p><div class="fullcomment"><div class="comment cmt"><p>The {{aws}} package contains idiomatic Scala facades for CloudFront, ElasticTranscoder, IAM, Lambda, Polly,
+Rekognizer, Route53, SNS and SQS.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="com.micronautics">micronautics</a></dd></dl></div>
     </li><li class="current-entities indented3">
                         <span class="separator"></span>
                         <a class="class" href="AclEnum.html" title=""></a>
@@ -308,9 +299,9 @@ policy so the owner can upload.">
                           Route53
                         </a>
                       </li><li class="current-entities indented3">
-                        <a class="object" href="S3$.html" title="This package is optimized for buckets that are read-mostly."></a>
-                        <a class="class" href="" title=""></a>
-                        <a href="" title="">
+                        <a class="object" href="S3$.html" title=""></a>
+                        <a class="class" href="" title="Optimized for read-mostly AWS S3 buckets."></a>
+                        <a href="" title="Optimized for read-mostly AWS S3 buckets.">
                           S3
                         </a>
                       </li><li class="current-entities indented3">
@@ -398,7 +389,20 @@ implicit AWSCredentials instance in scope."></a>
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/mslinn/awslib_scala/tree/master/src/main/scala/com/micronautics/aws/S3.scala" target="_blank">S3.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Optimized for read-mostly AWS S3 buckets.
+Either the app must be restarted or the cache must be cleared (by calling the <code>clearCaches</code> method) if a bucket or
+an object in a bucket is created or modified after a method is called, otherwise the old data will always be returned by that method.
+Methods that are cached are denoted by <b>cached</b>.</p><p>When uploading, any leading slashes for keys are removed because when AWS S3 is enabled for a web site, S3 adds a leading slash.</p><p>Keys of assets that were uploaded by other clients might start with leading slashes, or a dit; those assets can
+not be fetched by web browsers.</p><p>AWS does not respect the <code>last-modified</code> metadata provided when uploading; it uses the upload timestamp instead.
+After uploading, the <code>last-modified</code> timestamp of the uploaded file is read and applied to the local copy of the file
+so the timestamps match.</p><p>Java on Windows does not handle <code>last-modified</code> properly, so the creation date is set to the <code>last-modified</code> date for files (Windows only).</p><p>When web site access to an S3 bucket is enabled, AWS content is accessed by paths constructed by concatenating the URL, a slash (/),
+and the keyed data.
+The keys must therefore consist of relative paths (relative directory name followed by a file name), and must not start with a leading slash.
+<code>awslib_scala</code> stores each file name (referred to by AWS as a key) without a leading slash.
+For example, assuming that the default file name is <code>index.html</code>, then <code>http://domain.com</code> and <code>http://domain.com/</code>
+are translated to <code>http://domain.com/index.html</code>.</p><p>As another example, the key for a file in a directory called <code>&lt;WEBROOT&gt;/blah/ick/yuck.html</code> is defined as <code>blah/ick/yuck.html</code>.</p><p>For each directory, AWS creates a file of the same name, with the suffix <code>_$folder$</code>.
+If one of those files are deleted, the associated directory becomes unreachable. Don't mess with them.
+These hidden files are ignored by <code>awslib_scala</code>; users never see them because they are for AWS S3 internal use only.</p></div><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/mslinn/awslib_scala/tree/master/src/main/scala/com/micronautics/aws/S3.scala" target="_blank">S3.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -713,7 +717,7 @@ implicit AWSCredentials instance in scope."></a>
         <span class="name">allObjectData</span><span class="params">(<span name="bucketName">bucketName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="prefix">prefix: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.List">List</span>[<span class="extype" name="com.amazonaws.services.s3.model.S3ObjectSummary">S3ObjectSummary</span>]</span>
       </span>
       
-      <p class="shortcomment cmt">**cached**</p><div class="fullcomment"><div class="comment cmt"><p>**cached**</p></div><dl class="paramcmts block"><dt class="param">prefix</dt><dd class="cmt"><p>Any leading slashes are removed if a prefix is specified</p></dd><dt>returns</dt><dd class="cmt"><p>collection of S3ObjectSummary; keys are relativized if prefix is adjusted</p></dd></dl></div>
+      <p class="shortcomment cmt"><b>cached</b></p><div class="fullcomment"><div class="comment cmt"><p><b>cached</b></p></div><dl class="paramcmts block"><dt class="param">prefix</dt><dd class="cmt"><p>Any leading slashes are removed if a prefix is specified</p></dd><dt>returns</dt><dd class="cmt"><p>collection of S3ObjectSummary; keys are relativized if prefix is adjusted</p></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
@@ -761,7 +765,7 @@ implicit AWSCredentials instance in scope."></a>
         <span class="name">bucketLocation</span><span class="params">(<span name="bucketName">bucketName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
-      <p class="shortcomment cmt">**cached**</p>
+      <p class="shortcomment cmt"><b>cached</b></p>
     </li><li name="com.micronautics.aws.S3#bucketNames" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="bucketNames:List[String]"></a>
       <span class="permalink">
@@ -777,7 +781,7 @@ implicit AWSCredentials instance in scope."></a>
         <span class="name">bucketNames</span><span class="result">: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
       
-      <p class="shortcomment cmt">**cached** List the buckets in the account.</p>
+      <p class="shortcomment cmt"><b>cached</b> List the buckets in the account.</p>
     </li><li name="com.micronautics.aws.S3#bucketNamesWithDistributions" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="bucketNamesWithDistributions(implicitcf:com.micronautics.aws.CloudFront):com.micronautics.cache.Memoizer[com.micronautics.aws.CloudFront,List[String]]"></a><a id="bucketNamesWithDistributions(CloudFront):Memoizer[CloudFront,List[String]]"></a>
       <span class="permalink">
@@ -793,7 +797,7 @@ implicit AWSCredentials instance in scope."></a>
         <span class="name">bucketNamesWithDistributions</span><span class="params">(<span class="implicit">implicit </span><span name="cf">cf: <a href="CloudFront.html" class="extype" name="com.micronautics.aws.CloudFront">CloudFront</a></span>)</span><span class="result">: <span class="extype" name="com.micronautics.cache.Memoizer">Memoizer</span>[<a href="CloudFront.html" class="extype" name="com.micronautics.aws.CloudFront">CloudFront</a>, <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]]</span>
       </span>
       
-      <p class="shortcomment cmt">**cached** Either the memo cache must be cleared, or the app must be restarted if a bucket or distribution is created after this method is called,
+      <p class="shortcomment cmt"><b>cached</b> Either the memo cache must be cleared, or the app must be restarted if a bucket or distribution is created after this method is called,
 or the bucket or distribution will never be found</p>
     </li><li name="com.micronautics.aws.S3#bucketsWithDistributions" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="bucketsWithDistributions(implicitcf:com.micronautics.aws.CloudFront):List[com.amazonaws.services.s3.model.Bucket]"></a><a id="bucketsWithDistributions(CloudFront):List[Bucket]"></a>
@@ -1128,7 +1132,7 @@ based on modification times, ETags, and selectively downloading a range of an ob
         <span class="name">findByName</span><span class="params">(<span name="bucketName">bucketName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.amazonaws.services.s3.model.Bucket">Bucket</span>]</span>
       </span>
       
-      <p class="shortcomment cmt">**cached**</p>
+      <p class="shortcomment cmt"><b>cached</b></p>
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
@@ -1192,7 +1196,7 @@ based on modification times, ETags, and selectively downloading a range of an ob
         <span class="name">isWebsiteEnabled</span><span class="params">(<span name="bucketName">bucketName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
       
-      <p class="shortcomment cmt">**cached**</p>
+      <p class="shortcomment cmt"><b>cached</b></p>
     </li><li name="com.micronautics.aws.S3#listObjectsByPrefix" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="listObjectsByPrefix(bucketName:String,prefix:String,suffix:String,showSize:Boolean):List[String]"></a><a id="listObjectsByPrefix(String,String,String,Boolean):List[String]"></a>
       <span class="permalink">
@@ -1306,7 +1310,7 @@ Object metadata is preserved.</p></div></div>
         <span class="name">oneObjectData</span><span class="params">(<span name="bucketName">bucketName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="prefix">prefix: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="com.amazonaws.services.s3.model.S3ObjectSummary">S3ObjectSummary</span>]</span>
       </span>
       
-      <p class="shortcomment cmt">**cached**</p><div class="fullcomment"><div class="comment cmt"><p>**cached**</p></div><dl class="paramcmts block"><dt class="param">prefix</dt><dd class="cmt"><p>Any leading slashes are removed if a prefix is specified</p></dd><dt>returns</dt><dd class="cmt"><p>Option[ObjectSummary] with leading &quot;./&quot;, prepended if necessary</p></dd></dl></div>
+      <p class="shortcomment cmt"><b>cached</b></p><div class="fullcomment"><div class="comment cmt"><p><b>cached</b></p></div><dl class="paramcmts block"><dt class="param">prefix</dt><dd class="cmt"><p>Any leading slashes are removed if a prefix is specified</p></dd><dt>returns</dt><dd class="cmt"><p>Option[ObjectSummary] with leading &quot;./&quot;, prepended if necessary</p></dd></dl></div>
     </li><li name="com.micronautics.aws.S3#s3" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="s3:com.micronautics.aws.S3"></a><a id="s3:S3"></a>
       <span class="permalink">
@@ -1468,7 +1472,7 @@ Side effect: sets policy for AWS S3 upload bucket</p>
         <span class="name">staticResourceUrl</span><span class="params">(<span name="bucketName">bucketName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="maybeAlias">maybeAlias: <span class="extype" name="scala.Option">Option</span>[<a href="StaticCFAlias.html" class="extype" name="com.micronautics.aws.StaticCFAlias">StaticCFAlias</a>]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
-      <p class="shortcomment cmt">**cached** The cache must be cleared or the app must be restarted if a bucket is created or the referenced
+      <p class="shortcomment cmt"><b>cached</b> The cache must be cleared or the app must be restarted if a bucket is created or the referenced
 CloudFront distribution alias is created (by assigning a CNAME) after this method is first called,
 or the distribution with the desired cname will never be found</p>
     </li><li name="com.micronautics.aws.S3#streamingResourceUrl" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
@@ -1486,7 +1490,7 @@ or the distribution with the desired cname will never be found</p>
         <span class="name">streamingResourceUrl</span><span class="params">(<span name="bucketName">bucketName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="maybeAlias">maybeAlias: <span class="extype" name="scala.Option">Option</span>[<a href="StreamingCFAlias.html" class="extype" name="com.micronautics.aws.StreamingCFAlias">StreamingCFAlias</a>]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
-      <p class="shortcomment cmt">**cached** The cache must be cleared or the app must be restarted if a bucket is created or the referenced
+      <p class="shortcomment cmt"><b>cached</b> The cache must be cleared or the app must be restarted if a bucket is created or the referenced
 CloudFront distribution alias is created (by assigning a CNAME) after this method is first called,
 or the distribution with the desired cname will never be found</p>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
@@ -1680,8 +1684,8 @@ To list the creation date with seconds in bash with: <code>ls -l --time-style=fu
         <span class="name deprecated" title="Deprecated: (Since version 1.0.4) Use staticResourceUrl or streamingResourceUrl instead">resourceUrl</span><span class="params">(<span name="bucketName">bucketName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
-      <p class="shortcomment cmt">**cached** The cache must be cleared or the app must be restarted if a bucket is created after this method is
-first called, or the bucket will never be found</p><div class="fullcomment"><div class="comment cmt"><p>**cached** The cache must be cleared or the app must be restarted if a bucket is created after this method is
+      <p class="shortcomment cmt"><b>cached</b> The cache must be cleared or the app must be restarted if a bucket is created after this method is
+first called, or the bucket will never be found</p><div class="fullcomment"><div class="comment cmt"><p><b>cached</b> The cache must be cleared or the app must be restarted if a bucket is created after this method is
 first called, or the bucket will never be found</p></div><dl class="attributes block"> <dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
