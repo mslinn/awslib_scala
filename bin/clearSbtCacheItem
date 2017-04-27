@@ -1,4 +1,0 @@
-#!/bin/bash
-
-find ~/.ivy2 -name awslib_scala_2.10-1.1.10\* -exec rm {} \;
-find $PLAY_HOME/repository -name awslib_scala_2.10-1.1.10\* -exec rm {} \;
