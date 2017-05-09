@@ -1,12 +1,22 @@
-import java.nio.file.Path
+/* Copyright 2012-2016 Micronautics Research Corporation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License. */
+
 import sbt.Keys._
 
 version := "1.1.11"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-scalaVersion := "2.12.1"
-crossScalaVersions := Seq("2.10.6", "2.11.8", "2.12.1")
+scalaVersion := "2.12.2"
+crossScalaVersions := Seq("2.10.6", "2.11.11", scalaVersion.value)
 
 scalacOptions ++=
   scalaVersion {
@@ -51,12 +61,12 @@ javacOptions ++=
 scalacOptions in (Compile, doc) ++= baseDirectory.map {
   (bd: File) => Seq[String](
      "-sourcepath", bd.getAbsolutePath,
-     "-doc-source-url", "https://github.com/mslinn/awslib_scala/tree/master€{FILE_PATH}.scala"
+     "-doc-source-url", "https://github.com/mslinn/{name.value}/tree/master€{FILE_PATH}.scala"
   )
 }.value
 
 resolvers ++= Seq(
-  "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases",
+  "Typesafe Releases"             at "http://repo.typesafe.com/typesafe/releases",
   "micronautics/scala on bintray" at "http://dl.bintray.com/micronautics/scala"
 )
 
@@ -136,50 +146,9 @@ parallelExecution in Test := false
 
 // define the statements initially evaluated when entering 'console', 'console-quick', or 'console-project'
 initialCommands := """
-  |""".stripMargin
+                     |""".stripMargin
 
 // Only show warnings and errors on the screen for compilations.
 // This applies to both test:compile and compile and is Info by default
 //logLevel in compile := Level.Warn
 logLevel in test := Level.Info // Level.INFO is needed to see detailed output when running tests
-
-// bintray settings
-bintrayOrganization := Some("micronautics")
-bintrayRepository := "scala"
-bintrayVcsUrl := Some("git@github.com:mslinn/awslib_scala.git")
-
-// sbt-site settings
-enablePlugins(SiteScaladocPlugin)
-siteSourceDirectory := target.value / "api"
-publishSite
-
-// sbt-ghpages settings
-enablePlugins(GhpagesPlugin)
-git.remoteRepo := "git@github.com:mslinn/awslib_scala.git"
-
-doc in Compile ~= { (value: java.io.File) => // enhance doc command to also replace the CSS
-  import java.nio.file.{Files, Paths, StandardCopyOption}
-  val source: Path = Paths.get("src/site/latest/api/lib/template.css")
-  val dest: Path = Paths.get("target/site/latest/api/lib/").resolve(source.getFileName)
-  println(s"Copying $source to $dest")
-  Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING)
-  value
-}
-
-ghpagesPushSite ~= { _: Unit => // enhance doc command to also replace the CSS
-  import java.nio.file.{Files, Paths, StandardCopyOption}
-  val source: Path = Paths.get("src/site/latest/api/lib/template.css")
-  val dest: Path = Paths.get("target/site/latest/api/lib/").resolve(source.getFileName)
-  println(s"Copying $source to $dest")
-  Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING)
-  ()
-}
-
-previewSite ~= { _: Unit => // enhance doc command to also replace the CSS
-  import java.nio.file.{Files, Paths, StandardCopyOption}
-  val source: Path = Paths.get("src/site/latest/api/lib/template.css")
-  val dest: Path = Paths.get("target/site/latest/api/lib/").resolve(source.getFileName)
-  println(s"Copying $source to $dest")
-  Files.copy(source, dest, StandardCopyOption.REPLACE_EXISTING)
-  ()
-}

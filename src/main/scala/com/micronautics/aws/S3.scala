@@ -11,18 +11,18 @@
 
 package com.micronautics.aws
 
-import java.util.concurrent.atomic.AtomicBoolean
-import AclEnum._
 import java.io.{File, InputStream}
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
 import java.util.Date
+import java.util.concurrent.atomic.AtomicBoolean
 import com.amazonaws.auth.policy.{Policy, Statement}
 import com.amazonaws.event.ProgressEventType
-import com.amazonaws.services.s3.{AmazonS3, AmazonS3Client, AmazonS3ClientBuilder}
+import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
 import com.amazonaws.{AmazonClientException, HttpMethod, event}
+import com.micronautics.aws.AclEnum._
 import com.micronautics.cache.{Memoizer, Memoizer0}
 import org.joda.time.{DateTime, Duration}
 import scala.annotation.tailrec
@@ -315,7 +315,7 @@ class S3 {
     try {
       s3Client.listBuckets().asScala.find(_.getName == bucketName)
     } catch {
-      case e: Exception => None
+      case _: Exception => None
     }
   )
 
@@ -327,7 +327,7 @@ class S3 {
     try {
       s3Client.getBucketWebsiteConfiguration(bucketName) != null
     } catch {
-      case e: Exception => false
+      case _: Exception => false
     }
   )
 
@@ -399,7 +399,7 @@ class S3 {
     {
       val (bucketName, key, maybeAlias) = args
       (for {
-        bucket <- findByName(bucketName)
+        _ <- findByName(bucketName)
       } yield {
         val s3Url = s3Client.getResourceUrl(bucketName, key)
         maybeAlias.map { alias =>

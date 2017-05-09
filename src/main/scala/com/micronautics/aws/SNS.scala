@@ -11,9 +11,9 @@
 
 package com.micronautics.aws
 
-import com.amazonaws.services.sns.{AmazonSNS, AmazonSNSClient, AmazonSNSClientBuilder}
-import com.amazonaws.services.sns.model._
 import java.net.URL
+import com.amazonaws.services.sns.model._
+import com.amazonaws.services.sns.{AmazonSNS, AmazonSNSClientBuilder}
 import scala.collection.JavaConverters._
 
 object SNS {

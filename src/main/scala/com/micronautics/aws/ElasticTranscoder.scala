@@ -74,13 +74,15 @@ class ElasticTranscoder {
   def cancelJobs(pipeline: Pipeline, outputName: String=""): Unit = {
     import com.amazonaws.services.elastictranscoder.model.ListJobsByStatusRequest
     for {
-      job <- etClient.listJobsByStatus(new ListJobsByStatusRequest().withStatus("Submitted")).getJobs.asScala if outputName=="" || job.getOutput.getKey==outputName
+      job <- etClient.listJobsByStatus(new ListJobsByStatusRequest().withStatus("Submitted"))
+                     .getJobs.asScala
+      if outputName=="" || job.getOutput.getKey==outputName
     } try {
       import com.amazonaws.services.elastictranscoder.model.CancelJobRequest
       etClient.cancelJob(new CancelJobRequest().withId(job.getId))
       ()
     } catch {
-      case ignored: Exception =>
+      case _: Exception =>
     }
   }
 
@@ -163,7 +165,7 @@ class ElasticTranscoder {
    def defaultPresets: List[Preset] = try {
     List(presetCache("1351620000001-100070")).flatten
   } catch {
-    case e: Exception =>
+    case _: Exception =>
       Nil
   }
 
@@ -181,7 +183,7 @@ class ElasticTranscoder {
         cancelJobs(pipeline)
         pipeline.delete()
       } catch {
-        case ignored: Exception =>
+        case _: Exception =>
       }
     }
   }
@@ -239,7 +241,7 @@ class ElasticTranscoder {
   def findPresetByName(name: String): Option[Preset] = {
     val mapByName: Map[String, Seq[Preset]] = allPresets.groupBy(_.getName)
     val candidatePresets: Iterable[Preset] = for {
-      preset: Preset <- mapByName.getOrElse(name, Nil).headOption
+      preset <- mapByName.getOrElse(name, Nil).headOption
     } yield preset
     candidatePresets.headOption
   }
