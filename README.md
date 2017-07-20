@@ -50,4 +50,4 @@ Add this to your project's `build.sbt`:
 See the unit tests for examples of how to use this library.
 
 ## Scaladoc
-[Here](http://blog.mslinn.com/awslib_scala/latest/api/com/micronautics/aws/index.html)
+[Here](http://mslinn.github.io/awslib_scala/latest/api/com/micronautics/aws/index.html)

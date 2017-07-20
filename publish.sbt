@@ -9,11 +9,13 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License. */
 
+val vcs = "github"
+
 // bintray settings
 bintrayOrganization := Some("micronautics")
 bintrayRepository := "scala"
 bintrayPackageLabels := Seq("aws", "scala")
-bintrayVcsUrl := Some(s"git@github.com:mslinn/${ name.value }.git")
+bintrayVcsUrl := Some(s"git@$vcs.com:mslinn/${ name.value }.git")
 
 // sbt-site settings
 enablePlugins(SiteScaladocPlugin)
@@ -22,7 +24,7 @@ publishSite
 
 // sbt-ghpages settings
 enablePlugins(GhpagesPlugin)
-git.remoteRepo := s"git@github.com:mslinn/${ name.value }.git"
+git.remoteRepo := s"git@$vcs.com:mslinn/${ name.value }.git"
 
 /*import java.nio.file.Path
 
