@@ -20,7 +20,7 @@ import org.scalatest._
 
 class TestUpload extends WordSpec with TestBase with IAMImplicits with S3Implicits {
   import java.net.URL
-  import com.micronautics.aws.TestIAM._
+  import com.micronautics.aws.IAMTest._
 
   val Logger: org.slf4j.Logger = org.slf4j.LoggerFactory.getLogger("UploadTest")
   implicit val iamClient: AmazonIdentityManagement = iam.iamClient
