@@ -14,7 +14,8 @@ package com.micronautics.aws
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.model.Bucket
 import org.joda.time.{DateTime, DateTimeZone, Duration}
-import scala.util.{Success, Failure, Try}
+import org.slf4j.Logger
+import scala.util.{Failure, Success, Try}
 
 /** The implicit `AmazonIdentityManagementClient` instance determines the AIM user based on the AWS access key ID in the
   * implicit `AWSCredentials` instance in scope. */
@@ -22,7 +23,7 @@ object UploadPostV2 extends S3Implicits with CFImplicits {
   import java.net.URL
   import java.io.File
 
-  val Logger = org.slf4j.LoggerFactory.getLogger("UploadPostV2")
+  val Logger: Logger = org.slf4j.LoggerFactory.getLogger("UploadPostV2")
 
   /** @param file File to upload
     * @param bucket Bucket to deliver the upload to; must have CORS set for POST and the bucket policy must grant the
@@ -107,7 +108,7 @@ object UploadPostV2 extends S3Implicits with CFImplicits {
 class UploadPostV2(bucket: Bucket, expiryDuration: Duration=Duration.standardHours(1))
                   (implicit awsCredentials: AWSCredentials) {
   import com.micronautics.aws.AclEnum._
-  import sun.misc.BASE64Encoder
+  import java.util.Base64
 
   /** @param key has path, without leading slash, including filetype */
   def policyText(key: String, contentLength: Long, acl: AclEnum = privateAcl): String = {
@@ -130,7 +131,7 @@ class UploadPostV2(bucket: Bucket, expiryDuration: Duration=Duration.standardHou
   }
 
   def policyEncoder(policyText: String, contentLength: Long): String = {
-    val encodedPolicy = new BASE64Encoder().encode(policyText.getBytes("UTF-8"))
+    val encodedPolicy: String = new String(Base64.getEncoder.encode(policyText.getBytes("UTF-8")))
     encodedPolicy.replaceAll("\n|\r", "")
   }
 
@@ -140,12 +141,12 @@ class UploadPostV2(bucket: Bucket, expiryDuration: Duration=Duration.standardHou
     import javax.crypto.spec.SecretKeySpec
 
     assert(awsCredentials.getAWSSecretKey.nonEmpty)
-    val hmac = Mac.getInstance("HmacSHA1")
+    val hmac: Mac = Mac.getInstance("HmacSHA1")
     hmac.init(new SecretKeySpec(awsCredentials.getAWSSecretKey.getBytes("UTF-8"), "HmacSHA1"))
     val encodedPolicy: String = policyEncoder(policyText, contentLength)
-    val finalizedHmac = hmac.doFinal(encodedPolicy.getBytes("UTF-8"))
-    val signature = new BASE64Encoder().encode(finalizedHmac)
-    val result = signature.replaceAll("\n|\r", "")
+    val finalizedHmac: Array[Byte] = hmac.doFinal(encodedPolicy.getBytes("UTF-8"))
+    val signature: String = new String(Base64.getEncoder.encode(finalizedHmac))
+    val result: String = signature.replaceAll("\n|\r", "")
     result
   }
 
@@ -156,9 +157,9 @@ class UploadPostV2(bucket: Bucket, expiryDuration: Duration=Duration.standardHou
     assert(!key.startsWith("/"))
     assert(acl == AclEnum.publicAcl || acl == AclEnum.privateAcl)
     Logger.debug(s"Signing '$key' with awsSecretKey='${awsCredentials.getAWSSecretKey}' and acl='$acl'")
-    val policy = policyText(key, contentLength, acl)
-    val encodedPolicy = policyEncoder(policy, contentLength)
-    val signedPolicy = signPolicy(policy, contentLength)
-    val contentType = guessContentType(key)
+    val policy: String = policyText(key, contentLength, acl)
+    val encodedPolicy: String = policyEncoder(policy, contentLength)
+    val signedPolicy: String = signPolicy(policy, contentLength)
+    val contentType: String = guessContentType(key)
   }
 }

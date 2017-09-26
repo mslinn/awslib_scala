@@ -1,8 +1,8 @@
-/* Copyright 2012-2016 Micronautics Research Corporation. */
+/* Copyright 2012-2017 Micronautics Research Corporation. */
 
 import sbt.Keys._
 
-version := "1.1.11"
+version := "1.1.12"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
@@ -64,26 +64,26 @@ resolvers ++= Seq(
 libraryDependencies ++= {
   val httpV = "4.4.1"
   Seq(
-    "org.apache.httpcomponents"  %  "httpclient"          % httpV    withSources() force(),
-    "org.apache.httpcomponents"  %  "httpcore"            % httpV    withSources() force(),
-    "org.apache.httpcomponents"  %  "httpmime"            % httpV    withSources() force(),
+    "org.apache.httpcomponents"  %  "httpclient"          % httpV     withSources() force(),
+    "org.apache.httpcomponents"  %  "httpcore"            % httpV     withSources() force(),
+    "org.apache.httpcomponents"  %  "httpmime"            % httpV     withSources() force(),
     "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13",
-    "org.joda"                   %  "joda-convert"        % "1.7"     withSources() force(),
-    "com.fasterxml.jackson.core" %  "jackson-annotations" % "2.5.4"   withSources() force(),
-    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.96" withSources(),
-    "com.google.code.findbugs"   %  "jsr305"              % "3.0.1"   withSources() force(),
-    "com.micronautics"           %% "scalacourses-utils"  % "0.2.20"  withSources(),
-    "com.typesafe"               %  "config"              % "1.3.0"   withSources() force(),
-    "com.fasterxml.jackson.core" %  "jackson-core"        % "2.5.4"   withSources() force(),
-    "com.fasterxml.jackson.core" %  "jackson-databind"    % "2.5.4"   withSources() force(),
-    "com.github.nscala-time"     %% "nscala-time"         % "2.16.0"  withSources(),
-    "commons-codec"              %  "commons-codec"       % "1.10"    withSources() force(),
-    "commons-io"                 %  "commons-io"          % "2.4"     withSources(),
-    "commons-lang"               %  "commons-lang"        % "2.6"     withSources(),
-    "ch.qos.logback"             %  "logback-classic"     % "1.1.3"   withSources(),
-    "org.slf4j"                  %  "slf4j-api"           % "1.7.12"  withSources() force(),
+    "org.joda"                   %  "joda-convert"        % "1.7"      withSources() force(),
+    "com.fasterxml.jackson.core" %  "jackson-annotations" % "2.5.4"    withSources() force(),
+    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.202" withSources(),
+    "com.google.code.findbugs"   %  "jsr305"              % "3.0.1"    withSources() force(),
+    "com.micronautics"           %% "scalacourses-utils"  % "0.2.20"   withSources(),
+    "com.typesafe"               %  "config"              % "1.3.0"    withSources() force(),
+    "com.fasterxml.jackson.core" %  "jackson-core"        % "2.5.4"    withSources() force(),
+    "com.fasterxml.jackson.core" %  "jackson-databind"    % "2.5.4"    withSources() force(),
+    "com.github.nscala-time"     %% "nscala-time"         % "2.16.0"   withSources(),
+    "commons-codec"              %  "commons-codec"       % "1.10"     withSources() force(),
+    "commons-io"                 %  "commons-io"          % "2.4"      withSources(),
+    "commons-lang"               %  "commons-lang"        % "2.6"      withSources(),
+    "ch.qos.logback"             %  "logback-classic"     % "1.1.3"    withSources(),
+    "org.slf4j"                  %  "slf4j-api"           % "1.7.12"   withSources() force(),
     //
-    "junit"                      %  "junit"               % "4.12"  % "test"
+    "junit"                      %  "junit"               % "4.12"  % Test
   )
 }
 

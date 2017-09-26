@@ -14,8 +14,8 @@ package com.micronautics.aws
 import com.amazonaws.services.s3.model.Bucket
 import org.scalatest.WordSpec
 
-class TestIAM extends WordSpec with TestBase with IAMImplicits {
-  import TestIAM._
+class IAMTest extends WordSpec with TestBase with IAMImplicits {
+  import IAMTest._
   import scala.util.Success
 
   val iamUser1Name = "testIamUser1"
@@ -77,7 +77,7 @@ class TestIAM extends WordSpec with TestBase with IAMImplicits {
   }
 }
 
-object TestIAM {
+object IAMTest {
   val bucketName = s"www.test${ new java.util.Date().getTime }.com"
 
   def bucket(implicit s3: S3): Bucket = try {

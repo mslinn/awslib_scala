@@ -27,7 +27,6 @@ import com.micronautics.cache.{Memoizer, Memoizer0}
 import org.joda.time.{DateTime, Duration}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
-import scala.language.postfixOps
 
 trait CloudFrontAlias
 
@@ -670,13 +669,12 @@ trait S3Implicits {
     def signAndEncodePolicy(key: String,
                             contentLength: Long,
                             acl: AclEnum=privateAcl,
-                            awsSecretKey: String=awsCredentials.getAWSSecretKey,
                             expiryDuration: Duration=Duration.standardHours(1)): UploadPostV2#SignAndEncodePolicy = {
       val post = new UploadPostV2(bucket, expiryDuration)(awsCredentials)
       post.SignAndEncodePolicy(key, contentLength, acl)
     }
 
-    def signPolicy(policyText: String, contentLength: Long, awsSecretKey: String, expiryDuration: Duration=Duration.standardHours(1)): String = {
+    def signPolicy(policyText: String, contentLength: Long, expiryDuration: Duration=Duration.standardHours(1)): String = {
       val uploadPostV2 = new UploadPostV2(bucket, expiryDuration)(awsCredentials)
       uploadPostV2.signPolicy(policyText, contentLength)
     }

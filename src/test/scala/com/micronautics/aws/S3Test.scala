@@ -16,7 +16,7 @@ import com.amazonaws.services.s3.model.Bucket
 import com.micronautics.aws.S3._
 import org.scalatest.WordSpec
 
-class TestS3 extends WordSpec with TestBase {
+class S3Test extends WordSpec with TestBase {
   val bucketName = s"www.test${new java.util.Date().getTime}.com"
   var bucket: Bucket = try {
       println(s"Creating bucket $bucketName")

@@ -18,7 +18,7 @@ import com.micronautics.aws.AclEnum._
 import org.apache.commons.io.FileUtils
 import org.scalatest._
 
-class TestUpload extends WordSpec with TestBase with IAMImplicits with S3Implicits {
+class UploadTest extends WordSpec with TestBase with IAMImplicits with S3Implicits {
   import java.net.URL
   import com.micronautics.aws.IAMTest._
 
