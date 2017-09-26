@@ -186,7 +186,7 @@ Rekognizer, Route53, SNS and SQS.</p></div><dl class="attributes block"> <dt>Def
       </h4>
 
       
-          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/mslinn/awslib_scala/tree/master/src/main/scala/com/micronautics/aws/S3.scala" target="_blank">S3.scala</a></dd></dl><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/mslinn/{name.value}/tree/master/src/main/scala/com/micronautics/aws/S3.scala" target="_blank">S3.scala</a></dd></dl><div class="toggleContainer block">
           <span class="toggle">
             Linear Supertypes
           </span>
@@ -373,7 +373,9 @@ Rekognizer, Route53, SNS and SQS.</p></div><dl class="attributes block"> <dt>Def
         <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
@@ -408,7 +410,7 @@ Rekognizer, Route53, SNS and SQS.</p></div><dl class="attributes block"> <dt>Def
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">createPolicyText</span><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="contentLength">contentLength: <span class="extype" name="scala.Long">Long</span></span>, <span name="acl">acl: <a href="AclEnum.html" class="extype" name="com.micronautics.aws.AclEnum">AclEnum</a> = <span class="symbol">privateAcl</span></span>, <span name="expiryDuration">expiryDuration: <span class="extype" name="org.joda.time.Duration">Duration</span> = <span class="symbol">Duration.standardHours(1)</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">createPolicyText</span><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="contentLength">contentLength: <span class="extype" name="scala.Long">Long</span></span>, <span name="acl">acl: <a href="AclEnum.html" class="extype" name="com.micronautics.aws.AclEnum">AclEnum</a> = <span class="symbol"><span class="name"><a href="../../index.html">privateAcl</a></span></span></span>, <span name="expiryDuration">expiryDuration: <span class="extype" name="org.joda.time.Duration">Duration</span> = <span class="symbol">Duration.standardHours(1)</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
       
@@ -680,28 +682,6 @@ Rekognizer, Route53, SNS and SQS.</p></div><dl class="attributes block"> <dt>Def
       </span>
       
       
-    </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="finalize():Unit"></a>
-      <span class="permalink">
-      <a href="../../../com/micronautics/aws/S3Implicits$RichBucket.html#finalize():Unit" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
-      </span>
-      
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
-                <span class="name">@throws</span><span class="args">(<span>
-      
-      <span class="symbol">classOf[java.lang.Throwable]</span>
-    </span>)</span>
-              
-        </dd></dl></div>
     </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
       <span class="permalink">
@@ -717,7 +697,10 @@ Rekognizer, Route53, SNS and SQS.</p></div><dl class="attributes block"> <dt>Def
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
@@ -733,7 +716,10 @@ Rekognizer, Route53, SNS and SQS.</p></div><dl class="attributes block"> <dt>Def
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="com.micronautics.aws.S3Implicits.RichBucket#invalidate" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="invalidate(assetPath:String)(implicitcf:com.micronautics.aws.CloudFront):Int"></a><a id="invalidate(String)(CloudFront):Int"></a>
       <span class="permalink">
@@ -911,7 +897,10 @@ Rekognizer, Route53, SNS and SQS.</p></div><dl class="attributes block"> <dt>Def
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
@@ -927,7 +916,10 @@ Rekognizer, Route53, SNS and SQS.</p></div><dl class="attributes block"> <dt>Def
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@HotSpotIntrinsicCandidate</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="com.micronautics.aws.S3Implicits.RichBucket#oneObjectData" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="oneObjectData(prefix:String):Option[com.amazonaws.services.s3.model.S3ObjectSummary]"></a><a id="oneObjectData(String):Option[S3ObjectSummary]"></a>
       <span class="permalink">
@@ -1091,9 +1083,9 @@ or the bucket will never be found</p>
       
       
     </li><li name="com.micronautics.aws.S3Implicits.RichBucket#signAndEncodePolicy" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="signAndEncodePolicy(key:String,contentLength:Long,acl:com.micronautics.aws.AclEnum,awsSecretKey:String,expiryDuration:org.joda.time.Duration):com.micronautics.aws.UploadPostV2#SignAndEncodePolicy"></a><a id="signAndEncodePolicy(String,Long,AclEnum,String,Duration):SignAndEncodePolicy"></a>
+      <a id="signAndEncodePolicy(key:String,contentLength:Long,acl:com.micronautics.aws.AclEnum,expiryDuration:org.joda.time.Duration):com.micronautics.aws.UploadPostV2#SignAndEncodePolicy"></a><a id="signAndEncodePolicy(String,Long,AclEnum,Duration):SignAndEncodePolicy"></a>
       <span class="permalink">
-      <a href="../../../com/micronautics/aws/S3Implicits$RichBucket.html#signAndEncodePolicy(key:String,contentLength:Long,acl:com.micronautics.aws.AclEnum,awsSecretKey:String,expiryDuration:org.joda.time.Duration):com.micronautics.aws.UploadPostV2#SignAndEncodePolicy" title="Permalink">
+      <a href="../../../com/micronautics/aws/S3Implicits$RichBucket.html#signAndEncodePolicy(key:String,contentLength:Long,acl:com.micronautics.aws.AclEnum,expiryDuration:org.joda.time.Duration):com.micronautics.aws.UploadPostV2#SignAndEncodePolicy" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -1102,14 +1094,14 @@ or the bucket will never be found</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">signAndEncodePolicy</span><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="contentLength">contentLength: <span class="extype" name="scala.Long">Long</span></span>, <span name="acl">acl: <a href="AclEnum.html" class="extype" name="com.micronautics.aws.AclEnum">AclEnum</a> = <span class="symbol">privateAcl</span></span>, <span name="awsSecretKey">awsSecretKey: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol"><span class="name"><a href="index.html#awsCredentials:com.amazonaws.auth.AWSCredentials">awsCredentials.getAWSSecretKey</a></span></span></span>, <span name="expiryDuration">expiryDuration: <span class="extype" name="org.joda.time.Duration">Duration</span> = <span class="symbol">Duration.standardHours(1)</span></span>)</span><span class="result">: <a href="UploadPostV2$SignAndEncodePolicy.html" class="extype" name="com.micronautics.aws.UploadPostV2.SignAndEncodePolicy">SignAndEncodePolicy</a></span>
+        <span class="name">signAndEncodePolicy</span><span class="params">(<span name="key">key: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="contentLength">contentLength: <span class="extype" name="scala.Long">Long</span></span>, <span name="acl">acl: <a href="AclEnum.html" class="extype" name="com.micronautics.aws.AclEnum">AclEnum</a> = <span class="symbol"><span class="name"><a href="../../index.html">privateAcl</a></span></span></span>, <span name="expiryDuration">expiryDuration: <span class="extype" name="org.joda.time.Duration">Duration</span> = <span class="symbol">Duration.standardHours(1)</span></span>)</span><span class="result">: <a href="UploadPostV2$SignAndEncodePolicy.html" class="extype" name="com.micronautics.aws.UploadPostV2.SignAndEncodePolicy">SignAndEncodePolicy</a></span>
       </span>
       
       
     </li><li name="com.micronautics.aws.S3Implicits.RichBucket#signPolicy" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="signPolicy(policyText:String,contentLength:Long,awsSecretKey:String,expiryDuration:org.joda.time.Duration):String"></a><a id="signPolicy(String,Long,String,Duration):String"></a>
+      <a id="signPolicy(policyText:String,contentLength:Long,expiryDuration:org.joda.time.Duration):String"></a><a id="signPolicy(String,Long,Duration):String"></a>
       <span class="permalink">
-      <a href="../../../com/micronautics/aws/S3Implicits$RichBucket.html#signPolicy(policyText:String,contentLength:Long,awsSecretKey:String,expiryDuration:org.joda.time.Duration):String" title="Permalink">
+      <a href="../../../com/micronautics/aws/S3Implicits$RichBucket.html#signPolicy(policyText:String,contentLength:Long,expiryDuration:org.joda.time.Duration):String" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -1118,7 +1110,7 @@ or the bucket will never be found</p>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">signPolicy</span><span class="params">(<span name="policyText">policyText: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="contentLength">contentLength: <span class="extype" name="scala.Long">Long</span></span>, <span name="awsSecretKey">awsSecretKey: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="expiryDuration">expiryDuration: <span class="extype" name="org.joda.time.Duration">Duration</span> = <span class="symbol">Duration.standardHours(1)</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+        <span class="name">signPolicy</span><span class="params">(<span name="policyText">policyText: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="contentLength">contentLength: <span class="extype" name="scala.Long">Long</span></span>, <span name="expiryDuration">expiryDuration: <span class="extype" name="org.joda.time.Duration">Duration</span> = <span class="symbol">Duration.standardHours(1)</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
       
       
@@ -1356,7 +1348,36 @@ distribution alias is created (by assigning a CNAME) after this method is first 
 
         
 
-        
+        <div class="values members">
+              <h3>Deprecated Value Members</h3>
+              <ol><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <span class="permalink">
+      <a href="../../../com/micronautics/aws/S3Implicits$RichBucket.html#finalize():Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version ) see corresponding Javadoc for more information.">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@Deprecated</span>
+              
+                <span class="name">@deprecated</span>
+              
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version )</i> see corresponding Javadoc for more information.</p></dd></dl></div>
+    </li></ol>
+            </div>
         </div>
 
         <div id="inheritedMembers">
