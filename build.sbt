@@ -6,7 +6,7 @@ version := "1.1.12"
 name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-scalaVersion := "2.12.3"
+scalaVersion := "2.12.4"
 crossScalaVersions := Seq("2.10.6", "2.11.11", scalaVersion.value)
 
 scalacOptions ++=
