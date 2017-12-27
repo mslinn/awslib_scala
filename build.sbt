@@ -1,36 +1,21 @@
 /* Copyright 2012-2017 Micronautics Research Corporation. */
 
-import sbt.Keys._
-
-version := "1.1.12"
-name := "awslib_scala"
-organization := "com.micronautics"
-licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-scalaVersion := "2.12.4"
 crossScalaVersions := Seq("2.10.6", "2.11.11", scalaVersion.value)
 
-scalacOptions ++=
-  scalaVersion {
-    case sv if sv.startsWith("2.10") => List(
-      "-target:jvm-1.7"
-    )
-
-    case _ => List(
-      "-target:jvm-1.8",
-      "-Ywarn-unused"
-    )
-  }.value ++ Seq(
-    "-deprecation",
-    "-encoding", "UTF-8",
-    "-feature",
-    "-unchecked",
-    "-Ywarn-adapted-args",
-    "-Ywarn-dead-code",
-    "-Ywarn-numeric-widen",
-    "-Ywarn-value-discard",
-    "-Xfuture",
-    "-Xlint"
+developers := List(
+  Developer(
+    "mslinn",
+    "Mike Slinn",
+    "mslinn@micronauticsresearch.com",
+    url("https://github.com/mslinn")
   )
+)
+
+fork in Test := false
+
+// define the statements initially evaluated when entering 'console', 'console-quick', or 'console-project'
+initialCommands := """
+                     |""".stripMargin
 
 javacOptions ++=
   scalaVersion {
@@ -48,18 +33,6 @@ javacOptions ++=
     "-Xlint:unchecked",
     "-g:vars"
   )
-
-scalacOptions in (Compile, doc) ++= baseDirectory.map {
-  (bd: File) => Seq[String](
-     "-sourcepath", bd.getAbsolutePath,
-     "-doc-source-url", "https://github.com/mslinn/awslib_scala/tree/master€{FILE_PATH}.scala"
-  )
-}.value
-
-resolvers ++= Seq(
-  "Typesafe Releases"             at "http://repo.typesafe.com/typesafe/releases",
-  "micronautics/scala on bintray" at "http://dl.bintray.com/micronautics/scala"
-)
 
 libraryDependencies ++= {
   val httpV = "4.4.1"
@@ -129,17 +102,66 @@ libraryDependencies ++= scalaVersion {
     )
 }.value
 
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+
 //updateOptions := updateOptions.value.withCachedResolution(cachedResoluton = true)
 logBuffered in Test := false
-Keys.fork in Test := false
-parallelExecution in Test := false
-//logLevel := Level.Error
 
-// define the statements initially evaluated when entering 'console', 'console-quick', or 'console-project'
-initialCommands := """
-                     |""".stripMargin
+//logLevel := Level.Error
 
 // Only show warnings and errors on the screen for compilations.
 // This applies to both test:compile and compile and is Info by default
 //logLevel in compile := Level.Warn
 logLevel in test := Level.Info // Level.INFO is needed to see detailed output when running tests
+
+name := "awslib_scala"
+
+organization := "com.micronautics"
+
+parallelExecution in Test := false
+
+resolvers ++= Seq(
+  "Typesafe Releases"             at "http://repo.typesafe.com/typesafe/releases",
+  "micronautics/scala on bintray" at "http://dl.bintray.com/micronautics/scala"
+)
+
+scalacOptions ++=
+  scalaVersion {
+    case sv if sv.startsWith("2.10") => List(
+      "-target:jvm-1.7"
+    )
+
+    case _ => List(
+      "-target:jvm-1.8",
+      "-Ywarn-unused"
+    )
+  }.value ++ Seq(
+    "-deprecation",
+    "-encoding", "UTF-8",
+    "-feature",
+    "-unchecked",
+    "-Ywarn-adapted-args",
+    "-Ywarn-dead-code",
+    "-Ywarn-numeric-widen",
+    "-Ywarn-value-discard",
+    "-Xfuture",
+    "-Xlint"
+  )
+
+scalacOptions in (Compile, doc) ++= baseDirectory.map {
+  (bd: File) => Seq[String](
+     "-sourcepath", bd.getAbsolutePath,
+     "-doc-source-url", "https://github.com/mslinn/awslib_scala/tree/master€{FILE_PATH}.scala"
+  )
+}.value
+
+scalaVersion := "2.12.4"
+
+scmInfo := Some(
+  ScmInfo(
+    url(s"https://github.com/mslinn/$name"),
+    s"git@github.com:mslinn/$name.git"
+  )
+)
+
+version := "1.1.12"
