@@ -2,12 +2,12 @@
 
 import sbt.Keys._
 
-version := "1.1.12"
+version := "1.1.13"
 name := "awslib_scala"
 organization := "com.micronautics"
-licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-scalaVersion := "2.12.4"
-crossScalaVersions := Seq("2.10.6", "2.11.11", scalaVersion.value)
+licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
+scalaVersion := "2.12.8"
+crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.8", "2.13.0")
 
 scalacOptions ++=
   scalaVersion {
@@ -24,11 +24,6 @@ scalacOptions ++=
     "-encoding", "UTF-8",
     "-feature",
     "-unchecked",
-    "-Ywarn-adapted-args",
-    "-Ywarn-dead-code",
-    "-Ywarn-numeric-widen",
-    "-Ywarn-value-discard",
-    "-Xfuture",
     "-Xlint"
   )
 
@@ -50,7 +45,7 @@ javacOptions ++=
   )
 
 scalacOptions in (Compile, doc) ++= baseDirectory.map {
-  (bd: File) => Seq[String](
+  bd: File => Seq[String](
      "-sourcepath", bd.getAbsolutePath,
      "-doc-source-url", "https://github.com/mslinn/{name.value}/tree/master€{FILE_PATH}.scala"
   )
@@ -63,20 +58,20 @@ resolvers ++= Seq(
 
 libraryDependencies ++= {
   val httpV = "4.4.1"
+  val jackV = "2.9.9"
   Seq(
-    "org.apache.httpcomponents"  %  "httpclient"          % httpV     withSources() force(),
-    "org.apache.httpcomponents"  %  "httpcore"            % httpV     withSources() force(),
-    "org.apache.httpcomponents"  %  "httpmime"            % httpV     withSources() force(),
-    "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13",
+    "org.apache.httpcomponents"  %  "httpclient"          % httpV      withSources() force(),
+    "org.apache.httpcomponents"  %  "httpcore"            % httpV      withSources() force(),
+    "org.apache.httpcomponents"  %  "httpmime"            % httpV      withSources() force(),
+    "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13"   withSources(),
     "org.joda"                   %  "joda-convert"        % "1.7"      withSources() force(),
-    "com.fasterxml.jackson.core" %  "jackson-annotations" % "2.5.4"    withSources() force(),
-    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.202" withSources(),
+    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.327" withSources(),
+    "com.fasterxml.jackson.core" %  "jackson-annotations" % jackV      withSources() force(),
+    "com.fasterxml.jackson.core" %  "jackson-core"        % jackV      withSources() force(),
+    "com.fasterxml.jackson.core" %  "jackson-databind"    % jackV      withSources(),
     "com.google.code.findbugs"   %  "jsr305"              % "3.0.1"    withSources() force(),
-    "com.micronautics"           %% "scalacourses-utils"  % "0.2.20"   withSources(),
+    "com.micronautics"           %% "scalacourses-utils"  % "0.3.0"    withSources(),
     "com.typesafe"               %  "config"              % "1.3.0"    withSources() force(),
-    "com.fasterxml.jackson.core" %  "jackson-core"        % "2.5.4"    withSources() force(),
-    "com.fasterxml.jackson.core" %  "jackson-databind"    % "2.5.4"    withSources() force(),
-    "com.github.nscala-time"     %% "nscala-time"         % "2.16.0"   withSources(),
     "commons-codec"              %  "commons-codec"       % "1.10"     withSources() force(),
     "commons-io"                 %  "commons-io"          % "2.4"      withSources(),
     "commons-lang"               %  "commons-lang"        % "2.6"      withSources(),
@@ -88,15 +83,25 @@ libraryDependencies ++= {
 }
 
 libraryDependencies ++= scalaVersion {
+  case sv if sv.startsWith("2.13") => // Builds with Scala 2.13.x, Play 2.6.x
+    Seq(
+      "com.typesafe.play"        %% "play-json"        % "2.7.4" withSources() force(),
+      "org.clapper"              %% "grizzled-scala"   % "4.9.3" withSources(),
+      //
+      "com.typesafe.play"        %% "play"             % "2.7.3" % Test withSources(),
+      "com.typesafe.play"        %% "play-ws"          % "2.7.3" % Test withSources(),
+      "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % Test withSources()
+    )
+
   case sv if sv.startsWith("2.12") => // Builds with Scala 2.12.x, Play 2.6.x
     val playV = "2.6.0-M1"
     Seq(
       "com.typesafe.play"        %% "play-json"        % playV   withSources() force(),
       "org.clapper"              %% "grizzled-scala"   % "4.2.0" withSources(),
       //
-      "com.typesafe.play"        %% "play"             % playV      % "test" withSources(),
-      "com.typesafe.play"        %% "play-ws"          % playV      % "test" withSources(),
-      "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M2" % "test" withSources()
+      "com.typesafe.play"        %% "play"             % playV   % Test withSources(),
+      "com.typesafe.play"        %% "play-ws"          % playV   % Test withSources(),
+      "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % Test withSources()
     )
 
   case sv if sv.startsWith("2.11") => // Builds with Scala 2.11.x, Play 2.5.x
@@ -108,9 +113,9 @@ libraryDependencies ++= scalaVersion {
       "com.github.nscala-time"   %% "nscala-time"      % "2.16.0" withSources(),
       "org.clapper"              %% "grizzled-scala"   % "4.2.0"  withSources(),
       //
-      "com.typesafe.play"      %% "play"               % playV    % "test" withSources(),
-      "com.typesafe.play"      %% "play-ws"            % playV    % "test" withSources(),
-      "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1"  % "test" withSources()
+      "com.typesafe.play"      %% "play"               % playV    % Test withSources(),
+      "com.typesafe.play"      %% "play-ws"            % playV    % Test withSources(),
+      "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3"  % Test withSources()
     )
 
   case sv if sv.startsWith("2.10") => // Builds with Scala 2.10.x, Play 2.2.6
@@ -124,8 +129,8 @@ libraryDependencies ++= scalaVersion {
       "org.clapper"              %  "grizzled-scala_2.10" % "1.3"    withSources(),
       "org.scala-lang"           %  "scala-reflect"       % "2.10.6" force(),
       //
-      "com.typesafe.play"        %% "play"                % playV      % "test" withSources(),
-      "org.scalatestplus"        %% "play"                % "1.4.0-M4" % "test" withSources()
+      "com.typesafe.play"        %% "play"                % playV      % Test withSources(),
+      "org.scalatestplus"        %% "play"                % "1.4.0-M4" % Test withSources()
     )
 }.value
 

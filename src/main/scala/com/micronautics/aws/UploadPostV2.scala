@@ -14,7 +14,7 @@ package com.micronautics.aws
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.s3.model.Bucket
 import org.joda.time.{DateTime, DateTimeZone, Duration}
-import org.slf4j.Logger
+import org.slf4j.{Logger => SLFLogger}
 import scala.util.{Failure, Success, Try}
 
 /** The implicit `AmazonIdentityManagementClient` instance determines the AIM user based on the AWS access key ID in the
@@ -23,7 +23,7 @@ object UploadPostV2 extends S3Implicits with CFImplicits {
   import java.net.URL
   import java.io.File
 
-  val Logger: Logger = org.slf4j.LoggerFactory.getLogger("UploadPostV2")
+  val Logger: SLFLogger = org.slf4j.LoggerFactory.getLogger("UploadPostV2")
 
   /** @param file File to upload
     * @param bucket Bucket to deliver the upload to; must have CORS set for POST and the bucket policy must grant the
@@ -111,6 +111,7 @@ class UploadPostV2(bucket: Bucket, expiryDuration: Duration=Duration.standardHou
   import java.util.Base64
 
   /** @param key has path, without leading slash, including filetype */
+  // TODO remove contentLength parameter because it is not used
   def policyText(key: String, contentLength: Long, acl: AclEnum = privateAcl): String = {
     import org.joda.time.format.ISODateTimeFormat
     val expiryDT = new DateTime(DateTimeZone.UTC).plus(expiryDuration)
@@ -130,6 +131,7 @@ class UploadPostV2(bucket: Bucket, expiryDuration: Duration=Duration.standardHou
     policy
   }
 
+  // TODO remove contentLength parameter because it is not used
   def policyEncoder(policyText: String, contentLength: Long): String = {
     val encodedPolicy: String = new String(Base64.getEncoder.encode(policyText.getBytes("UTF-8")))
     encodedPolicy.replaceAll("\n|\r", "")

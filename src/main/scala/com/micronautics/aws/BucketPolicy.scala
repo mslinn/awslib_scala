@@ -64,7 +64,7 @@ object BucketPolicy {
         try {
           //bucket.delete()
         } catch {
-          case ignored: Exception =>
+          case _: Exception =>
             //Logger.debug(s"Ignoring: $ignored")
         }
         throw new Exception(s"Exception setting up $bucketName; $e")

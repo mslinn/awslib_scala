@@ -18,13 +18,13 @@ bintrayPackageLabels := Seq("aws", "scala")
 bintrayVcsUrl := Some(s"git@$vcs.com:mslinn/${ name.value }.git")
 
 // sbt-site settings
-enablePlugins(SiteScaladocPlugin)
-siteSourceDirectory := target.value / "api"
-publishSite
+//enablePlugins(SiteScaladocPlugin)
+//siteSourceDirectory := target.value / "api"
+//publishSite
 
 // sbt-ghpages settings
-enablePlugins(GhpagesPlugin)
-git.remoteRepo := s"git@$vcs.com:mslinn/${ name.value }.git"
+//enablePlugins(GhpagesPlugin)
+//git.remoteRepo := s"git@$vcs.com:mslinn/${ name.value }.git"
 
 /*import java.nio.file.Path
 

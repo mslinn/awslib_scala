@@ -17,6 +17,7 @@ import com.amazonaws.services.cloudfront.model._
 import com.micronautics.cache.{Memoizer, Memoizer0, Memoizer2}
 import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 
 object CloudFront {
@@ -67,7 +68,7 @@ class CloudFront extends CFImplicits with S3Implicits {
     Memoizer { (bucket, s3) =>
       val (_, bucketOriginId) = RichBucket(bucket)(s3).safeNames
       val distributionSummaries: List[DistributionSummary] = distributions.filter { distribution =>
-        val origins: Seq[Origin] = distribution.getOrigins.getItems.asScala
+        val origins: mutable.Seq[Origin] = distribution.getOrigins.getItems.asScala
         origins.exists(_.getId == bucketOriginId)
       }
       distributionSummaries

@@ -71,6 +71,7 @@ class ElasticTranscoder {
     * Race conditions are possible; jobs processed might start between the time they are listed and the time that cancellation is attempted.
     * This means that some jobs might not be cancelled.
     * This is a synchronous call. */
+  // TODO use pipeline parameter; this method cannot work as written
   def cancelJobs(pipeline: Pipeline, outputName: String=""): Unit = {
     import com.amazonaws.services.elastictranscoder.model.ListJobsByStatusRequest
     for {
@@ -180,7 +181,7 @@ class ElasticTranscoder {
     val pipelines: List[Pipeline] = etClient.listPipelines.getPipelines.asScala.toList
     pipelines.foreach { pipeline =>
       try {
-        cancelJobs(pipeline)
+        cancelJobs(pipeline) // This is a bug because cancelJobs does not use the pipeline parameter
         pipeline.delete()
       } catch {
         case _: Exception =>
@@ -304,7 +305,7 @@ class ElasticTranscoder {
           s3.deleteObject(pipeline.getInputBucket, outputKey)
         }
         Logger.debug(s"About to transcode for pipeline $pipelineId, inputKey $inputKey, outputKey $outputKey, preset ${preset.getId}")
-        createJob(inputBucket, pipelineId, inputKey, outputKey, preset.getId) map { job =>
+        createJob(inputBucket, pipelineId, inputKey, outputKey, preset.getId) map { _ =>
           Logger.info(s"Transcoding $inputKey to $outputKey for pipeline #$pipelineId (${findPipelineById(pipelineId)}})")
           outputKey
         }

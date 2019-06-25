@@ -18,7 +18,6 @@ import com.amazonaws.auth.{AWSCredentials, DefaultAWSCredentialsProviderChain}
 package object aws extends CFImplicits with ETImplicits with IAMImplicits with S3Implicits with SNSImplicits with SQSImplicits {
   import com.amazonaws.util.json.Jackson
   import org.slf4j.LoggerFactory
-  import scala.language.implicitConversions
 
   private lazy val contentTypeMap = Map(
     "css"   -> "text/css",

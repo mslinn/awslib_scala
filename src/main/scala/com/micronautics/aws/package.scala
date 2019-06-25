@@ -33,6 +33,7 @@ class ExceptTrace(msg: String) extends Exception(msg) with NoStackTrace
 object ExceptTrace {
   def apply(msg: String): ExceptTrace = new ExceptTrace(msg)
 
+  // TODO remove exception parameter because it is not used
   def apply(msg: String, exception: Exception): ExceptTrace = new ExceptTrace(msg)
 }
 

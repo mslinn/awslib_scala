@@ -26,6 +26,7 @@ class Route53 {
     * @param cname external resource to link to ("xxx.herokuapp.com.") - note the trailing period, might not be necessary
     * @param routingPolicy not used yet
     * @param ttl time to live, in seconds */
+  // TODO remove parameter routingPolicy because it is not used
   def createCnameAlias(hostedZoneName: String, dnsName: String, cname: String, routingPolicy: String="Simple", ttl: Long=60L): Boolean = {
     maybeHostedZone(hostedZoneName).exists { hostedZone =>
       implicit val rSets: List[ResourceRecordSet] = recordSets(hostedZone + ".")
@@ -59,8 +60,8 @@ class Route53 {
       val dnsNameStart = dnsName + "."
       val gotSome = for {
         resourceRecordSet <- resourceRecordSets
-        if resourceRecordSet.getName.startsWith(dnsNameStart)
-        if aliasExists(dnsNameStart)
+          if resourceRecordSet.getName.startsWith(dnsNameStart)
+          if aliasExists(dnsNameStart)
       } yield {
         val changeBatch = new ChangeBatch(List(new Change(ChangeAction.DELETE, resourceRecordSet)).asJava)
         val changeResourceRecordSetsRequest = new ChangeResourceRecordSetsRequest(hostedZone.getId, changeBatch)

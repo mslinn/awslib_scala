@@ -18,12 +18,14 @@ import java.nio.file.attribute.{BasicFileAttributeView, FileTime}
 import java.util.Date
 import java.util.concurrent.atomic.AtomicBoolean
 import com.amazonaws.auth.policy.{Policy, Statement}
+import com.amazonaws.auth.{AWSCredentialsProvider, AWSStaticCredentialsProvider}
 import com.amazonaws.event.ProgressEventType
-import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model._
+import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
 import com.amazonaws.{AmazonClientException, HttpMethod, event}
 import com.micronautics.aws.AclEnum._
 import com.micronautics.cache.{Memoizer, Memoizer0}
+import org.apache.commons.io.IOUtils
 import org.joda.time.{DateTime, Duration}
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
@@ -114,7 +116,8 @@ class S3 {
   val cacheIsDirty = new AtomicBoolean(false)
 
   implicit val s3: S3 = this
-  implicit val s3Client: AmazonS3Client = new AmazonS3Client(awsCredentials)
+  protected val credentialsProvider: AWSCredentialsProvider = new AWSStaticCredentialsProvider(awsCredentials)
+  implicit val s3Client: AmazonS3 = AmazonS3ClientBuilder.standard.withCredentials(credentialsProvider).build
 
   protected val _allObjectData: Memoizer[(String, String), List[S3ObjectSummary]] =
     Memoizer( args => {
@@ -146,7 +149,7 @@ class S3 {
     _allObjectData((bucketName, prefix))
 
   protected val _bucketExists: Memoizer[String, Boolean] = Memoizer( (bucketName: String) =>
-    s3Client.doesBucketExist(bucketName)
+    s3Client.doesBucketExistV2(bucketName)
   )
 
   def bucketExists(bucketName: String): Boolean = _bucketExists(bucketName)
@@ -394,19 +397,19 @@ class S3 {
   def oneObjectData(bucketName: String, prefix: String): Option[S3ObjectSummary] =
     _oneObjectData.apply((bucketName, prefix))
 
+  // TODO write test for this method
   val _resourceUrl: Memoizer[(String, String, Option[CloudFrontAlias]), String] = Memoizer( args =>
     {
       val (bucketName, key, maybeAlias) = args
       (for {
         _ <- findByName(bucketName)
       } yield {
-        val s3Url = s3Client.getResourceUrl(bucketName, key)
+        val url: URL = s3Client.getUrl(bucketName, key)
         maybeAlias.map { alias =>
-          val url   = new URL(s3Url)
           val path  = Option(url.getPath).getOrElse("")
           val query = Option(url.getQuery).map( "?" + _ ).getOrElse("")
           s"""$alias$path$query"""
-        }.getOrElse(s3Url)
+        }.getOrElse(url.toString)
       }).getOrElse("")
     })
 
@@ -599,7 +602,7 @@ trait S3Implicits {
 
     def downloadAsStream(key: String): InputStream = s3.downloadFile(bucket.getName, key)
 
-    def downloadAsString(key: String): String = io.Source.fromInputStream(downloadAsStream(key)).mkString
+    def downloadAsString(key: String): String = IOUtils.toString(downloadAsStream(key))
 
     @throws(classOf[AmazonClientException])
     def empty(): Unit = s3.emptyBucket(bucket.getName)
