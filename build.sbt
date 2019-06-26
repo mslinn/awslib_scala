@@ -6,7 +6,7 @@ name := "awslib_scala"
 organization := "com.micronautics"
 licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 scalaVersion := "2.13.0"
-crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.8", "2.13.0")
+crossScalaVersions := Seq("2.10.6", "2.11.12", "2.12.8", "2.13.0")
 
 scalacOptions ++=
   scalaVersion {
