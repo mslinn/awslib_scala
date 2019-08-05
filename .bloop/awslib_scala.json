@@ -1,0 +1,919 @@
+{
+    "version" : "1.1.2",
+    "project" : {
+        "name" : "awslib_scala",
+        "directory" : "C:\\work\\cadenzaHome\\cadenzaCode\\cadenzaDependencies\\awslib_scala",
+        "sources" : [
+            "C:\\work\\cadenzaHome\\cadenzaCode\\cadenzaDependencies\\awslib_scala\\src\\main\\scala-2.12",
+            "C:\\work\\cadenzaHome\\cadenzaCode\\cadenzaDependencies\\awslib_scala\\src\\main\\scala",
+            "C:\\work\\cadenzaHome\\cadenzaCode\\cadenzaDependencies\\awslib_scala\\src\\main\\java",
+            "C:\\work\\cadenzaHome\\cadenzaCode\\cadenzaDependencies\\awslib_scala\\target\\scala-2.12\\src_managed\\main"
+        ],
+        "dependencies" : [
+        ],
+        "classpath" : [
+            "C:\\Users\\mslinn\\.ivy2\\cache\\org.scala-lang\\scala-library\\jars\\scala-library-2.12.8.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\org.apache.httpcomponents\\httpclient\\jars\\httpclient-4.4.1.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\org.apache.httpcomponents\\httpcore\\jars\\httpcore-4.4.1.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\commons-logging\\commons-logging\\jars\\commons-logging-1.2.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\commons-codec\\commons-codec\\jars\\commons-codec-1.10.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\org.apache.httpcomponents\\httpmime\\jars\\httpmime-4.4.1.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\org.codehaus.jackson\\jackson-mapper-asl\\jars\\jackson-mapper-asl-1.9.13.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\org.codehaus.jackson\\jackson-core-asl\\jars\\jackson-core-asl-1.9.13.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\org.joda\\joda-convert\\jars\\joda-convert-1.7.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.amazonaws\\aws-java-sdk-osgi\\jars\\aws-java-sdk-osgi-1.11.327.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-codec-http\\jars\\netty-codec-http-4.1.17.Final.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-codec\\jars\\netty-codec-4.1.17.Final.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-transport\\jars\\netty-transport-4.1.17.Final.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-buffer\\jars\\netty-buffer-4.1.17.Final.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-common\\jars\\netty-common-4.1.17.Final.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-resolver\\jars\\netty-resolver-4.1.17.Final.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-handler\\jars\\netty-handler-4.1.17.Final.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\software.amazon.ion\\ion-java\\bundles\\ion-java-1.0.2.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.core\\jackson-databind\\jars\\jackson-databind-2.9.9.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.core\\jackson-annotations\\jars\\jackson-annotations-2.9.9.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.core\\jackson-core\\jars\\jackson-core-2.9.9.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.dataformat\\jackson-dataformat-cbor\\bundles\\jackson-dataformat-cbor-2.6.7.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\joda-time\\joda-time\\jars\\joda-time-2.8.1.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.code.findbugs\\jsr305\\jars\\jsr305-3.0.1.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.micronautics\\scalacourses-utils_2.12\\jars\\scalacourses-utils_2.12-0.3.0.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\guava\\jars\\guava-28.0-jre.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\guava\\jars\\guava-28.0-jre-sources.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\failureaccess\\bundles\\failureaccess-1.0.1.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\listenablefuture\\jars\\listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\org.checkerframework\\checker-qual\\jars\\checker-qual-2.8.1.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.errorprone\\error_prone_annotations\\jars\\error_prone_annotations-2.3.2.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.j2objc\\j2objc-annotations\\jars\\j2objc-annotations-1.3.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\org.codehaus.mojo\\animal-sniffer-annotations\\jars\\animal-sniffer-annotations-1.17.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.typesafe\\config\\jars\\config-1.3.0.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\commons-io\\commons-io\\jars\\commons-io-2.4.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\commons-lang\\commons-lang\\jars\\commons-lang-2.6.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\ch.qos.logback\\logback-classic\\jars\\logback-classic-1.1.3.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\ch.qos.logback\\logback-core\\jars\\logback-core-1.1.3.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\org.slf4j\\slf4j-api\\jars\\slf4j-api-1.7.12.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.typesafe.play\\play-json_2.12\\jars\\play-json_2.12-2.6.0-M1.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.typesafe.play\\play-functional_2.12\\jars\\play-functional_2.12-2.6.0-M1.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\org.scala-lang\\scala-reflect\\jars\\scala-reflect-2.12.8.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.datatype\\jackson-datatype-jdk8\\bundles\\jackson-datatype-jdk8-2.8.5.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.datatype\\jackson-datatype-jsr310\\bundles\\jackson-datatype-jsr310-2.8.5.jar",
+            "C:\\Users\\mslinn\\.ivy2\\cache\\org.clapper\\grizzled-scala_2.12\\jars\\grizzled-scala_2.12-4.2.0.jar"
+        ],
+        "out" : "C:\\work\\cadenzaHome\\cadenzaCode\\cadenzaDependencies\\awslib_scala\\.bloop\\awslib_scala",
+        "classesDir" : "C:\\work\\cadenzaHome\\cadenzaCode\\cadenzaDependencies\\awslib_scala\\.bloop\\awslib_scala\\scala-2.12\\classes",
+        "resources" : [
+            "C:\\work\\cadenzaHome\\cadenzaCode\\cadenzaDependencies\\awslib_scala\\src\\main\\resources",
+            "C:\\work\\cadenzaHome\\cadenzaCode\\cadenzaDependencies\\awslib_scala\\target\\scala-2.12\\resource_managed\\main"
+        ],
+        "scala" : {
+            "organization" : "org.scala-lang",
+            "name" : "scala-compiler",
+            "version" : "2.12.8",
+            "options" : [
+                "-target:jvm-1.8",
+                "-Ywarn-unused",
+                "-deprecation",
+                "-encoding",
+                "UTF-8",
+                "-feature",
+                "-unchecked",
+                "-Xlint",
+                "-target:jvm-1.8",
+                "-Ywarn-unused",
+                "-deprecation",
+                "-encoding",
+                "UTF-8",
+                "-feature",
+                "-unchecked",
+                "-Ywarn-adapted-args",
+                "-Ywarn-dead-code",
+                "-Ywarn-numeric-widen",
+                "-Ywarn-value-discard",
+                "-Xfuture",
+                "-Xlint",
+                "-P:semanticdb:synthetics:on",
+                "-P:semanticdb:failures:warning",
+                "-P:semanticdb:sourceroot:C:\\work\\cadenzaHome\\cadenzaCode\\cadenzaDependencies\\awslib_scala",
+                "-Yrangepos",
+                "-Xplugin-require:semanticdb",
+                "-Xplugin:C:\\Users\\mslinn\\.ivy2\\cache\\org.scalameta\\semanticdb-scalac_2.12.8\\jars\\semanticdb-scalac_2.12.8-4.1.9.jar"
+            ],
+            "jars" : [
+                "C:\\Users\\mslinn\\.ivy2\\cache\\org.scala-lang\\scala-compiler\\jars\\scala-compiler-2.12.8.jar",
+                "C:\\Users\\mslinn\\.ivy2\\cache\\org.scala-lang\\scala-library\\jars\\scala-library-2.12.8.jar",
+                "C:\\Users\\mslinn\\.ivy2\\cache\\org.scala-lang\\scala-reflect\\jars\\scala-reflect-2.12.8.jar",
+                "C:\\Users\\mslinn\\.ivy2\\cache\\org.scala-lang.modules\\scala-xml_2.12\\bundles\\scala-xml_2.12-1.0.6.jar",
+                "C:\\Users\\mslinn\\.ivy2\\cache\\jline\\jline\\jars\\jline-2.14.6.jar"
+            ],
+            "setup" : {
+                "order" : "mixed",
+                "addLibraryToBootClasspath" : true,
+                "addCompilerToClasspath" : false,
+                "addExtraJarsToClasspath" : false,
+                "manageBootClasspath" : true,
+                "filterLibraryFromClasspath" : true
+            }
+        },
+        "java" : {
+            "options" : [
+                "-source",
+                "1.8",
+                "-target",
+                "1.8",
+                "-Xlint:deprecation",
+                "-Xlint:unchecked",
+                "-g:vars"
+            ]
+        },
+        "test" : {
+            "frameworks" : [
+                {
+                    "names" : [
+                        "org.scalacheck.ScalaCheckFramework"
+                    ]
+                },
+                {
+                    "names" : [
+                        "org.specs2.runner.Specs2Framework",
+                        "org.specs2.runner.SpecsFramework"
+                    ]
+                },
+                {
+                    "names" : [
+                        "org.specs.runner.SpecsFramework"
+                    ]
+                },
+                {
+                    "names" : [
+                        "org.scalatest.tools.Framework",
+                        "org.scalatest.tools.ScalaTestFramework"
+                    ]
+                },
+                {
+                    "names" : [
+                        "com.novocode.junit.JUnitFramework"
+                    ]
+                }
+            ],
+            "options" : {
+                "excludes" : [
+                ],
+                "arguments" : [
+                ]
+            }
+        },
+        "platform" : {
+            "name" : "jvm",
+            "config" : {
+                "home" : "C:\\Program Files\\AdoptOpenJDK\\jdk-11.0.3.7-hotspot",
+                "options" : [
+                ]
+            },
+            "mainClass" : [
+            ]
+        },
+        "resolution" : {
+            "modules" : [
+                {
+                    "organization" : "org.scala-lang",
+                    "name" : "scala-library",
+                    "version" : "2.12.8",
+                    "artifacts" : [
+                        {
+                            "name" : "scala-library",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.scala-lang\\scala-library\\jars\\scala-library-2.12.8.jar"
+                        },
+                        {
+                            "name" : "scala-library",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.scala-lang\\scala-library\\srcs\\scala-library-2.12.8-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.apache.httpcomponents",
+                    "name" : "httpclient",
+                    "version" : "4.4.1",
+                    "artifacts" : [
+                        {
+                            "name" : "httpclient",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.apache.httpcomponents\\httpclient\\jars\\httpclient-4.4.1.jar"
+                        },
+                        {
+                            "name" : "httpclient",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.apache.httpcomponents\\httpclient\\srcs\\httpclient-4.4.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.apache.httpcomponents",
+                    "name" : "httpcore",
+                    "version" : "4.4.1",
+                    "artifacts" : [
+                        {
+                            "name" : "httpcore",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.apache.httpcomponents\\httpcore\\jars\\httpcore-4.4.1.jar"
+                        },
+                        {
+                            "name" : "httpcore",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.apache.httpcomponents\\httpcore\\srcs\\httpcore-4.4.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "commons-logging",
+                    "name" : "commons-logging",
+                    "version" : "1.2",
+                    "artifacts" : [
+                        {
+                            "name" : "commons-logging",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\commons-logging\\commons-logging\\jars\\commons-logging-1.2.jar"
+                        },
+                        {
+                            "name" : "commons-logging",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\commons-logging\\commons-logging\\srcs\\commons-logging-1.2-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.apache.httpcomponents",
+                    "name" : "httpmime",
+                    "version" : "4.4.1",
+                    "artifacts" : [
+                        {
+                            "name" : "httpmime",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.apache.httpcomponents\\httpmime\\jars\\httpmime-4.4.1.jar"
+                        },
+                        {
+                            "name" : "httpmime",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.apache.httpcomponents\\httpmime\\srcs\\httpmime-4.4.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.codehaus.jackson",
+                    "name" : "jackson-mapper-asl",
+                    "version" : "1.9.13",
+                    "artifacts" : [
+                        {
+                            "name" : "jackson-mapper-asl",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.codehaus.jackson\\jackson-mapper-asl\\jars\\jackson-mapper-asl-1.9.13.jar"
+                        },
+                        {
+                            "name" : "jackson-mapper-asl",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.codehaus.jackson\\jackson-mapper-asl\\srcs\\jackson-mapper-asl-1.9.13-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.codehaus.jackson",
+                    "name" : "jackson-core-asl",
+                    "version" : "1.9.13",
+                    "artifacts" : [
+                        {
+                            "name" : "jackson-core-asl",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.codehaus.jackson\\jackson-core-asl\\jars\\jackson-core-asl-1.9.13.jar"
+                        },
+                        {
+                            "name" : "jackson-core-asl",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.codehaus.jackson\\jackson-core-asl\\srcs\\jackson-core-asl-1.9.13-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.joda",
+                    "name" : "joda-convert",
+                    "version" : "1.7",
+                    "artifacts" : [
+                        {
+                            "name" : "joda-convert",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.joda\\joda-convert\\jars\\joda-convert-1.7.jar"
+                        },
+                        {
+                            "name" : "joda-convert",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.joda\\joda-convert\\srcs\\joda-convert-1.7-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.amazonaws",
+                    "name" : "aws-java-sdk-osgi",
+                    "version" : "1.11.327",
+                    "artifacts" : [
+                        {
+                            "name" : "aws-java-sdk-osgi",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.amazonaws\\aws-java-sdk-osgi\\jars\\aws-java-sdk-osgi-1.11.327.jar"
+                        },
+                        {
+                            "name" : "aws-java-sdk-osgi",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.amazonaws\\aws-java-sdk-osgi\\srcs\\aws-java-sdk-osgi-1.11.327-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.netty",
+                    "name" : "netty-codec-http",
+                    "version" : "4.1.17.Final",
+                    "artifacts" : [
+                        {
+                            "name" : "netty-codec-http",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-codec-http\\jars\\netty-codec-http-4.1.17.Final.jar"
+                        },
+                        {
+                            "name" : "netty-codec-http",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-codec-http\\srcs\\netty-codec-http-4.1.17.Final-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.netty",
+                    "name" : "netty-codec",
+                    "version" : "4.1.17.Final",
+                    "artifacts" : [
+                        {
+                            "name" : "netty-codec",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-codec\\jars\\netty-codec-4.1.17.Final.jar"
+                        },
+                        {
+                            "name" : "netty-codec",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-codec\\srcs\\netty-codec-4.1.17.Final-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.netty",
+                    "name" : "netty-transport",
+                    "version" : "4.1.17.Final",
+                    "artifacts" : [
+                        {
+                            "name" : "netty-transport",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-transport\\jars\\netty-transport-4.1.17.Final.jar"
+                        },
+                        {
+                            "name" : "netty-transport",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-transport\\srcs\\netty-transport-4.1.17.Final-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.netty",
+                    "name" : "netty-buffer",
+                    "version" : "4.1.17.Final",
+                    "artifacts" : [
+                        {
+                            "name" : "netty-buffer",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-buffer\\jars\\netty-buffer-4.1.17.Final.jar"
+                        },
+                        {
+                            "name" : "netty-buffer",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-buffer\\srcs\\netty-buffer-4.1.17.Final-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.netty",
+                    "name" : "netty-common",
+                    "version" : "4.1.17.Final",
+                    "artifacts" : [
+                        {
+                            "name" : "netty-common",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-common\\jars\\netty-common-4.1.17.Final.jar"
+                        },
+                        {
+                            "name" : "netty-common",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-common\\srcs\\netty-common-4.1.17.Final-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.netty",
+                    "name" : "netty-resolver",
+                    "version" : "4.1.17.Final",
+                    "artifacts" : [
+                        {
+                            "name" : "netty-resolver",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-resolver\\jars\\netty-resolver-4.1.17.Final.jar"
+                        },
+                        {
+                            "name" : "netty-resolver",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-resolver\\srcs\\netty-resolver-4.1.17.Final-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "io.netty",
+                    "name" : "netty-handler",
+                    "version" : "4.1.17.Final",
+                    "artifacts" : [
+                        {
+                            "name" : "netty-handler",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-handler\\jars\\netty-handler-4.1.17.Final.jar"
+                        },
+                        {
+                            "name" : "netty-handler",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\io.netty\\netty-handler\\srcs\\netty-handler-4.1.17.Final-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "commons-codec",
+                    "name" : "commons-codec",
+                    "version" : "1.10",
+                    "artifacts" : [
+                        {
+                            "name" : "commons-codec",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\commons-codec\\commons-codec\\jars\\commons-codec-1.10.jar"
+                        },
+                        {
+                            "name" : "commons-codec",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\commons-codec\\commons-codec\\srcs\\commons-codec-1.10-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "software.amazon.ion",
+                    "name" : "ion-java",
+                    "version" : "1.0.2",
+                    "artifacts" : [
+                        {
+                            "name" : "ion-java",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\software.amazon.ion\\ion-java\\bundles\\ion-java-1.0.2.jar"
+                        },
+                        {
+                            "name" : "ion-java",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\software.amazon.ion\\ion-java\\srcs\\ion-java-1.0.2-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.fasterxml.jackson.dataformat",
+                    "name" : "jackson-dataformat-cbor",
+                    "version" : "2.6.7",
+                    "artifacts" : [
+                        {
+                            "name" : "jackson-dataformat-cbor",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.dataformat\\jackson-dataformat-cbor\\bundles\\jackson-dataformat-cbor-2.6.7.jar"
+                        },
+                        {
+                            "name" : "jackson-dataformat-cbor",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.dataformat\\jackson-dataformat-cbor\\srcs\\jackson-dataformat-cbor-2.6.7-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "joda-time",
+                    "name" : "joda-time",
+                    "version" : "2.8.1",
+                    "artifacts" : [
+                        {
+                            "name" : "joda-time",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\joda-time\\joda-time\\jars\\joda-time-2.8.1.jar"
+                        },
+                        {
+                            "name" : "joda-time",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\joda-time\\joda-time\\srcs\\joda-time-2.8.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.fasterxml.jackson.core",
+                    "name" : "jackson-annotations",
+                    "version" : "2.9.9",
+                    "artifacts" : [
+                        {
+                            "name" : "jackson-annotations",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.core\\jackson-annotations\\jars\\jackson-annotations-2.9.9.jar"
+                        },
+                        {
+                            "name" : "jackson-annotations",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.core\\jackson-annotations\\srcs\\jackson-annotations-2.9.9-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.fasterxml.jackson.core",
+                    "name" : "jackson-core",
+                    "version" : "2.9.9",
+                    "artifacts" : [
+                        {
+                            "name" : "jackson-core",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.core\\jackson-core\\jars\\jackson-core-2.9.9.jar"
+                        },
+                        {
+                            "name" : "jackson-core",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.core\\jackson-core\\srcs\\jackson-core-2.9.9-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.fasterxml.jackson.core",
+                    "name" : "jackson-databind",
+                    "version" : "2.9.9",
+                    "artifacts" : [
+                        {
+                            "name" : "jackson-databind",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.core\\jackson-databind\\jars\\jackson-databind-2.9.9.jar"
+                        },
+                        {
+                            "name" : "jackson-databind",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.core\\jackson-databind\\srcs\\jackson-databind-2.9.9-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.google.code.findbugs",
+                    "name" : "jsr305",
+                    "version" : "3.0.1",
+                    "artifacts" : [
+                        {
+                            "name" : "jsr305",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.code.findbugs\\jsr305\\jars\\jsr305-3.0.1.jar"
+                        },
+                        {
+                            "name" : "jsr305",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.code.findbugs\\jsr305\\srcs\\jsr305-3.0.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.micronautics",
+                    "name" : "scalacourses-utils_2.12",
+                    "version" : "0.3.0",
+                    "artifacts" : [
+                        {
+                            "name" : "scalacourses-utils_2.12",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.micronautics\\scalacourses-utils_2.12\\jars\\scalacourses-utils_2.12-0.3.0.jar"
+                        },
+                        {
+                            "name" : "scalacourses-utils_2.12",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.micronautics\\scalacourses-utils_2.12\\srcs\\scalacourses-utils_2.12-0.3.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.google.guava",
+                    "name" : "guava",
+                    "version" : "28.0-jre",
+                    "artifacts" : [
+                        {
+                            "name" : "guava",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\guava\\jars\\guava-28.0-jre.jar"
+                        },
+                        {
+                            "name" : "guava",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\guava\\jars\\guava-28.0-jre-sources.jar"
+                        },
+                        {
+                            "name" : "guava",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\guava\\srcs\\guava-28.0-jre-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.google.guava",
+                    "name" : "failureaccess",
+                    "version" : "1.0.1",
+                    "artifacts" : [
+                        {
+                            "name" : "failureaccess",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\failureaccess\\bundles\\failureaccess-1.0.1.jar"
+                        },
+                        {
+                            "name" : "failureaccess",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\failureaccess\\srcs\\failureaccess-1.0.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.google.guava",
+                    "name" : "listenablefuture",
+                    "version" : "9999.0-empty-to-avoid-conflict-with-guava",
+                    "artifacts" : [
+                        {
+                            "name" : "listenablefuture",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\listenablefuture\\jars\\listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.checkerframework",
+                    "name" : "checker-qual",
+                    "version" : "2.8.1",
+                    "artifacts" : [
+                        {
+                            "name" : "checker-qual",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.checkerframework\\checker-qual\\jars\\checker-qual-2.8.1.jar"
+                        },
+                        {
+                            "name" : "checker-qual",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.checkerframework\\checker-qual\\srcs\\checker-qual-2.8.1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.google.errorprone",
+                    "name" : "error_prone_annotations",
+                    "version" : "2.3.2",
+                    "artifacts" : [
+                        {
+                            "name" : "error_prone_annotations",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.errorprone\\error_prone_annotations\\jars\\error_prone_annotations-2.3.2.jar"
+                        },
+                        {
+                            "name" : "error_prone_annotations",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.errorprone\\error_prone_annotations\\srcs\\error_prone_annotations-2.3.2-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.google.j2objc",
+                    "name" : "j2objc-annotations",
+                    "version" : "1.3",
+                    "artifacts" : [
+                        {
+                            "name" : "j2objc-annotations",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.j2objc\\j2objc-annotations\\jars\\j2objc-annotations-1.3.jar"
+                        },
+                        {
+                            "name" : "j2objc-annotations",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.j2objc\\j2objc-annotations\\srcs\\j2objc-annotations-1.3-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.codehaus.mojo",
+                    "name" : "animal-sniffer-annotations",
+                    "version" : "1.17",
+                    "artifacts" : [
+                        {
+                            "name" : "animal-sniffer-annotations",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.codehaus.mojo\\animal-sniffer-annotations\\jars\\animal-sniffer-annotations-1.17.jar"
+                        },
+                        {
+                            "name" : "animal-sniffer-annotations",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.codehaus.mojo\\animal-sniffer-annotations\\srcs\\animal-sniffer-annotations-1.17-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.typesafe",
+                    "name" : "config",
+                    "version" : "1.3.0",
+                    "artifacts" : [
+                        {
+                            "name" : "config",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.typesafe\\config\\jars\\config-1.3.0.jar"
+                        },
+                        {
+                            "name" : "config",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.typesafe\\config\\srcs\\config-1.3.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "commons-io",
+                    "name" : "commons-io",
+                    "version" : "2.4",
+                    "artifacts" : [
+                        {
+                            "name" : "commons-io",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\commons-io\\commons-io\\jars\\commons-io-2.4.jar"
+                        },
+                        {
+                            "name" : "commons-io",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\commons-io\\commons-io\\srcs\\commons-io-2.4-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "commons-lang",
+                    "name" : "commons-lang",
+                    "version" : "2.6",
+                    "artifacts" : [
+                        {
+                            "name" : "commons-lang",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\commons-lang\\commons-lang\\jars\\commons-lang-2.6.jar"
+                        },
+                        {
+                            "name" : "commons-lang",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\commons-lang\\commons-lang\\srcs\\commons-lang-2.6-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "ch.qos.logback",
+                    "name" : "logback-classic",
+                    "version" : "1.1.3",
+                    "artifacts" : [
+                        {
+                            "name" : "logback-classic",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\ch.qos.logback\\logback-classic\\jars\\logback-classic-1.1.3.jar"
+                        },
+                        {
+                            "name" : "logback-classic",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\ch.qos.logback\\logback-classic\\srcs\\logback-classic-1.1.3-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "ch.qos.logback",
+                    "name" : "logback-core",
+                    "version" : "1.1.3",
+                    "artifacts" : [
+                        {
+                            "name" : "logback-core",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\ch.qos.logback\\logback-core\\jars\\logback-core-1.1.3.jar"
+                        },
+                        {
+                            "name" : "logback-core",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\ch.qos.logback\\logback-core\\srcs\\logback-core-1.1.3-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.slf4j",
+                    "name" : "slf4j-api",
+                    "version" : "1.7.12",
+                    "artifacts" : [
+                        {
+                            "name" : "slf4j-api",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.slf4j\\slf4j-api\\jars\\slf4j-api-1.7.12.jar"
+                        },
+                        {
+                            "name" : "slf4j-api",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.slf4j\\slf4j-api\\srcs\\slf4j-api-1.7.12-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.typesafe.play",
+                    "name" : "play-json_2.12",
+                    "version" : "2.6.0-M1",
+                    "artifacts" : [
+                        {
+                            "name" : "play-json_2.12",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.typesafe.play\\play-json_2.12\\jars\\play-json_2.12-2.6.0-M1.jar"
+                        },
+                        {
+                            "name" : "play-json_2.12",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.typesafe.play\\play-json_2.12\\srcs\\play-json_2.12-2.6.0-M1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.typesafe.play",
+                    "name" : "play-functional_2.12",
+                    "version" : "2.6.0-M1",
+                    "artifacts" : [
+                        {
+                            "name" : "play-functional_2.12",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.typesafe.play\\play-functional_2.12\\jars\\play-functional_2.12-2.6.0-M1.jar"
+                        },
+                        {
+                            "name" : "play-functional_2.12",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.typesafe.play\\play-functional_2.12\\srcs\\play-functional_2.12-2.6.0-M1-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.scala-lang",
+                    "name" : "scala-reflect",
+                    "version" : "2.12.8",
+                    "artifacts" : [
+                        {
+                            "name" : "scala-reflect",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.scala-lang\\scala-reflect\\jars\\scala-reflect-2.12.8.jar"
+                        },
+                        {
+                            "name" : "scala-reflect",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.scala-lang\\scala-reflect\\srcs\\scala-reflect-2.12.8-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.fasterxml.jackson.datatype",
+                    "name" : "jackson-datatype-jdk8",
+                    "version" : "2.8.5",
+                    "artifacts" : [
+                        {
+                            "name" : "jackson-datatype-jdk8",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.datatype\\jackson-datatype-jdk8\\bundles\\jackson-datatype-jdk8-2.8.5.jar"
+                        },
+                        {
+                            "name" : "jackson-datatype-jdk8",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.datatype\\jackson-datatype-jdk8\\srcs\\jackson-datatype-jdk8-2.8.5-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.fasterxml.jackson.datatype",
+                    "name" : "jackson-datatype-jsr310",
+                    "version" : "2.8.5",
+                    "artifacts" : [
+                        {
+                            "name" : "jackson-datatype-jsr310",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.datatype\\jackson-datatype-jsr310\\bundles\\jackson-datatype-jsr310-2.8.5.jar"
+                        },
+                        {
+                            "name" : "jackson-datatype-jsr310",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.fasterxml.jackson.datatype\\jackson-datatype-jsr310\\srcs\\jackson-datatype-jsr310-2.8.5-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "org.clapper",
+                    "name" : "grizzled-scala_2.12",
+                    "version" : "4.2.0",
+                    "artifacts" : [
+                        {
+                            "name" : "grizzled-scala_2.12",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.clapper\\grizzled-scala_2.12\\jars\\grizzled-scala_2.12-4.2.0.jar"
+                        },
+                        {
+                            "name" : "grizzled-scala_2.12",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\org.clapper\\grizzled-scala_2.12\\srcs\\grizzled-scala_2.12-4.2.0-sources.jar"
+                        }
+                    ]
+                },
+                {
+                    "organization" : "com.google.guava",
+                    "name" : "guava",
+                    "version" : "28.0-jre",
+                    "artifacts" : [
+                        {
+                            "name" : "guava",
+                            "classifier" : "",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\guava\\jars\\guava-28.0-jre.jar"
+                        },
+                        {
+                            "name" : "guava",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\guava\\jars\\guava-28.0-jre.jar"
+                        },
+                        {
+                            "name" : "guava",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\guava\\jars\\guava-28.0-jre-sources.jar"
+                        },
+                        {
+                            "name" : "guava",
+                            "classifier" : "",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\guava\\jars\\guava-28.0-jre.jar"
+                        },
+                        {
+                            "name" : "guava",
+                            "classifier" : "",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\guava\\jars\\guava-28.0-jre.jar"
+                        },
+                        {
+                            "name" : "guava",
+                            "classifier" : "sources",
+                            "path" : "C:\\Users\\mslinn\\.ivy2\\cache\\com.google.guava\\guava\\srcs\\guava-28.0-jre-sources.jar"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

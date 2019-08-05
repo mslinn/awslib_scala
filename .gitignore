@@ -20,3 +20,4 @@ AwsCredentials.properties
 BBCredentials.properties
 classes/
 src/test/resources/index*.html
+.metals/
