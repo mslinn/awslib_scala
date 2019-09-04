@@ -201,4 +201,6 @@ scmInfo := Some(
   )
 )
 
+ThisBuild / turbo := true
+
 version := "1.1.13"
