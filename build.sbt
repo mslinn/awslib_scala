@@ -1,4 +1,4 @@
-/* Copyright 2012-2017 Micronautics Research Corporation. */
+/* Copyright 2012-2019 Micronautics Research Corporation. */
 
 import sbt.Keys._
 
