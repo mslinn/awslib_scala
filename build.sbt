@@ -57,8 +57,8 @@ scalacOptions in (Compile, doc) ++= baseDirectory.map {
 }.value
 
 resolvers ++= Seq(
-  "Typesafe Releases"             at "http://repo.typesafe.com/typesafe/releases",
-  "micronautics/scala on bintray" at "http://dl.bintray.com/micronautics/scala"
+  "Typesafe Releases"             at "https://repo.typesafe.com/typesafe/releases",
+  "micronautics/scala on bintray" at "https://dl.bintray.com/micronautics/scala"
 )
 
 libraryDependencies ++= {
@@ -139,7 +139,7 @@ libraryDependencies ++= scalaVersion {
     )
 }.value
 
-licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+licenses += ("MIT", url("https://opensource.org/licenses/MIT"))
 
 //updateOptions := updateOptions.value.withCachedResolution(cachedResoluton = true)
 logBuffered in Test := false
@@ -158,8 +158,8 @@ organization := "com.micronautics"
 parallelExecution in Test := false
 
 resolvers ++= Seq(
-  "Typesafe Releases"             at "http://repo.typesafe.com/typesafe/releases",
-  "micronautics/scala on bintray" at "http://dl.bintray.com/micronautics/scala"
+  "Typesafe Releases"             at "https://repo.typesafe.com/typesafe/releases",
+  "micronautics/scala on bintray" at "https://dl.bintray.com/micronautics/scala"
 )
 
 scalacOptions ++=
