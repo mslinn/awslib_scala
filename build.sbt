@@ -57,7 +57,6 @@ scalacOptions in (Compile, doc) ++= baseDirectory.map {
 }.value
 
 resolvers ++= Seq(
-  "Typesafe Releases"             at "https://repo.typesafe.com/typesafe/releases",
   "micronautics/scala on bintray" at "https://dl.bintray.com/micronautics/scala"
 )
 
