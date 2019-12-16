@@ -24,7 +24,8 @@ case class Arn(arnString: String) {
   def asTopic: Topic = new Topic().withTopicArn(arnString)
 }
 
-case class Credentials(awsAccountName: String, accessKey: String, secretKey: String) extends BasicAWSCredentials(accessKey, secretKey) {
+case class Credentials(awsAccountName: String, accessKey: String, secretKey: String)
+  extends BasicAWSCredentials(accessKey, secretKey) {
   val asBasicAWSCredentials: BasicAWSCredentials = new BasicAWSCredentials(accessKey, secretKey)
 }
 
@@ -41,7 +42,8 @@ case class Subscription(arn: Arn) {
   import com.amazonaws.services.sns.AmazonSNSClient
 
   /** @return Option[String] containing SubscriptionId */
-  def confirm(token: String)(implicit snsClient: AmazonSNSClient): Option[Arn] = {
+  def confirm(token: String)
+             (implicit snsClient: AmazonSNSClient): Option[Arn] = {
     import com.amazonaws.services.sns.model.ConfirmSubscriptionRequest
 
     val request = new ConfirmSubscriptionRequest().withTopicArn(arn.arnString).withToken(token)

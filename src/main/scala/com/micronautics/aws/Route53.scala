@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import com.amazonaws.services.route53.model._
 import com.amazonaws.services.route53.{AmazonRoute53, AmazonRoute53ClientBuilder}
 import com.micronautics.cache.{Memoizer, Memoizer0}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class Route53 {
   implicit val r53: Route53 = this
@@ -27,9 +27,15 @@ class Route53 {
     * @param routingPolicy not used yet
     * @param ttl time to live, in seconds */
   // TODO remove parameter routingPolicy because it is not used
-  def createCnameAlias(hostedZoneName: String, dnsName: String, cname: String, routingPolicy: String="Simple", ttl: Long=60L): Boolean = {
+  def createCnameAlias(
+                        hostedZoneName: String,
+                        dnsName: String,
+                        cname: String,
+                        routingPolicy: String="Simple",
+                        ttl: Long=60L
+                      ): Boolean = {
     maybeHostedZone(hostedZoneName).exists { hostedZone =>
-      implicit val rSets: List[ResourceRecordSet] = recordSets(hostedZone + ".")
+      implicit val rSets: List[ResourceRecordSet] = recordSets(hostedZone.toString + ".")
       val dnsNameStart = dnsName + "."
       val aRecord: Boolean = rSets.exists(_.getName.startsWith(dnsNameStart))
       if (aRecord || aliasExists(dnsNameStart))
@@ -85,6 +91,7 @@ class Route53 {
 
   protected val _recordSets: Memoizer[HostedZone, List[ResourceRecordSet]] = Memoizer( hostedZone =>
     {
+      @scala.annotation.tailrec
       def getEmAll(lrrsr: ListResourceRecordSetsResult, accum: List[ResourceRecordSet]=Nil): List[ResourceRecordSet] =
         if (!lrrsr.getIsTruncated) accum ::: lrrsr.getResourceRecordSets.asScala.toList else {
           lrrsr.getNextRecordName

@@ -26,7 +26,7 @@ Programmers using this library are encouraged to use named parameters for the fe
 
 ## Building and Running
 
- 1. Java 8 is required.
+ 1. Java 8+ is required.
  2. You need an AWS account.
 [Separate AWS accounts](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/consolidated-billing.html)
 for development and production are recommended.
@@ -45,7 +45,7 @@ Add this to your project's `build.sbt`:
 
     resolvers += "micronautics/scala on bintray" at "https://dl.bintray.com/micronautics/scala"
 
-    libraryDependencies += "com.micronautics" %% "awslib_scala" % "1.1.13" withSources()
+    libraryDependencies += "com.micronautics" %% "awslib_scala" % "1.1.14" withSources()
 
 ## Sample Code
 See the unit tests for examples of how to use this library.

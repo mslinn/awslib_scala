@@ -11,7 +11,7 @@
 
 package com.micronautics.aws
 
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import com.amazonaws.services.elastictranscoder.{AmazonElasticTranscoder, AmazonElasticTranscoderClientBuilder}
 import com.amazonaws.services.elastictranscoder.model._
 import scala.util.{Failure, Success}
@@ -91,7 +91,8 @@ class ElasticTranscoder {
     * in other words there is no CloudFront distribution for the output bucket, the output file will be unavailable until
     * the job completes. If the job fails, there is no output file.
     * TODO listen for job completion and if the output file existed previously, invalidate the output file so CloudFront can distribute the new version. */
-  def createJob(bucket: Bucket, pipelineId: String, inputKey: String, outputKey: String, presetId: String)(implicit s3: S3): Try[Job] = {
+  def createJob(bucket: Bucket, pipelineId: String, inputKey: String, outputKey: String, presetId: String)
+               (implicit s3: S3): Try[Job] = {
     if (s3.listObjectsByPrefix(bucket.getName, inputKey).isEmpty) {
       Failure(ExceptTrace(s"Error: $inputKey does not exist in bucket ${bucket.getName}. Transcoding not attempted"))
     } else if (findJobByOutputKeyName(outputKey, pipelineId).isDefined) {
@@ -290,7 +291,8 @@ class ElasticTranscoder {
 
   /** @return list of job output keys */
   // todo listen to job notifications, and add metadata that sets the last-modified-date to the date of the original file
-  def transcode(pipelineId: String, inputKey: String, outputKey: String)(implicit s3: S3): List[Try[String]] =
+  def transcode(pipelineId: String, inputKey: String, outputKey: String)
+               (implicit s3: S3): List[Try[String]] =
     for {
       preset      <- defaultPresets
       pipeline    <- findPipelineById(pipelineId)

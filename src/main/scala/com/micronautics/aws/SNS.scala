@@ -14,7 +14,7 @@ package com.micronautics.aws
 import java.net.URL
 import com.amazonaws.services.sns.model._
 import com.amazonaws.services.sns.{AmazonSNS, AmazonSNSClientBuilder}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object SNS {
   def apply: SNS = new SNS
@@ -84,7 +84,7 @@ trait  SNSImplicits {
     def delete()(implicit snsClient: AmazonSNS): Unit =
       try {
        snsClient.deleteTopic(topic.getTopicArn)
-       Logger.debug(s"SNS topic ${topic.getTopicArn} was deleted")
+       Logger.debug(s"SNS topic ${ topic.getTopicArn } was deleted")
       } catch {
         case e: Exception =>
           Logger.warn(e.getMessage)

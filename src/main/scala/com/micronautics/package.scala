@@ -15,7 +15,13 @@ import com.amazonaws.auth.{AWSCredentials, DefaultAWSCredentialsProviderChain}
 
 /** The `aws` package contains idiomatic Scala facades for CloudFront, ElasticTranscoder, IAM, Lambda, Polly,
   * Rekognizer, Route53, SNS and SQS. */
-package object aws extends CFImplicits with ETImplicits with IAMImplicits with S3Implicits with SNSImplicits with SQSImplicits {
+package object aws
+  extends CFImplicits
+    with ETImplicits
+    with IAMImplicits
+    with S3Implicits
+    with SNSImplicits
+    with SQSImplicits {
   import com.amazonaws.util.json.Jackson
   import org.slf4j.LoggerFactory
 

@@ -18,7 +18,7 @@ import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.services.identitymanagement.{AmazonIdentityManagement, AmazonIdentityManagementClientBuilder}
 import com.amazonaws.services.identitymanagement.model.{User => IAMUser, _}
 import com.amazonaws.services.s3.model._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Try}
 
 object IAM {
@@ -52,18 +52,18 @@ class IAM {
         (oldIamUser, keys)
       }
     } catch {
-      case e: NoSuchEntityException => // this is normal, if the IAM user does not exist create one
+      case e: NoSuchEntityException => // This is normal, if the IAM user does not exist create one
         try {
           Logger.info(e.getMessage)
           val createUserRequest = new CreateUserRequest().withUserName(userName)
           val iamUserNew: IAMUser = iamClient.createUser(createUserRequest).getUser
           iamUserNew.createAccessKeys().map { keys =>
-            Logger.debug(s"New AWS IAM user $userName has path ${iamUserNew.getPath} and keys $keys")
+            Logger.debug(s"New AWS IAM user $userName has path ${ iamUserNew.getPath } and keys $keys")
             (iamUserNew, keys)
           }
         } catch {
           case e: Exception =>
-            Failure(ExceptTrace(s"${e.getMessage}\nAWS IAM user $userName did not previously exist"))
+            Failure(ExceptTrace(s"${ e.getMessage }\nAWS IAM user $userName did not previously exist"))
         }
 
       case e: Exception =>
@@ -137,6 +137,6 @@ trait IAMImplicits {
 
     def deleteUser(): Try[Boolean] = iam.deleteUser(iamUser.getUserName)
 
-    def principal: Principal = new Principal(iamUser.getArn) // specify account id instead of user arn?!?!
+    def principal: Principal = new Principal(iamUser.getArn) // Specify account id instead of user arn?!?!
   }
 }

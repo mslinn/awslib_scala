@@ -28,7 +28,7 @@ import com.micronautics.cache.{Memoizer, Memoizer0}
 import org.apache.commons.io.IOUtils
 import org.joda.time.{DateTime, Duration}
 import scala.annotation.tailrec
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 trait CloudFrontAlias
 
@@ -59,7 +59,7 @@ object S3 {
     |}
     |""".stripMargin
 
-  val _latestFileTime = Memoizer( (file: File) =>
+  val _latestFileTime: Memoizer[File, Long] = Memoizer((file: File) =>
     {
       val fileAttributeView = Files.getFileAttributeView(file.toPath, classOf[BasicFileAttributeView])
       val creationTime = fileAttributeView.readAttributes.creationTime.toMillis
@@ -602,7 +602,7 @@ trait S3Implicits {
 
     def downloadAsStream(key: String): InputStream = s3.downloadFile(bucket.getName, key)
 
-    def downloadAsString(key: String): String = IOUtils.toString(downloadAsStream(key))
+    def downloadAsString(key: String): String = IOUtils.toString(downloadAsStream(key), "UTF-8")
 
     @throws(classOf[AmazonClientException])
     def empty(): Unit = s3.emptyBucket(bucket.getName)

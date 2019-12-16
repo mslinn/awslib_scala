@@ -1,30 +1,9 @@
 /* Copyright 2012-2019 Micronautics Research Corporation. */
 
 import sbt.Keys._
+import Settings._
 
-name := "awslib_scala"
-organization := "com.micronautics"
-licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
-scalaVersion := "2.13.1"
-crossScalaVersions := Seq("2.10.6", "2.11.12", "2.12.10", "2.13.1")
-
-scalacOptions ++=
-  scalaVersion {
-    case sv if sv.startsWith("2.10") => List(
-      "-target:jvm-1.7"
-    )
-
-    case _ => List(
-      "-target:jvm-1.8",
-      "-Ywarn-unused"
-    )
-  }.value ++ Seq(
-    "-deprecation",
-    "-encoding", "UTF-8",
-    "-feature",
-    "-unchecked",
-    "-Xlint"
-  )
+crossScalaVersions := Seq("2.11.12", "2.12.10", "2.13.1")
 
 fork in Test := false
 
@@ -48,13 +27,6 @@ javacOptions ++=
     "-Xlint:unchecked",
     "-g:vars"
   )
-
-scalacOptions in (Compile, doc) ++= baseDirectory.map {
-  bd: File => Seq[String](
-     "-sourcepath", bd.getAbsolutePath,
-     "-doc-source-url", "https://github.com/mslinn/{name.value}/tree/master€{FILE_PATH}.scala"
-  )
-}.value
 
 resolvers ++= Seq(
   "micronautics/scala on bintray" at "https://dl.bintray.com/micronautics/scala"
@@ -82,63 +54,51 @@ libraryDependencies ++= {
     "org.joda"                   %  "joda-convert"        % "2.2.1"    withSources() force(),
     "org.slf4j"                  %  "slf4j-api"           % "1.7.29"   withSources() force(),
     //
-    "junit"                      %  "junit"               % "4.12"  % Test
+    "junit"                      %  "junit"               % "4.12"     % Test
   )
 }
 
 libraryDependencies ++= scalaVersion {
-  case sv if sv.startsWith("2.13") => // Builds with Scala 2.13.x, Play 2.6.x
+  case sv if sv.startsWith("2.13") => // Builds with Scala 2.13.x, Play 2.8.x
+    val playV = "2.8.0"
     Seq(
-      "com.typesafe.play"        %% "play-json"        % "2.7.4" withSources() force(),
-      "org.clapper"              %% "grizzled-scala"   % "4.9.3" withSources(),
+      "com.typesafe.play"        %% "play-json"          % playV    withSources() force(),
+      "org.clapper"              %% "grizzled-scala"     % "4.10.0" withSources(),
       //
-      "com.typesafe.play"        %% "play"             % "2.7.3" % Test withSources(),
-      "com.typesafe.play"        %% "play-ws"          % "2.7.3" % Test withSources(),
-      "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % Test withSources()
+      "com.typesafe.play"        %% "play"               % playV    % Test withSources(),
+      "com.typesafe.play"        %% "play-ws"            % playV    % Test withSources(),
+      "org.scalatestplus.play"   %% "scalatestplus-play" % "5.0.0"  % Test withSources()
     )
 
-  case sv if sv.startsWith("2.12") => // Builds with Scala 2.12.x, Play 2.6.x
-    val playV = "2.6.0-M1"
+  case sv if sv.startsWith("2.12") => // Builds with Scala 2.12.x, Play 2.8.x
+    val playV = "2.8.0"
     Seq(
-      "com.typesafe.play"        %% "play-json"        % playV   withSources() force(),
-      "org.clapper"              %% "grizzled-scala"   % "4.2.0" withSources(),
+      "com.typesafe.play"        %% "play-json"               % playV    withSources() force(),
+      "org.clapper"              %% "grizzled-scala"          % "4.10.0" withSources(),
+      "org.scala-lang.modules"   %% "scala-collection-compat" % "2.1.2"  withSources(),
       //
-      "com.typesafe.play"        %% "play"             % playV   % Test withSources(),
-      "com.typesafe.play"        %% "play-ws"          % playV   % Test withSources(),
-      "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % Test withSources()
+      "com.typesafe.play"        %% "play"                    % playV    % Test withSources(),
+      "com.typesafe.play"        %% "play-ws"                 % playV    % Test withSources(),
+      "org.scalatestplus.play"   %% "scalatestplus-play"      % "5.0.0"  % Test withSources()
     )
 
   case sv if sv.startsWith("2.11") => // Builds with Scala 2.11.x, Play 2.5.x
     val playV = "2.5.12"
     Seq(
-      "com.typesafe.play"        %% "play-json"        % playV    withSources() force(),
-      "com.typesafe.play"        %% "play-iteratees"   % playV    withSources() force(),
-      "com.typesafe.play"        %% "play-datacommons" % playV    withSources() force(),
-      "com.github.nscala-time"   %% "nscala-time"      % "2.16.0" withSources(),
-      "org.clapper"              %% "grizzled-scala"   % "4.2.0"  withSources(),
+      "com.typesafe.play"        %% "play-json"               % playV    withSources() force(),
+      "com.typesafe.play"        %% "play-iteratees"          % playV    withSources() force(),
+      "com.typesafe.play"        %% "play-datacommons"        % playV    withSources() force(),
+      "com.github.nscala-time"   %% "nscala-time"             % "2.16.0" withSources(),
+      "org.clapper"              %% "grizzled-scala"          % "4.2.0"  withSources(),
+      "org.scala-lang.modules"   %% "scala-collection-compat" % "2.1.2"  withSources(),
       //
-      "com.typesafe.play"      %% "play"               % playV    % Test withSources(),
-      "com.typesafe.play"      %% "play-ws"            % playV    % Test withSources(),
-      "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3"  % Test withSources()
-    )
-
-  case sv if sv.startsWith("2.10") => // Builds with Scala 2.10.x, Play 2.2.6
-    val playV = "2.2.6"
-    Seq(
-      "com.typesafe.play"        %% "play-json"           % playV    withSources() force(),
-      "com.typesafe.play"        %% "play-iteratees"      % playV    withSources() force(),
-      "com.typesafe.play"        %% "play-datacommons"    % playV    withSources() force(),
-      "com.github.nscala-time"   %% "nscala-time"         % "2.4.0"  exclude("joda-time", "joda-time"),
-      "joda-time"                %  "joda-time"           % "2.8.2",
-      "org.clapper"              %  "grizzled-scala_2.10" % "1.3"    withSources(),
-      "org.scala-lang"           %  "scala-reflect"       % "2.10.6" force(),
-      //
-      "com.typesafe.play"        %% "play"                % playV      % Test withSources(),
-      "org.scalatestplus"        %% "play"                % "1.4.0-M4" % Test withSources()
+      "com.typesafe.play"      %% "play"                      % playV    % Test withSources(),
+      "com.typesafe.play"      %% "play-ws"                   % playV    % Test withSources(),
+      "org.scalatestplus.play" %% "scalatestplus-play"        % "4.0.3"  % Test withSources()
     )
 }.value
 
-licenses += ("MIT", url("https://opensource.org/licenses/MIT"))
+licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 
 //updateOptions := updateOptions.value.withCachedResolution(cachedResoluton = true)
 logBuffered in Test := false
@@ -161,37 +121,73 @@ resolvers ++= Seq(
   "micronautics/scala on bintray" at "https://dl.bintray.com/micronautics/scala"
 )
 
+scalacOptions ++= Seq(
+  "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
+  "-encoding", "utf-8",                // Specify character encoding used by source files.
+  "-explaintypes",                     // Explain type errors in more detail.
+  "-feature",                          // Emit warning and location for usages of features that should be imported explicitly.
+  "-language:existentials",            // Existential types (besides wildcard types) can be written and inferred
+  "-language:experimental.macros",     // Allow macro definition (besides implementation and application)
+  "-language:higherKinds",             // Allow higher-kinded types
+  "-language:implicitConversions",     // Allow definition of implicit functions called views
+  "-unchecked",                        // Enable additional warnings where generated code depends on assumptions.
+  "-Xcheckinit",                       // Wrap field accessors to throw an exception on uninitialized access.
+  "-Xlint:adapted-args",               // Warn if an argument list is modified to match the receiver.
+  "-Xlint:constant"                    // Evaluation of a constant arithmetic expression results in an error.
+)
+
 scalacOptions ++=
   scalaVersion {
-    case sv if sv.startsWith("2.10") => List(
-      "-target:jvm-1.7"
+    case sv if sv.startsWith("2.13") => List(
     )
 
-    case _ => List(
-      "-target:jvm-1.8",
-      "-Ywarn-unused"
+    case sv if sv.startsWith("2.12") => List(
+      "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
+      "-Ypartial-unification",             // Enable partial unification in type constructor inference
+      "-Ywarn-inaccessible",               // Warn about inaccessible types in method signatures.
+      "-Ywarn-infer-any",                  // Warn when a type argument is inferred to be `Any`.
+      "-Ywarn-nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
+      "-Ywarn-nullary-unit",               // Warn when nullary methods return Unit.
+      "-Ywarn-numeric-widen",               // Warn when numerics are widened.
+      "-Xlint:delayedinit-select",         // Selecting member of DelayedInit.
+      "-Xlint:doc-detached",               // A Scaladoc comment appears to be detached from its element.
+      "-Xlint:inaccessible",               // Warn about inaccessible types in method signatures.
+      "-Xlint:infer-any",                  // Warn when a type argument is inferred to be `Any`.
+      "-Xlint:missing-interpolator",       // A string literal appears to be missing an interpolator id.
+      "-Xlint:nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
+      "-Xlint:nullary-unit",               // Warn when nullary methods return Unit.
+      "-Xlint:option-implicit",            // Option.apply used implicit view.
+      "-Xlint:package-object-classes",     // Class or object defined in package object.
+      "-Xlint:poly-implicit-overload",     // Parameterized overloaded implicit methods are not visible as view bounds.
+      "-Xlint:private-shadow",             // A private field (or class parameter) shadows a superclass field.
+      "-Xlint:stars-align",                // Pattern sequence wildcard must align with sequence component.
+      "-Xlint:type-parameter-shadow"      // A local type parameter shadows a type already in scope.
     )
-  }.value ++ Seq(
-    "-deprecation",
-    "-encoding", "UTF-8",
-    "-feature",
-    "-unchecked",
-    "-Ywarn-adapted-args",
-    "-Ywarn-dead-code",
-    "-Ywarn-numeric-widen",
-    "-Ywarn-value-discard",
-    "-Xfuture",
-    "-Xlint"
-  )
+
+    case sv if sv.startsWith("2.11") => List(
+      "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
+      "-Ypartial-unification",             // Enable partial unification in type constructor inference
+      "-Ywarn-inaccessible",               // Warn about inaccessible types in method signatures.
+      "-Ywarn-infer-any",                  // Warn when a type argument is inferred to be `Any`.
+      "-Ywarn-nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
+      "-Ywarn-nullary-unit",               // Warn when nullary methods return Unit.
+      "-Ywarn-numeric-widen"               // Warn when numerics are widened.
+    )
+
+    case _ => Nil
+  }.value
+
+// The REPL can’t cope with -Ywarn-unused:imports or -Xfatal-warnings so turn them off for the console
+scalacOptions in (Compile, console) --= Seq("-Ywarn-unused:imports", "-Xfatal-warnings")
 
 scalacOptions in (Compile, doc) ++= baseDirectory.map {
   bd: File => Seq[String](
      "-sourcepath", bd.getAbsolutePath,
-     "-doc-source-url", "https://github.com/mslinn/awslib_scala/tree/master€{FILE_PATH}.scala"
+     "-doc-source-url", s"https://github.com/$gitHubId/$name/tree/master€{FILE_PATH}.scala"
   )
 }.value
 
-scalaVersion := "2.12.8"
+scalaVersion := "2.13.1"
 
 scmInfo := Some(
   ScmInfo(
@@ -202,4 +198,4 @@ scmInfo := Some(
 
 ThisBuild / turbo := true
 
-version := "1.1.13"
+version := "1.1.14"

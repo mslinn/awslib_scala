@@ -22,7 +22,8 @@ import scala.util.Try
 object BucketPolicy {
   /** This method is idempotent
     * Side effect: sets policy for given AWS S3 upload bucket */
-  def setPolicy(bucket: Bucket, statements: List[Statement])(implicit s3: S3): Bucket = {
+  def setPolicy(bucket: Bucket, statements: List[Statement])
+               (implicit s3: S3): Bucket = {
     try {
       bucket.policy = statements
       Logger.debug(s"${bucket.getName} bucket policy=${bucket.policy}")
@@ -44,12 +45,14 @@ object BucketPolicy {
   def principalUser(implicit iamClient: AmazonIdentityManagement): Try[Principal] =
     arnUser.map(arn => new Principal(arn))
 
-  def allowUserEverythingStatement(bucket: Bucket)(implicit iamClient: AmazonIdentityManagement): Statement = {
+  def allowUserEverythingStatement(bucket: Bucket)
+                                  (implicit iamClient: AmazonIdentityManagement): Statement = {
     val principals: Seq[Principal] = principalUser.toOption.toList
     bucket.allowAllStatement(principals, "Allow user to do everything")
   }
 
-  def createBucket(bucketName: String)(implicit s3: S3, iamClient: AmazonIdentityManagement): Bucket = {
+  def createBucket(bucketName: String)
+                  (implicit s3: S3, iamClient: AmazonIdentityManagement): Bucket = {
     try {
       Logger.info(s"Setting up bucket $bucketName")
       val bucket = s3.createBucket(bucketName)

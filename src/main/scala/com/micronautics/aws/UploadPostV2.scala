@@ -40,10 +40,18 @@ object UploadPostV2 extends S3Implicits with CFImplicits {
     )
   }
 
-  def invalidateDistributions(bucket: Bucket, key: String)(implicit s3: S3, cf: CloudFront): Try[Boolean] =
+  def invalidateDistributions(bucket: Bucket, key: String)
+                             (implicit s3: S3, cf: CloudFront): Try[Boolean] =
     Try { RichBucket(bucket).invalidate(key)>0 }
 
-  protected[aws] def params(file: File, bucket: Bucket, key: String, acl: AclEnum, expiryDuration: Duration, awsCredentials: AWSCredentials): Map[String, String] = {
+  protected[aws] def params(
+                             file: File,
+                             bucket: Bucket,
+                             key: String,
+                             acl: AclEnum,
+                             expiryDuration: Duration,
+                             awsCredentials: AWSCredentials
+                           ): Map[String, String] = {
     val awsUpload = new UploadPostV2(bucket, expiryDuration)(awsCredentials)
     val contentLength = file.length
     val fileName = file.getName
