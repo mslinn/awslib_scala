@@ -10,7 +10,7 @@
  * specific language governing permissions and limitations under the License. */
 
 package com.micronautics.aws
-
+/*
 import org.scalatest._
 import org.scalatestplus.play._
 import play.api.mvc.Results
@@ -18,7 +18,7 @@ import play.api.test._
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import scala.language.postfixOps
-/*
+
 class SNSTest extends PlaySpecServer {
   import play.api.libs.ws.WS
   import play.api.mvc._
