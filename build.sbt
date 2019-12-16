@@ -73,7 +73,7 @@ libraryDependencies ++= {
     "com.fasterxml.jackson.core" %  "jackson-annotations" % jackV      withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-core"        % jackV      withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-databind"    % jackV      withSources(),
-    "com.google.code.findbugs"   %  "jsr305"              % "3.0.1"    withSources() force(),
+    "com.google.code.findbugs"   %  "jsr305"              % "3.0.2"    withSources() force(),
     "com.micronautics"           %% "scalacourses-utils"  % "0.3.0"    withSources(),
     "com.typesafe"               %  "config"              % "1.3.0"    withSources() force(),
     "commons-codec"              %  "commons-codec"       % "1.10"     withSources() force(),
