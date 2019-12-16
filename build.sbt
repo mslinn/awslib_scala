@@ -61,7 +61,7 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val httpV = "4.4.1"
+  val httpV = "4.4.12"
   val jackV = "2.9.9"
   Seq(
     "org.apache.httpcomponents"  %  "httpclient"          % httpV      withSources() force(),
