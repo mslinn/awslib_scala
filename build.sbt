@@ -61,11 +61,11 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val httpV = "4.4.12"
+  val httpV = "4.5.10"
   val jackV = "2.9.9"
   Seq(
     "org.apache.httpcomponents"  %  "httpclient"          % httpV      withSources() force(),
-    "org.apache.httpcomponents"  %  "httpcore"            % httpV      withSources() force(),
+    "org.apache.httpcomponents"  %  "httpcore"            % "4.4.12"   withSources() force(),
     "org.apache.httpcomponents"  %  "httpmime"            % httpV      withSources() force(),
     "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13"   withSources(),
     "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.693" withSources(),
