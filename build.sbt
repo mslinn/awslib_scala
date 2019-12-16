@@ -64,23 +64,22 @@ libraryDependencies ++= {
   val httpV = "4.5.10"
   val jackV = "2.9.9"
   Seq(
-    "org.apache.httpcomponents"  %  "httpclient"          % httpV      withSources() force(),
-    "org.apache.httpcomponents"  %  "httpcore"            % "4.4.12"   withSources() force(),
-    "org.apache.httpcomponents"  %  "httpmime"            % httpV      withSources() force(),
-    "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13"   withSources(),
+    "ch.qos.logback"             %  "logback-classic"     % "1.1.11"   withSources(),
     "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.693" withSources(),
-    "org.joda"                   %  "joda-convert"        % "1.9.2"      withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-annotations" % jackV      withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-core"        % jackV      withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-databind"    % jackV      withSources(),
     "com.google.code.findbugs"   %  "jsr305"              % "3.0.2"    withSources() force(),
     "com.micronautics"           %% "scalacourses-utils"  % "0.3.4"    withSources(),
-    "com.typesafe"               %  "config"              % "1.3.0"    withSources() force(),
-    "commons-io"                 %  "commons-io"          % "2.6"      withSources(),
+    "com.typesafe"               %  "config"              % "1.3.4"    withSources() force(),
     "commons-codec"              %  "commons-codec"       % "1.13"     withSources() force(),
+    "commons-io"                 %  "commons-io"          % "2.6"      withSources(),
     "commons-lang"               %  "commons-lang"        % "2.6"      withSources(),
-    "ch.qos.logback"             %  "logback-classic"     % "1.1.11"    withSources(),
-    "ch.qos.logback"             %  "logback-classic"     % "1.1.3"    withSources(),
+    "org.apache.httpcomponents"  %  "httpclient"          % httpV      withSources() force(),
+    "org.apache.httpcomponents"  %  "httpcore"            % "4.4.12"   withSources() force(),
+    "org.apache.httpcomponents"  %  "httpmime"            % httpV      withSources() force(),
+    "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13"   withSources(),
+    "org.joda"                   %  "joda-convert"        % "1.9.2"    withSources() force(),
     "org.slf4j"                  %  "slf4j-api"           % "1.7.29"   withSources() force(),
     //
     "junit"                      %  "junit"               % "4.12"  % Test
