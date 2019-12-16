@@ -52,7 +52,7 @@ libraryDependencies ++= {
     "org.apache.httpcomponents"  %  "httpmime"            % httpV      withSources() force(),
     "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13"   withSources(),
     "org.joda"                   %  "joda-convert"        % "2.2.1"    withSources() force(),
-    "org.slf4j"                  %  "slf4j-api"           % "1.7.29"   withSources() force(),
+    "org.slf4j"                  %  "slf4j-api"           % "1.7.30"   withSources() force(),
     //
     "junit"                      %  "junit"               % "4.12"     % Test
   )
