@@ -76,7 +76,7 @@ libraryDependencies ++= {
     "com.google.code.findbugs"   %  "jsr305"              % "3.0.1"    withSources() force(),
     "com.micronautics"           %% "scalacourses-utils"  % "0.3.0"    withSources(),
     "com.typesafe"               %  "config"              % "1.3.0"    withSources() force(),
-    "commons-codec"              %  "commons-codec"       % "1.10"     withSources() force(),
+    "commons-codec"              %  "commons-codec"       % "1.13"     withSources() force(),
     "commons-io"                 %  "commons-io"          % "2.4"      withSources(),
     "commons-lang"               %  "commons-lang"        % "2.6"      withSources(),
     "ch.qos.logback"             %  "logback-classic"     % "1.1.3"    withSources(),
