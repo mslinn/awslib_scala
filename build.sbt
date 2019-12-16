@@ -69,7 +69,7 @@ libraryDependencies ++= {
     "org.apache.httpcomponents"  %  "httpmime"            % httpV      withSources() force(),
     "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13"   withSources(),
     "org.joda"                   %  "joda-convert"        % "1.7"      withSources() force(),
-    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.327" withSources(),
+    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.693" withSources(),
     "com.fasterxml.jackson.core" %  "jackson-annotations" % jackV      withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-core"        % jackV      withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-databind"    % jackV      withSources(),
