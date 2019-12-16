@@ -77,7 +77,7 @@ libraryDependencies ++= {
     "com.micronautics"           %% "scalacourses-utils"  % "0.3.4"    withSources(),
     "com.typesafe"               %  "config"              % "1.3.0"    withSources() force(),
     "commons-codec"              %  "commons-codec"       % "1.10"     withSources() force(),
-    "commons-io"                 %  "commons-io"          % "2.4"      withSources(),
+    "commons-io"                 %  "commons-io"          % "2.6"      withSources(),
     "commons-lang"               %  "commons-lang"        % "2.6"      withSources(),
     "ch.qos.logback"             %  "logback-classic"     % "1.1.11"    withSources(),
     "ch.qos.logback"             %  "logback-classic"     % "1.1.3"    withSources(),
