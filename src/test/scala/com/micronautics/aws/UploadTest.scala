@@ -18,7 +18,7 @@ import com.micronautics.aws.AclEnum._
 import org.apache.commons.io.FileUtils
 import org.scalatest._
 
-class UploadTest extends WordSpec with TestBase with IAMImplicits with S3Implicits {
+class UploadTest extends WordSpec with TestBase with IAMImplicits with S3Implicits with BeforeAndAfterAll {
   import java.net.URL
   import com.micronautics.aws.IAMTest._
 
@@ -33,13 +33,19 @@ class UploadTest extends WordSpec with TestBase with IAMImplicits with S3Implici
 
   /** Download a binary file specified by the given bucket and key */
   def download(bucket: Bucket, key: String): Array[Byte] = {
-    val url = bucket.resourceUrl(key).replace("https:", "http:") // step around SSL certificate mismatch
+    val url = bucket.resourceUrl(key).replace("https:", "http:") // Step around SSL certificate mismatch
     val stream = new URL(url).openStream
     try {
       org.apache.commons.io.IOUtils.toByteArray(stream)
     } finally {
       stream.close()
     }
+  }
+
+  override def afterAll(): Unit = {
+    s3.deleteBucket(bucketName)
+    s3.clearCaches()
+    ()
   }
 
   "uploadAssets" should {

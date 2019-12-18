@@ -17,15 +17,16 @@ import com.micronautics.aws.S3._
 import org.scalatest.WordSpec
 
 class S3Test extends WordSpec with TestBase {
-  val bucketName = s"www.test${new java.util.Date().getTime}.com"
-  var bucket: Bucket = try {
+  val bucketName = s"www.test${ new java.util.Date().getTime }.com"
+  val bucket: Bucket = try {
       println(s"Creating bucket $bucketName")
       val bucket = s3.createBucket(bucketName)
       s3.clearCaches()
       bucket
     } catch {
       case e: Exception =>
-        fail(s"Error creating bucket with accessKey=${ awsCredentials.getAWSAccessKeyId } and secretKey=${ awsCredentials.getAWSSecretKey }\n${ e.getMessage }")
+        fail(s"Error creating bucket with accessKey=${ awsCredentials.getAWSAccessKeyId } and secretKey=${
+          awsCredentials.getAWSSecretKey }\n${ e.getMessage }")
     }
 
   val file1Name = "index.html"
@@ -49,6 +50,7 @@ class S3Test extends WordSpec with TestBase {
     }
   }
 
+  /* The bucket is created separately */
   override def beforeAll(): Unit = {
     saveToFile(file1, """<h1>Test 1 of AWS S3</h1>
                         |<p>This is index.html</p>
