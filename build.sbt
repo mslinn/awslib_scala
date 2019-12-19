@@ -89,7 +89,7 @@ libraryDependencies ++= scalaVersion {
       "com.typesafe.play"        %% "play-iteratees"          % playV    withSources() force(),
       "com.typesafe.play"        %% "play-datacommons"        % playV    withSources() force(),
       "com.github.nscala-time"   %% "nscala-time"             % "2.16.0" withSources(),
-      "org.clapper"              %% "grizzled-scala"          % "4.2.0"  withSources(),
+      "org.clapper"              %% "grizzled-scala"          % "4.10.0"  withSources(),
       "org.scala-lang.modules"   %% "scala-collection-compat" % "2.1.2"  withSources(),
       //
       "com.typesafe.play"      %% "play"                      % playV    % Test withSources(),
