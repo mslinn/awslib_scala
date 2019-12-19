@@ -83,7 +83,7 @@ libraryDependencies ++= scalaVersion {
     )
 
   case sv if sv.startsWith("2.11") => // Builds with Scala 2.11.x, Play 2.5.x
-    val playV = "2.5.12"
+    val playV = "2.7.4"
     Seq(
       "com.typesafe.play"        %% "play-json"               % playV    withSources() force(),
       "com.typesafe.play"        %% "play-iteratees"          % playV    withSources() force(),
