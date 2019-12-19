@@ -12,12 +12,12 @@
 package com.micronautics.aws
 
 import org.scalatest.concurrent.AsyncAssertions
+import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, MustMatchers, Suite}
-import org.scalatestplus.play.OneServerPerSuite
 import org.scalatestplus.play.PlaySpec
 
 abstract class PlaySpecServer extends PlaySpec
-                              with OneServerPerSuite
+                              with GuiceOneServerPerSuite
                               with AsyncAssertions
                               with play.api.mvc.Results
                               with SNSImplicits {

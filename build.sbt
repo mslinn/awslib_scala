@@ -63,10 +63,8 @@ libraryDependencies ++= scalaVersion {
     val playV = "2.8.0"
     Seq(
       "com.typesafe.play"        %% "play-json"          % playV    withSources() force(),
-      "org.clapper"              %% "grizzled-scala"     % "4.10.0" withSources(),
       //
       "com.typesafe.play"        %% "play"               % playV    % Test withSources(),
-      "com.typesafe.play"        %% "play-ws"            % playV    % Test withSources(),
       "org.scalatestplus.play"   %% "scalatestplus-play" % "5.0.0"  % Test withSources()
     )
 
@@ -74,11 +72,9 @@ libraryDependencies ++= scalaVersion {
     val playV = "2.8.0"
     Seq(
       "com.typesafe.play"        %% "play-json"               % playV    withSources() force(),
-      "org.clapper"              %% "grizzled-scala"          % "4.10.0" withSources(),
       "org.scala-lang.modules"   %% "scala-collection-compat" % "2.1.3"  withSources(),
       //
       "com.typesafe.play"        %% "play"                    % playV    % Test withSources(),
-      "com.typesafe.play"        %% "play-ws"                 % playV    % Test withSources(),
       "org.scalatestplus.play"   %% "scalatestplus-play"      % "5.0.0"  % Test withSources()
     )
 
@@ -86,13 +82,9 @@ libraryDependencies ++= scalaVersion {
     val playV = "2.7.4"
     Seq(
       "com.typesafe.play"        %% "play-json"               % playV    withSources() force(),
-      "com.typesafe.play"        %% "play-iteratees"          % playV    withSources() force(),
-      "com.typesafe.play"        %% "play-datacommons"        % playV    withSources() force(),
-      "com.github.nscala-time"   %% "nscala-time"             % "2.16.0" withSources(),
       "org.scala-lang.modules"   %% "scala-collection-compat" % "2.1.3"  withSources(),
       //
       "com.typesafe.play"      %% "play"                      % playV    % Test withSources(),
-      "com.typesafe.play"      %% "play-ws"                   % playV    % Test withSources(),
       "org.scalatestplus.play" %% "scalatestplus-play"        % "4.0.3"  % Test withSources()
     )
 }.value
