@@ -37,7 +37,7 @@ libraryDependencies ++= {
   val jackV = "2.9.9"
   Seq(
     "ch.qos.logback"             %  "logback-classic"     % "1.2.3"   withSources(),
-    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.695" withSources(),
+    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.696" withSources(),
     "com.fasterxml.jackson.core" %  "jackson-annotations" % jackV      withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-core"        % jackV      withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-databind"    % jackV      withSources(),
