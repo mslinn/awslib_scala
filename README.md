@@ -14,7 +14,7 @@ This library provides a functional interface to the [AWS Java library](https://d
 The exposed API is much simpler to use than Amazon's Java API,
 however you can mix calls to this library with calls to the underlying AWS Java library.
 
-Container classes such as `CloudFront`, `IAM`, `Polly`, `Rekoginzer`, `S3`, `SNS` and `SQS` are defined that
+Container classes such as `CloudFront`, `Comprehend`, `IAM`, `Polly`, `Rekoginzer`, `S3`, `SNS` and `SQS` are defined that
 encapsulate top-level functionality.
 The container classes are defined using composition instead of inheritance.
 
@@ -27,18 +27,21 @@ Programmers using this library are encouraged to use named parameters for the fe
 ## Building and Running
 
  1. Java 8+ is required.
+ 
  2. You need an AWS account.
-[Separate AWS accounts](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/consolidated-billing.html)
-for development and production are recommended.
+    [Separate AWS accounts](https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/consolidated-billing.html)
+    for development and production are recommended.
+    
  3. Your AWS keys must either be defined in environment variables called `AWS_ACCESS_KEY` and `AWS_SECRET_KEY`
-or you must have configured [AWS CLI](https://aws.amazon.com/cli/) with your AWS authentication credentials.
-If environment variables and the AWS CLI configuration file are all available, the environment variables have precedence.
+    or you must have configured [AWS CLI](https://aws.amazon.com/cli/) with your AWS authentication credentials.
+    If environment variables and the AWS CLI configuration file are all available, the environment variables have precedence.
+    
  4. Type the following into a bash console:
-````
-git clone https://github.com/mslinn/awslib_scala.git
-cd awslib_scala
-sbt test
-````
+    ````
+    git clone https://github.com/mslinn/awslib_scala.git
+    cd awslib_scala
+    sbt test
+    ````
 
 ## Installation
 Add this to your project's `build.sbt`:

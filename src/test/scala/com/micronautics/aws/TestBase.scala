@@ -16,6 +16,7 @@ import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, MustMatchers, Suite}
 trait TestBase extends MustMatchers with BeforeAndAfter with BeforeAndAfterAll with SNSImplicits { this: BeforeAndAfterAll with Suite =>
   lazy implicit val s3: S3 = new S3()
   lazy implicit val cf: CloudFront = new CloudFront()
+  lazy implicit val comprehend: Comprehend = new Comprehend()
   lazy implicit val et: ElasticTranscoder = new ElasticTranscoder()
   lazy implicit val iam: IAM = new IAM()
   lazy implicit val r53: Route53 = new Route53()
