@@ -13,17 +13,16 @@ package com.micronautics.aws
 
 import com.amazonaws.services.comprehend.model.{DetectSentimentResult, DominantLanguage, Entity, KeyPhrase, SyntaxToken}
 import org.scalatest.WordSpec
-import Ordering.Double.TotalOrdering
 
 class ComprehendTest extends WordSpec with TestBase {
   val text: String =
     """This is a paragraph.
       |It has no feelings.
       |No feelings at all.
-      |Cherie, je t'aime!
       |Very sad indeed!
       |Yet there is joy in my virtual heart.
       |For I do not live on Earth, the Moon, or in the stars.
+      |Cherie, je t'aime!
       |""".stripMargin
 
   "Comprehend" must {
@@ -50,10 +49,10 @@ class ComprehendTest extends WordSpec with TestBase {
 
     "detect sentiment" in {
       val actual: DetectSentimentResult = comprehend.detectSentiment(text)
-      actual.getSentiment mustBe "NEGATIVE"
+      actual.getSentiment mustBe "POSITIVE"
       val score = actual.getSentimentScore
       score.getMixed.toDouble    must be < (0.6)
-      score.getNegative.toDouble must be > (0.5)
+      score.getNegative.toDouble must be < (0.1)
       score.getNeutral.toDouble  must be > (0.0)
       score.getPositive.toDouble must be > (0.0)
     }

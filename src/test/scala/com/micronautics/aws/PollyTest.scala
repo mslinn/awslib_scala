@@ -42,8 +42,8 @@ class PollyTest extends WordSpec with TestBase {
 
     "find lexicon" in {
       polly.lexiconFor("asdf") match {
-        case Left(lexicon) => fail(s"Lexicon with name asdf must not be found because it does not exist")
-        case Right(e) =>
+        case Right(lexicon) => fail(s"Lexicon with name asdf must not be found because it does not exist")
+        case Left(e) =>
       }
     }
   }

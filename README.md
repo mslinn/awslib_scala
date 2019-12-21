@@ -4,6 +4,8 @@
 [![Build Status](https://travis-ci.org/mslinn/awslib_scala.svg?branch=master)](https://travis-ci.org/mslinn/awslib_scala)
 [ ![Download](https://api.bintray.com/packages/micronautics/scala/awslib_scala/images/download.svg) ](https://bintray.com/micronautics/scala/awslib_scala/_latestVersion)
 
+Starting with v1.1.17, Scala 2.11 is no longer supported, just Scala 2.12 & 2.13.
+
 ![awslib_scala Logo](https://raw.githubusercontent.com/mslinn/awslib_scala/master/images/awsLib_76x78.png)
 This project is sponsored by [Micronautics Research Corporation](https://www.micronauticsresearch.com/),
 the company behind [Cadenza](https://www.micronauticsresearch.com/products/cadenza/index.html) and
@@ -48,7 +50,7 @@ Add this to your project's `build.sbt`:
 
     resolvers += "micronautics/scala on bintray" at "https://dl.bintray.com/micronautics/scala"
 
-    libraryDependencies += "com.micronautics" %% "awslib_scala" % "1.1.16" withSources()
+    libraryDependencies += "com.micronautics" %% "awslib_scala" % "1.1.17" withSources()
 
 ## Sample Code
 See the unit tests for examples of how to use this library.
