@@ -151,7 +151,7 @@ class Polly {
         result.getSynthesisTask.getTaskStatus
     }
 
-    val SYNTHESIS_TASK_TIMEOUT_SECONDS: Int = 300
+    val SYNTHESIS_TASK_TIMEOUT_SECONDS: Long = 300L
     val SYNTHESIS_TASK_POLL_INTERVAL = Durations.FIVE_SECONDS
     val SYNTHESIS_TASK_POLL_DELAY: Duration = Durations.TEN_SECONDS
 
