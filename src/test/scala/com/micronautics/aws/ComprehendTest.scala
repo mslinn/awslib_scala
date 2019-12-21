@@ -19,7 +19,7 @@ class ComprehendTest extends WordSpec with TestBase {
     """This is a paragraph.
       |It has no feelings.
       |No feelings at all.
-      |Chérie, je t'aime!
+      |Cherie, je t'aime!
       |Very sad indeed!
       |Yet there is joy in my virtual heart.
       |For I do not live on Earth, the Moon, or in the stars.
@@ -28,12 +28,12 @@ class ComprehendTest extends WordSpec with TestBase {
   "Comprehend" must {
     "detect all languages used" in {
       val actual: List[DominantLanguage] = comprehend.detectDominantLanguages(text)
-      actual mustBe List("en", "fr")
+      actual mustBe List("en-US", "fr-FR")
     }
 
     "detect the most common language used" in {
       val actual: DominantLanguage = comprehend.detectDominantLanguage(text)
-      actual.getLanguageCode mustBe "en"
+      actual.getLanguageCode mustBe "en-US"
       actual.getScore mustBe 1.0f
     }
 
@@ -51,10 +51,10 @@ class ComprehendTest extends WordSpec with TestBase {
       val actual: DetectSentimentResult = comprehend.detectSentiment(text)
       actual.getSentiment mustBe "NEUTRAL"
       val score = actual.getSentimentScore
-      score.getMixed mustBe > 0
-      score.getNegative mustBe > 0
-      score.getNeutral mustBe > 0
-      score.getPositive mustBe > 0
+      score.getMixed mustBe > (0)
+      score.getNegative mustBe > (0)
+      score.getNeutral mustBe > (0)
+      score.getPositive mustBe > (0)
     }
 
     "detect syntax" in {

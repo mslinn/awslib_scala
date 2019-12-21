@@ -26,7 +26,7 @@ class Polly {
   implicit val polly: Polly = this
   implicit val pollyClient: AmazonPollyAsync = AmazonPollyAsyncClientBuilder.standard.build
 
-  def describeVoices(languageCode: String= "en"): List[Voice] = {
+  def describeVoices(languageCode: String= "en-US"): List[Voice] = {
     import com.amazonaws.services.polly.model.{DescribeVoicesRequest, DescribeVoicesResult}
 
     @scala.annotation.tailrec
@@ -38,9 +38,9 @@ class Polly {
 
       if (nextToken!=null) {
         request.setNextToken(nextToken)
-        updatedAccum
-      } else
         getEmAll(request, updatedAccum)
+      } else
+        updatedAccum
     }
 
     val request = new DescribeVoicesRequest().withLanguageCode(languageCode)
@@ -90,9 +90,9 @@ class Polly {
 
       if (nextToken!=null) {
         request.setNextToken(nextToken)
-        updatedAccum
-      } else
         getEmAll(request, updatedAccum)
+      } else
+        updatedAccum
     }
 
     val request = new ListLexiconsRequest()

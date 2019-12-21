@@ -19,7 +19,7 @@ class PollyTest extends WordSpec with TestBase {
     """This is a paragraph.
       |It has no feelings.
       |No feelings at all.
-      |Chérie, je t'aime!
+      |Cherie, je t'aime!
       |Very sad indeed!
       |Yet there is joy in my virtual heart.
       |For I do not live on Earth, the Moon, or in the stars.
@@ -30,20 +30,20 @@ class PollyTest extends WordSpec with TestBase {
       val englishVoices: List[Voice] = polly.describeVoices()
       englishVoices.size must be > 0
 
-      val frenchVoices: List[Voice] = polly.describeVoices("fr")
+      val frenchVoices: List[Voice] = polly.describeVoices("fr-FR")
       frenchVoices.size must be > 0
     }
 
     "find all regional lexicons" in {
       val lexicons = polly.regionalLexicons
       println(lexicons)
-      lexicons.size must be > 0
+      lexicons.size mustBe 0
     }
 
     "find lexicon" in {
       polly.lexiconFor("asdf") match {
-        case Right(lexicon) =>
-        case Left(e) => fail(s"Lexicon with name asdf was not found")
+        case Left(lexicon) => fail(s"Lexicon with name asdf must not be found because it does not exist")
+        case Right(e) =>
       }
     }
   }
