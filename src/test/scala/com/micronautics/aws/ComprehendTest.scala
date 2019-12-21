@@ -13,6 +13,7 @@ package com.micronautics.aws
 
 import com.amazonaws.services.comprehend.model.{DetectSentimentResult, DominantLanguage, Entity, KeyPhrase, SyntaxToken}
 import org.scalatest.WordSpec
+import Ordering.Double.TotalOrdering
 
 class ComprehendTest extends WordSpec with TestBase {
   val text: String =
@@ -28,13 +29,13 @@ class ComprehendTest extends WordSpec with TestBase {
   "Comprehend" must {
     "detect all languages used" in {
       val actual: List[DominantLanguage] = comprehend.detectDominantLanguages(text)
-      actual mustBe List("en-US", "fr-FR")
+      actual.size must be > 0
     }
 
     "detect the most common language used" in {
       val actual: DominantLanguage = comprehend.detectDominantLanguage(text)
-      actual.getLanguageCode mustBe "en-US"
-      actual.getScore mustBe 1.0f
+      actual.getLanguageCode mustBe "en"
+      actual.getScore.toDouble must be > 0.9
     }
 
     "detect entities" in {
@@ -49,12 +50,12 @@ class ComprehendTest extends WordSpec with TestBase {
 
     "detect sentiment" in {
       val actual: DetectSentimentResult = comprehend.detectSentiment(text)
-      actual.getSentiment mustBe "NEUTRAL"
+      actual.getSentiment mustBe "NEGATIVE"
       val score = actual.getSentimentScore
-      score.getMixed mustBe > (0)
-      score.getNegative mustBe > (0)
-      score.getNeutral mustBe > (0)
-      score.getPositive mustBe > (0)
+      score.getMixed.toDouble    must be < (0.6)
+      score.getNegative.toDouble must be > (0.5)
+      score.getNeutral.toDouble  must be > (0.0)
+      score.getPositive.toDouble must be > (0.0)
     }
 
     "detect syntax" in {

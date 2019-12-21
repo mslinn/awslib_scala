@@ -48,7 +48,7 @@ Add this to your project's `build.sbt`:
 
     resolvers += "micronautics/scala on bintray" at "https://dl.bintray.com/micronautics/scala"
 
-    libraryDependencies += "com.micronautics" %% "awslib_scala" % "1.1.14" withSources()
+    libraryDependencies += "com.micronautics" %% "awslib_scala" % "1.1.16" withSources()
 
 ## Sample Code
 See the unit tests for examples of how to use this library.

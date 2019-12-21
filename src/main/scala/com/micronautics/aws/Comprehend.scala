@@ -37,7 +37,7 @@ class Comprehend {
   def detectDominantLanguage(text: String): DominantLanguage =
     detectDominantLanguages(text).groupBy(identity).maxBy(_._2.size)._1
 
-  def detectEntities(text: String, languageCode: String="en-US"): List[Entity] = {
+  def detectEntities(text: String, languageCode: String="en"): List[Entity] = {
     import com.amazonaws.services.comprehend.model.DetectEntitiesRequest
 
     val detectEntitiesRequest = new DetectEntitiesRequest()
@@ -47,7 +47,7 @@ class Comprehend {
     detectEntitiesResult.getEntities.asScala.toList
   }
 
-  def detectKeyPhrases(text: String, languageCode: String="en-US"): List[KeyPhrase] = {
+  def detectKeyPhrases(text: String, languageCode: String="en"): List[KeyPhrase] = {
     import com.amazonaws.services.comprehend.model.DetectKeyPhrasesRequest
 
     val detectKeyPhrasesRequest = new DetectKeyPhrasesRequest()
@@ -57,7 +57,7 @@ class Comprehend {
     detectKeyPhrasesResult.getKeyPhrases.asScala.toList
   }
 
-  def detectSentiment(text: String, languageCode: String="en-US"): DetectSentimentResult = {
+  def detectSentiment(text: String, languageCode: String="en"): DetectSentimentResult = {
     import com.amazonaws.services.comprehend.model.DetectSentimentRequest
 
     val detectSentimentRequest = new DetectSentimentRequest()
@@ -67,7 +67,7 @@ class Comprehend {
     detectSentimentResult
   }
 
-  def detectSyntax(text: String, languageCode: String="en-US"): List[SyntaxToken] = {
+  def detectSyntax(text: String, languageCode: String="en"): List[SyntaxToken] = {
     import com.amazonaws.services.comprehend.model.DetectSyntaxRequest
 
     val detectSyntaxRequest = new DetectSyntaxRequest()
