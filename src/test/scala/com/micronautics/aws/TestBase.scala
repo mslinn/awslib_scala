@@ -19,6 +19,7 @@ trait TestBase extends MustMatchers with BeforeAndAfter with BeforeAndAfterAll w
   lazy implicit val comprehend: Comprehend = new Comprehend()
   lazy implicit val et: ElasticTranscoder = new ElasticTranscoder()
   lazy implicit val iam: IAM = new IAM()
+  lazy implicit val polly: Polly = new Polly()
   lazy implicit val r53: Route53 = new Route53()
   lazy implicit val sns: SNS = new SNS()
 }
