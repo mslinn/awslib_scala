@@ -50,6 +50,7 @@ libraryDependencies ++= {
     "org.apache.httpcomponents"  %  "httpclient"          % httpV      withSources() force(),
     "org.apache.httpcomponents"  %  "httpcore"            % "4.4.12"   withSources() force(),
     "org.apache.httpcomponents"  %  "httpmime"            % httpV      withSources() force(),
+    "org.awaitility"             %  "awaitility"          % "4.0.1"    withSources(),
     "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13"   withSources(),
     "org.joda"                   %  "joda-convert"        % "2.2.1"    withSources() force(),
     "org.slf4j"                  %  "slf4j-api"           % "1.7.30"   withSources() force(),
