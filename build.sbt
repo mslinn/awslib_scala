@@ -7,26 +7,15 @@ crossScalaVersions := Seq("2.12.10", "2.13.1")
 
 fork in Test := false
 
-// define the statements initially evaluated when entering 'console', 'console-quick', or 'console-project'
+// Define the statements initially evaluated when entering 'console', 'console-quick', or 'console-project'
 initialCommands := """
                      |""".stripMargin
 
-javacOptions ++=
-  scalaVersion {
-    case sv if sv.startsWith("2.10") => List(
-      "-source", "1.7",
-      "-target", "1.7"
-    )
-
-    case _ => List(
-      "-source", "1.8",
-      "-target", "1.8"
-    )
-  }.value ++ Seq(
-    "-Xlint:deprecation",
-    "-Xlint:unchecked",
-    "-g:vars"
-  )
+javacOptions ++= Seq(
+  "-Xlint:deprecation",
+  "-Xlint:unchecked",
+  "-g:vars"
+)
 
 resolvers ++= Seq(
   "micronautics/scala on bintray" at "https://dl.bintray.com/micronautics/scala"
@@ -78,21 +67,10 @@ libraryDependencies ++= scalaVersion {
       "com.typesafe.play"        %% "play"                    % playV    % Test withSources(),
       "org.scalatestplus.play"   %% "scalatestplus-play"      % "5.0.0"  % Test withSources()
     )
-
-  case sv if sv.startsWith("2.11") => // Builds with Scala 2.11.x, Play 2.5.x
-    val playV = "2.7.4"
-    Seq(
-      "com.typesafe.play"        %% "play-json"               % playV    withSources() force(),
-      "org.scala-lang.modules"   %% "scala-collection-compat" % "2.1.3"  withSources(),
-      //
-      "com.typesafe.play"      %% "play"                      % playV    % Test withSources(),
-      "org.scalatestplus.play" %% "scalatestplus-play"        % "4.0.3"  % Test withSources()
-    )
 }.value
 
 licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
 
-//updateOptions := updateOptions.value.withCachedResolution(cachedResoluton = true)
 logBuffered in Test := false
 
 //logLevel := Level.Error
@@ -100,6 +78,7 @@ logBuffered in Test := false
 // Only show warnings and errors on the screen for compilations.
 // This applies to both test:compile and compile and is Info by default
 //logLevel in compile := Level.Warn
+
 logLevel in test := Level.Info // Level.INFO is needed to see detailed output when running tests
 
 name := "awslib_scala"
@@ -158,16 +137,6 @@ scalacOptions ++=
       "-Xlint:type-parameter-shadow"      // A local type parameter shadows a type already in scope.
     )
 
-    case sv if sv.startsWith("2.11") => List(
-      "-Yno-adapted-args",                 // Do not adapt an argument list (either by inserting () or creating a tuple) to match the receiver.
-      "-Ypartial-unification",             // Enable partial unification in type constructor inference
-      "-Ywarn-inaccessible",               // Warn about inaccessible types in method signatures.
-      "-Ywarn-infer-any",                  // Warn when a type argument is inferred to be `Any`.
-      "-Ywarn-nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
-      "-Ywarn-nullary-unit",               // Warn when nullary methods return Unit.
-      "-Ywarn-numeric-widen"               // Warn when numerics are widened.
-    )
-
     case _ => Nil
   }.value
 
@@ -192,4 +161,6 @@ scmInfo := Some(
 
 ThisBuild / turbo := true
 
-version := "1.1.17"
+//updateOptions := updateOptions.value.withCachedResolution(cachedResoluton = true)
+
+version := "1.1.18"

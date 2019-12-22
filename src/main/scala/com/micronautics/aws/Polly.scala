@@ -11,7 +11,7 @@
 
 package com.micronautics.aws
 
-import com.amazonaws.services.polly.model.{Lexicon, LexiconDescription, PutLexiconResult, StartSpeechSynthesisTaskResult, Voice}
+import com.amazonaws.services.polly.model._
 import com.amazonaws.services.polly.{AmazonPollyAsync, AmazonPollyAsyncClientBuilder}
 import scala.jdk.CollectionConverters._
 
@@ -20,8 +20,7 @@ object Polly {
 }
 
 class Polly {
-
-  import com.amazonaws.services.polly.model.{OutputFormat, SpeechMarkType, TextType, VoiceId}
+  import com.amazonaws.services.polly.model.{LanguageCode, OutputFormat, SpeechMarkType, TextType, VoiceId}
 
   implicit val polly: Polly = this
   implicit val pollyClient: AmazonPollyAsync = AmazonPollyAsyncClientBuilder.standard.build
@@ -114,28 +113,57 @@ class Polly {
 
   /** Asynchronous; starts task and returns immediately */
   def startSpeechSynthesisTask(text: String,
+                               languageCode: LanguageCode = LanguageCode.EnUS,
                                outputBucket: RichBucket,
                                snsTopicArn: Arn,
-                               voiceId: VoiceId = VoiceId.Amy,
+                               engine: String = "neural",
+                               lexiconNames: Seq[String] = Seq.empty,
+                               outputFormat: OutputFormat = OutputFormat.Mp3,
+                               s3KeyPrefix: String = "",
+                               sampleRate: Option[String] = None,
+                               speechMarkTypes: Seq[SpeechMarkType] = Nil,
                                textType: TextType = TextType.Text,
-                               outputFormat: OutputFormat = OutputFormat.Mp3
-                              ): StartSpeechSynthesisTaskResult = {
+                               voiceId: VoiceId = VoiceId.Amy
+  ): StartSpeechSynthesisTaskResult = {
     import com.amazonaws.services.polly.model._
 
-    val request = new StartSpeechSynthesisTaskRequest()
+    val request: StartSpeechSynthesisTaskRequest = {
+      val r = new StartSpeechSynthesisTaskRequest()
+      .withEngine(engine)
+      .withLanguageCode(languageCode)
+      .withLexiconNames(lexiconNames.asJava)
       .withOutputFormat(outputFormat.toString)
+      .withOutputS3BucketName(outputBucket.bucket.getName)
+      .withOutputS3KeyPrefix(s3KeyPrefix)
+      .withSnsTopicArn(snsTopicArn.arnString)
       .withText(text)
       .withTextType(textType)
       .withVoiceId(voiceId)
-      .withOutputS3BucketName(outputBucket.bucket.getName)
-      .withSnsTopicArn(snsTopicArn.arnString)
+
+      val s: StartSpeechSynthesisTaskRequest = sampleRate.map(r.withSampleRate) getOrElse r
+      val t: StartSpeechSynthesisTaskRequest = if (speechMarkTypes.nonEmpty) s.withSpeechMarkTypes(speechMarkTypes: _*) else s
+      t
+    }
 
     pollyClient.startSpeechSynthesisTask(request)
   }
 
   /** Blocks until completion.
-    * See https://docs.aws.amazon.com/polly/latest/dg/StartSpeechSynthesisTask.html */
-  def startSpeechSynthesisTaskBlocking(text: String, outputBucket: RichBucket, snsTopicArn: Arn): Unit = {
+    * See https://docs.aws.amazon.com/polly/latest/dg/StartSpeechSynthesisTask.html
+    * Neural voices: https://docs.aws.amazon.com/polly/latest/dg/ntts-voices-main.html#ntts-voices-main */
+  def startSpeechSynthesisTaskBlocking(text: String,
+                                       outputBucket: RichBucket,
+                                       snsTopicArn: Arn,
+                                       engine: String = "neural",
+                                       languageCode: LanguageCode = LanguageCode.EnUS,
+                                       lexiconNames: Seq[String] = Seq.empty,
+                                       outputFormat: OutputFormat = OutputFormat.Mp3,
+                                       s3KeyPrefix: String = "",
+                                       sampleRate: Option[String] = None,
+                                       speechMarkTypes: Seq[SpeechMarkType] = Nil,
+                                       textType: TextType = TextType.Text,
+                                       voiceId: VoiceId = VoiceId.Joanna
+                                      ): Unit = {
     import java.time.Duration
     import java.util.concurrent.TimeUnit
     import com.amazonaws.services.polly.model.TaskStatus
@@ -155,7 +183,19 @@ class Polly {
     val SYNTHESIS_TASK_POLL_INTERVAL = Durations.FIVE_SECONDS
     val SYNTHESIS_TASK_POLL_DELAY: Duration = Durations.TEN_SECONDS
 
-    val result: StartSpeechSynthesisTaskResult = startSpeechSynthesisTask(text, outputBucket, snsTopicArn)
+    val result: StartSpeechSynthesisTaskResult = startSpeechSynthesisTask(
+      text = text,
+      outputBucket = outputBucket,
+      snsTopicArn = snsTopicArn,
+      languageCode = languageCode,
+      lexiconNames = lexiconNames,
+      outputFormat = outputFormat,
+      s3KeyPrefix = s3KeyPrefix,
+      sampleRate = sampleRate,
+      speechMarkTypes = speechMarkTypes,
+      textType = textType,
+      voiceId = voiceId
+    )
     val taskId = result.getSynthesisTask.getTaskId
     await
       .`with`
@@ -169,18 +209,25 @@ class Polly {
   /** See https://docs.aws.amazon.com/polly/latest/dg/speechmarks.html */
   def synthesizeSpeechMarks(text: String,
                             outputFileName: String,
+                            engine: String = "neural",
+                            languageCode: LanguageCode = LanguageCode.EnUS,
                             outputFormat: OutputFormat = OutputFormat.Json,
-                            voiceId: VoiceId = VoiceId.Joanna,
-                            speechMarkTypes: Seq[SpeechMarkType] = List(SpeechMarkType.Viseme, SpeechMarkType.Word)
+                            speechMarkTypes: Seq[SpeechMarkType] = List(SpeechMarkType.Viseme, SpeechMarkType.Word),
+                            textType: TextType = TextType.Text,
+                            voiceId: VoiceId = VoiceId.Joanna
                            ): Either[Exception, Array[Byte]] = {
     import com.amazonaws.services.polly.model.{SynthesizeSpeechRequest, SynthesizeSpeechResult}
     import org.apache.commons.io.IOUtils
 
     val synthesizeSpeechRequest = new SynthesizeSpeechRequest()
+      .withEngine(engine)
+      .withLanguageCode(languageCode)
       .withOutputFormat(outputFormat)
       .withSpeechMarkTypes(speechMarkTypes: _*)
-      .withVoiceId(voiceId)
       .withText(text)
+      .withTextType(textType)
+      .withVoiceId(voiceId)
+
     try {
       val synthesizeSpeechResult: SynthesizeSpeechResult = pollyClient.synthesizeSpeech(synthesizeSpeechRequest)
       val audioBytes: Array[Byte] = IOUtils.toByteArray(synthesizeSpeechResult.getAudioStream)

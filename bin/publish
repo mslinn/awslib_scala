@@ -16,10 +16,10 @@ function findValue {
 
 VERSION="$( findValue version )"
 
-echo "Creating and uploading Scaladoc"
-sbt "; doc; ghpagesPushSite"
+#echo "Creating and uploading Scaladoc"
+#sbt "; doc; ghpages.PushSite"
 
-if [ $? == 0 ]; then
+#if [ $? == 0 ]; then
   echo "Publishing version $VERSION"
   sbt "+publish"
 
@@ -30,7 +30,7 @@ if [ $? == 0 ]; then
   else
     echo "Non-zero return code from SBT, so git commit not performed"
   fi
-else
-  echo "Non-zero return code from SBT ghpagesPushSite, so sbt +publish not performed"
-fi
+#else
+#  echo "Non-zero return code from SBT ghpages.PushSite, so sbt +publish not performed"
+#fi
 
