@@ -3,7 +3,7 @@
 import sbt.Keys._
 import Settings._
 
-crossScalaVersions := Seq("2.12.10", "2.13.1")
+crossScalaVersions := Seq("2.13.1")
 
 fork in Test := false
 

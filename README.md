@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.org/mslinn/awslib_scala.svg?branch=master)](https://travis-ci.org/mslinn/awslib_scala)
 [ ![Download](https://api.bintray.com/packages/micronautics/scala/awslib_scala/images/download.svg) ](https://bintray.com/micronautics/scala/awslib_scala/_latestVersion)
 
-Starting with v1.1.17, Scala 2.11 is no longer supported, just Scala 2.12 & 2.13.
+Starting with v1.1.18, Scala 2.12 is no longer supported, just Scala 2.13.
 
 ![awslib_scala Logo](https://raw.githubusercontent.com/mslinn/awslib_scala/master/images/awsLib_76x78.png)
 This project is sponsored by [Micronautics Research Corporation](https://www.micronauticsresearch.com/),
