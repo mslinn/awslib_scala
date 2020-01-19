@@ -22,7 +22,7 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val httpV = "4.5.10"
+  val httpV = "4.5.11"
   val jackV = "2.9.9"
   Seq(
     "ch.qos.logback"             %  "logback-classic"     % "1.2.3"   withSources(),
