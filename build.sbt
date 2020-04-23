@@ -26,7 +26,7 @@ libraryDependencies ++= {
   val jackV = "2.9.9"
   Seq(
     "ch.qos.logback"             %  "logback-classic"     % "1.2.3"   withSources(),
-    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.707" withSources(),
+    "com.amazonaws"              %  "aws-java-sdk-osgi"   % "1.11.737" withSources(),
     "com.fasterxml.jackson.core" %  "jackson-annotations" % jackV      withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-core"        % jackV      withSources() force(),
     "com.fasterxml.jackson.core" %  "jackson-databind"    % jackV      withSources(),
@@ -50,7 +50,7 @@ libraryDependencies ++= {
 
 libraryDependencies ++= scalaVersion {
   case sv if sv.startsWith("2.13") => // Builds with Scala 2.13.x, Play 2.8.x
-    val playV = "2.8.0"
+    val playV = "2.8.1"
     Seq(
       "com.typesafe.play"        %% "play-json"          % playV    withSources() force(),
       //
