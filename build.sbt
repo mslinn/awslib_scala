@@ -3,7 +3,7 @@
 import sbt.Keys._
 import Settings._
 
-crossScalaVersions := Seq("2.13.1")
+crossScalaVersions := Seq("2.13.2")
 
 fork in Test := false
 
@@ -150,7 +150,7 @@ scalacOptions in (Compile, doc) ++= baseDirectory.map {
   )
 }.value
 
-scalaVersion := "2.13.1"
+scalaVersion := "2.13.2"
 
 scmInfo := Some(
   ScmInfo(
