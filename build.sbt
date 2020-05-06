@@ -55,7 +55,7 @@ libraryDependencies ++= scalaVersion {
       "com.typesafe.play"        %% "play-json"          % playV    withSources() force(),
       //
       "com.typesafe.play"        %% "play"               % playV    % Test withSources(),
-      "org.scalatestplus.play"   %% "scalatestplus-play" % "5.0.0"  % Test withSources()
+      "org.scalatestplus.play"   %% "scalatestplus-play" % "5.1.0"  % Test withSources()
     )
 
   case sv if sv.startsWith("2.12") => // Builds with Scala 2.12.x, Play 2.8.x
@@ -65,7 +65,7 @@ libraryDependencies ++= scalaVersion {
       "org.scala-lang.modules"   %% "scala-collection-compat" % "2.1.3"  withSources(),
       //
       "com.typesafe.play"        %% "play"                    % playV    % Test withSources(),
-      "org.scalatestplus.play"   %% "scalatestplus-play"      % "5.0.0"  % Test withSources()
+      "org.scalatestplus.play"   %% "scalatestplus-play"      % "5.1.0"  % Test withSources()
     )
 }.value
 
