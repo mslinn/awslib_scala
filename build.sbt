@@ -44,7 +44,7 @@ libraryDependencies ++= {
     "org.joda"                   %  "joda-convert"        % "2.2.1"    withSources() force(),
     "org.slf4j"                  %  "slf4j-api"           % "1.7.30"   withSources() force(),
     //
-    "junit"                      %  "junit"               % "4.13"     % Test
+    "junit"                      %  "junit"               % "4.13.1"     % Test
   )
 }
 
