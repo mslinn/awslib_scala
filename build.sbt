@@ -37,7 +37,7 @@ libraryDependencies ++= {
     "commons-io"                 %  "commons-io"          % "2.6"      withSources(),
     "commons-lang"               %  "commons-lang"        % "2.6"      withSources(),
     "org.apache.httpcomponents"  %  "httpclient"          % httpV      withSources() force(),
-    "org.apache.httpcomponents"  %  "httpcore"            % "4.4.13"   withSources() force(),
+    "org.apache.httpcomponents"  %  "httpcore"            % "4.4.14"   withSources() force(),
     "org.apache.httpcomponents"  %  "httpmime"            % httpV      withSources() force(),
     "org.awaitility"             %  "awaitility"          % "4.0.2"    withSources(),
     "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13"   withSources(),
