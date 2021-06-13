@@ -34,7 +34,7 @@ libraryDependencies ++= {
     "com.micronautics"           %% "scalacourses-utils"  % "0.3.5"    withSources(),
     "com.typesafe"               %  "config"              % "1.4.0"    withSources() force(),
     "commons-codec"              %  "commons-codec"       % "1.14"     withSources() force(),
-    "commons-io"                 %  "commons-io"          % "2.6"      withSources(),
+    "commons-io"                 %  "commons-io"          % "2.10.0"      withSources(),
     "commons-lang"               %  "commons-lang"        % "2.6"      withSources(),
     "org.apache.httpcomponents"  %  "httpclient"          % httpV      withSources() force(),
     "org.apache.httpcomponents"  %  "httpcore"            % "4.4.13"   withSources() force(),
