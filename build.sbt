@@ -41,7 +41,7 @@ libraryDependencies ++= {
     "org.apache.httpcomponents"  %  "httpmime"            % httpV      withSources() force(),
     "org.awaitility"             %  "awaitility"          % "4.0.2"    withSources(),
     "org.codehaus.jackson"       %  "jackson-mapper-asl"  % "1.9.13"   withSources(),
-    "org.joda"                   %  "joda-convert"        % "2.2.1"    withSources() force(),
+    "org.joda"                   %  "joda-convert"        % "2.2.2"    withSources() force(),
     "org.slf4j"                  %  "slf4j-api"           % "1.7.30"   withSources() force(),
     //
     "junit"                      %  "junit"               % "4.13"     % Test
